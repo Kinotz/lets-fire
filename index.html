@@ -57,7 +57,18 @@
         .promo-link-btn.donate-btn { background: linear-gradient(135deg, #ec4899, #db2777); color: #ffffff; width: 100%; margin-top: 6px; padding: 9px; }
         .sponsor-reward-bar { background: linear-gradient(90deg, rgba(251, 191, 36, 0.2), rgba(192, 132, 252, 0.15)); border: 1px dashed var(--accent-gold); border-radius: 10px; padding: 8px 10px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .sponsor-reward-btn { background: var(--accent-gold); color: #030712; border: none; border-radius: 8px; padding: 6px 10px; font-size: 0.66rem; font-weight: 900; cursor: pointer; white-space: nowrap; }
-        .ad-banner-slot { margin-top: 12px; padding: 10px; background: #050811; border: 1px dashed var(--border); border-radius: 10px; text-align: center; font-size: 0.65rem; color: var(--text-sub); }
+        .ad-banner-slot {
+    margin-top: 12px;
+    padding: 10px;
+    background: #050811;
+    border: 1px dashed var(--border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    max-width: 100%;
+}
+
         .market-switcher { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; background: #050811; padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
         .mkt-btn { background: transparent; border: 1px solid transparent; color: var(--text-sub); font-size: 0.68rem; font-weight: 800; padding: 6px 2px; border-radius: 6px; cursor: pointer; text-align: center; }
         .mkt-btn.active { background: var(--card-bg); color: var(--accent-blue); border-color: var(--accent-blue); }
