@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プライバシーポリシー - Let's FIRE！</title>
+    <meta name="description" content="資産形成シミュレーションゲーム「Let's FIRE！」のプライバシーポリシーです。">
+    <meta name="robots" content="noindex">
+    <style>
+        :root { --bg: #030712; --panel: #0b1120; --card: #151f32; --border: #283652; --text: #f8fafc; --sub: #94a3b8; --blue: #38bdf8; --gold: #fbbf24; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 12px 12px 40px; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; line-height: 1.7; font-size: 15px; }
+        main { max-width: 640px; margin: 0 auto; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+        h1 { font-size: 1.25rem; margin: 4px 0 4px; color: var(--gold); }
+        h2 { font-size: 1.05rem; margin: 24px 0 8px; color: var(--blue); border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+        h3 { font-size: 0.95rem; margin: 16px 0 4px; }
+        p, li { color: #e2e8f0; }
+        ul { padding-left: 1.3em; margin: 6px 0; }
+        li { margin: 4px 0; }
+        a { color: var(--blue); overflow-wrap: anywhere; }
+        .meta { color: var(--sub); font-size: 0.875rem; margin: 0 0 12px; }
+        .box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin: 8px 0; }
+        .back { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); color: var(--text); text-decoration: none; font-weight: 800; }
+        code { background: #050811; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+<main>
+    <p><a class="back" href="./">← ゲームに戻る</a></p>
+    <h1>プライバシーポリシー</h1>
+    <p class="meta">「Let's FIRE！」（以下「本ゲーム」）　運営者：Kinotz　制定日：2026年11月15日</p>
+
+    <p>本ゲームは、ブラウザで遊べる資産形成の学習用ゲームです。会員登録はなく、氏名・メールアドレス・電話番号などの入力は求めません。このページでは、本ゲームを遊ぶときに外部のサービスへ送られる情報、その目的と送信先、送信を止める方法を説明します。</p>
+
+    <h2>1. アクセス解析（Googleタグマネージャー／Googleアナリティクス）</h2>
+    <div class="box">
+        <ul>
+            <li><strong>送られる情報</strong>：閲覧したページ、ページを開いた日時、参照元、端末・OS・ブラウザの種類、画面サイズ、おおよその地域（IPアドレスから推定）、Cookie などに保存される識別子</li>
+            <li><strong>目的</strong>：遊ばれ方を把握し、ゲームを改善するため</li>
+            <li><strong>送信先</strong>：Google LLC（Googleタグマネージャーを通じて、Googleアナリティクスを利用しています）</li>
+            <li><strong>止める方法</strong>：<a href="https://tools.google.com/dlpage/gaoptout?hl=ja" target="_blank" rel="noopener">Googleアナリティクス オプトアウト アドオン</a>を使うか、ブラウザの設定で Cookie を無効にしてください。広告ブロック機能などで読み込みを止めても、ゲームは遊べます。</li>
+        </ul>
+        <p>Google によるデータの扱いは「<a href="https://policies.google.com/technologies/partner-sites?hl=ja" target="_blank" rel="noopener">Google のサービスを使用するサイトやアプリから収集した情報の Google による使用</a>」をご覧ください。</p>
+    </div>
+
+    <h2>2. 広告（忍者AdMax）</h2>
+    <div class="box">
+        <ul>
+            <li><strong>送られる情報</strong>：広告を表示するために、閲覧しているページ、端末・ブラウザの情報、IPアドレス、Cookie などの識別子が広告配信サービスへ送られます。過去の閲覧履歴に応じた広告が表示されることがあります。</li>
+            <li><strong>目的</strong>：広告を表示し、本ゲームの運営費にあてるため</li>
+            <li><strong>送信先</strong>：広告配信サービス「<a href="https://admax.shinobi.jp/" target="_blank" rel="noopener">忍者AdMax</a>」の運営事業者（取り扱いは同サービスの規約・方針に従います）</li>
+            <li><strong>止める方法</strong>：ブラウザの設定で Cookie を無効にする・削除することで、閲覧履歴に応じた広告を止められます。</li>
+        </ul>
+    </div>
+
+    <h2>3. みんなの資産ランキング（Firebase）</h2>
+    <div class="box">
+        <p>ランキングの仕組み（Google の Firebase）は、<strong>「🏆 ランキング」を開いたとき、または結果画面で「ランキングに登録する」を押したときだけ</strong>読み込まれます。押さなければ、下記の情報は送られません。</p>
+        <ul>
+            <li><strong>登録時に送る情報</strong>：表示名（<code>name</code>）、最終純資産（<code>netWorth</code>）、終了時の年齢（<code>age</code>）、モード（<code>mode</code>）、FIRE達成の有無（<code>fireAchieved</code>）、獲得称号数（<code>titleCount</code>）、神話級称号数（<code>mythicCount</code>）、登録日時（<code>createdAt</code>）</li>
+            <li><strong>公開範囲</strong>：表示名と成績は、本ゲームを遊ぶ<strong>誰でも見られる形で公開</strong>されます。本名や、個人が特定できる名前は入力しないでください。</li>
+            <li><strong>目的</strong>：プレイヤー同士で成績を比べるランキングを表示するため</li>
+            <li><strong>送信先</strong>：Google LLC（Firebase の Cloud Firestore）。読み込みや送信の際には、IPアドレスなどの通信情報も Google に送られます。</li>
+            <li><strong>削除の依頼</strong>：登録した記録を消したい場合は、下記の連絡先へ「表示名・おおよその登録日時・成績」をお知らせください。確認のうえ削除します。</li>
+        </ul>
+        <p>Firebase のデータの扱いは「<a href="https://firebase.google.com/support/privacy?hl=ja" target="_blank" rel="noopener">Firebase でのプライバシーとセキュリティ</a>」をご覧ください。</p>
+    </div>
+
+    <h2>4. 端末の中だけに保存する情報（localStorage）</h2>
+    <div class="box">
+        <p>獲得した称号、モード別の自己ベスト、音量の設定、途中のセーブデータ、チュートリアルを終えたかどうかは、お使いのブラウザの中（localStorage）だけに保存し、外部には送りません。</p>
+        <p>消したいときは、ゲームのオープニング画面の「🗑️ データ初期化」を押すか、ブラウザのサイトデータを削除してください（音量の設定と自己ベストは、ブラウザのサイトデータの削除で消えます）。</p>
+    </div>
+
+    <h2>5. 外部サイトへのリンク</h2>
+    <div class="box">
+        <p>「開発者を応援」ボタン（応援サービス OFUSE）や「𝕏 結果とURLをシェア」ボタンを押すと、外部のサイトが開きます。開いた先での情報の扱いは、それぞれのサービスの規約・方針に従います。シェアの文章は、送信前にご自身で確認・編集できます。</p>
+    </div>
+
+    <h2>6. お問い合わせ</h2>
+    <div class="box">
+        <p>運営者：Kinotz<br>連絡先：X（旧Twitter）<a href="https://x.com/Kinotzsalad" target="_blank" rel="noopener">@Kinotzsalad</a> へのダイレクトメッセージ</p>
+    </div>
+
+    <h2>7. このポリシーの変更</h2>
+    <p>利用するサービスや送る情報が変わったときは、このページを更新し、更新日を記載します。</p>
+
+    <p style="margin-top:24px;"><a class="back" href="./">← ゲームに戻る</a></p>
+</main>
+</body>
+</html>
