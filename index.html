@@ -3147,11 +3147,22 @@
     function sellProp(idx) {
         let p = g.ownedProps[idx];
         if (!p || p.isHome) return;
-        g.cash += (p.price - p.debt);
+        const proceeds = p.price - p.debt;
+        // 売却額が残債を下回る（オーバーローン）場合は、差額を手元現金で返済しないと売却できない
+        if (proceeds < 0 && g.cash < -proceeds) {
+            alert(currentLang === 'ja'
+                ? '🏦 売却額（' + fmtShort(p.price) + '）がローン残債（' + fmtShort(p.debt) + '）を下回っています。\n売却するには差額 ' + fmtShort(-proceeds) + ' を手元現金で返済する必要があります。'
+                : 'The sale price (' + fmtShort(p.price) + ') is below the remaining loan (' + fmtShort(p.debt) + ').\nYou need ' + fmtShort(-proceeds) + ' in cash to cover the shortfall.');
+            return;
+        }
+        g.cash += proceeds;
         g.ownedProps.splice(idx, 1);
         syncDebt();
         g.realEstateAsset = g.ownedProps.reduce(function(sum, x) { return sum + x.price; }, 0);
         renderRealEstate(); updateUI(); playSound('action');
+        if (proceeds < 0) {
+            showEventResult("🏦 オーバーローンでの売却", "売却額がローン残債を下回ったため、差額 " + fmtShort(-proceeds) + " を手元現金で返済して売却しました。\n\n💡 物件価格が下がると、売っても借金が残ることがあります。これがレバレッジのリスクです。", true);
+        }
     }
 
     function renderCareer() {
