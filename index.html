@@ -2946,8 +2946,34 @@
         playSound('event');
     }
 
+    // --- イベントの出やすさ：モードごとに発生率と「良いイベント」の割合を変える ---
+    // 悪いイベント（ピンチ）と良いイベント（チャンス）の添字。配列の順番は変えない（旧セーブの pendingFlow.idx を保つため）
+    const BAD_EVENT_IDX = [0, 1, 2, 3, 4, 5, 6, 8, 10];
+    const GOOD_EVENT_IDX = [7, 9, 11, 12, 13];
+    const EVENT_MODE_CFG = {
+        easy:   { chance: 0.30, goodShare: 0.60 },
+        normal: { chance: 0.35, goodShare: 0.45 },
+        hard:   { chance: 0.45, goodShare: 0.30 }
+    };
+    // 暴落イベント（添字0）は調整局面・不景気のときに出やすくする（市場サイクル表示に意味を持たせる）
+    const CRASH_EVENT_WEIGHT = { boom: 1, bubble: 1, correction: 2.5, recession: 1.5 };
+    function pickDynamicEventIndex() {
+        const cfg = EVENT_MODE_CFG[gameMode] || EVENT_MODE_CFG.normal;
+        if (Math.random() < cfg.goodShare) {
+            return GOOD_EVENT_IDX[Math.floor(Math.random() * GOOD_EVENT_IDX.length)];
+        }
+        const weights = BAD_EVENT_IDX.map(function(i) { return i === 0 ? (CRASH_EVENT_WEIGHT[g.cycleId] || 1) : 1; });
+        const total = weights.reduce(function(s, w) { return s + w; }, 0);
+        let r = Math.random() * total;
+        for (let k = 0; k < BAD_EVENT_IDX.length; k++) {
+            if (r < weights[k]) return BAD_EVENT_IDX[k];
+            r -= weights[k];
+        }
+        return BAD_EVENT_IDX[0];
+    }
+
     function triggerDynamicEvent(forcedIdx) {
-        const idx = (typeof forcedIdx === 'number') ? forcedIdx : Math.floor(Math.random() * dynamicEvents.length);
+        const idx = (typeof forcedIdx === 'number') ? forcedIdx : pickDynamicEventIndex();
         const ev = dynamicEvents[idx];
         if (!ev) return;
         setPendingFlow({ type: 'event', idx: idx });
@@ -3447,9 +3473,9 @@
             return;
         }
 
-        let evChance = gameMode === 'easy' ? 0.35 : (gameMode === 'normal' ? 0.25 : 0.38);
+        const evCfg = EVENT_MODE_CFG[gameMode] || EVENT_MODE_CFG.normal;
         let eventFiredThisTurn = false;
-        if (isFinalNavStep() && !isScenario && Math.random() < evChance) {
+        if (isFinalNavStep() && !isScenario && Math.random() < evCfg.chance) {
             triggerDynamicEvent();
             eventFiredThisTurn = true;
         }
