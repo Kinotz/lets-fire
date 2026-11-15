@@ -1052,7 +1052,8 @@
         // リタイア関連（ゲーム上の設定）
         //   fireMultiple：FIRE目標の資産＝生活費×25（4%ルールの目安）、rejobSalaryRate：資産が尽きて再就職したときの給与（以前の何割）、
         //   cutLivingRate：生活を切り詰めたときの生活費（もとの何割。年金額の方が大きければ年金額）
-        retire: { fireMultiple: 25, rejobSalaryRate: 0.5, cutLivingRate: 0.6 },
+        //   bucketYears：バケット戦略で現金と金で確保しておく生活費の年数
+        retire: { fireMultiple: 25, rejobSalaryRate: 0.5, cutLivingRate: 0.6, bucketYears: 2 },
         // 不動産価格の実質の長期傾向を年-0.5%前後（建物の老朽化）にするための補正（景気サイクルの平均-0.75%に足す）
         realEstateDrift: 0.0025
     };
@@ -1065,7 +1066,7 @@
             priceIndex: 1, inflationRate: ECON.inflation.byCycle.boom,
             retired: false, retireAge: null, lastSalary: null, yearsSinceHire: yrs, workYears: yrs,
             pensionAccrual: Math.round(sal * ECON.pension.kouseiRate * yrs * 10) / 10, pensionStartAge: null,
-            livingCut: false, depletedEver: false, lastShortfall: 0, pendingLate: null, freeYears: 0,
+            livingCut: false, bucketMode: null, depletedEver: false, lastShortfall: 0, pendingLate: null, freeYears: 0,
             fireAchievedAge: null, fireFailed: false, fireReadyNotified: false
         };
     }
@@ -1468,6 +1469,15 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const pGold = Math.round((g.goldAsset / totalGross) * 100);
         const pCrypto = Math.round((cryptoTotal / totalGross) * 100);
 
+        if (g.retired) {
+            const L = Math.max(1, getLivingCost());
+            const safeYears = Math.round((Math.max(0, g.cash) + g.goldAsset) / L * 10) / 10;
+            const liquidYears = Math.round(getLiquidAssets() / L * 10) / 10;
+            el.innerHTML = "🏖️ <strong>【取り崩し生活】</strong> 生活費 " + fmtShort(L) + "／年に対して、すぐ売れる資産は約" + liquidYears + "年分、そのうち現金と金は約" + safeYears + "年分です。" +
+                (g.pensionStartAge ? "年金は" + g.pensionStartAge + "歳から 年" + fmtShort(getPensionAnnual(g.pensionStartAge)) + "。" : "年金の受け取り開始年齢はまだ決めていません。") +
+                (liquidYears < 5 ? "⚠️ 残りが少なくなっています。物件の売却や、生活の見直しも考えましょう。" : "");
+            return;
+        }
         if (g.cash < 150) {
             el.innerHTML = "⚠️ <strong>【生活防衛資金アラート】</strong> 手元現金が " + fmtShort(g.cash) + " と少なくなっています！急な病気や不動産の修繕トラブルが起きると株を安値で強制売却することになるため、現金は常に150以上残すのが鉄則です。";
         } else if (pCash >= 75) {
@@ -3341,8 +3351,21 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     }
 
     // 生活費の不足分を、決めた順番で資産を売ってまかなう。売った額と、それでも足りなかった額を返す
+    // 取り崩す順番（現金のあと）。バケット戦略：株が下がった年は現金・金から、上がった年は株から売る。
+    // 株中心：いつも株から売る（下がった年にも安値で売ることになる）
     function getWithdrawOrder(indRate) {
+        if (g.bucketMode === 'bucket') return indRate < 0 ? ['gold', 'index', 'stocks', 'crypto'] : ['index', 'stocks', 'gold', 'crypto'];
+        if (g.bucketMode === 'stock') return ['index', 'stocks', 'gold', 'crypto'];
         return ['gold', 'index', 'stocks', 'crypto'];
+    }
+    // バケット戦略：現金＋金が生活費の bucketYears 年分より少なければ、株を売って現金を補充する（株が上がった年だけ）
+    function refillBucket() {
+        const target = getLivingCost() * ECON.retire.bucketYears;
+        const need = Math.round(target - Math.max(0, g.cash) - g.goldAsset);
+        if (need <= 0) return 0;
+        let got = sellForCash('index', need);
+        if (got < need) got += sellForCash('stocks', need - got);
+        return got;
     }
     function sellForCash(kind, need) {
         let got = 0;
@@ -3426,7 +3449,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     }
     // リタイア直後に続けて決めること（B6で追加）
     function afterRetireFlow() {
-        if (needsPensionChoice()) triggerLateEvent('pension');
+        triggerLateEvent('bucket');
     }
 
     // --- 人生後半のイベント（リタイア関連）：選択待ちは pendingFlow {type:'late', id} として保存する ---
@@ -3473,6 +3496,28 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         return Math.round((f * startAge - base) / (f - 1) * 10) / 10;
     }
     const PENSION_AGE_OPTIONS = [60, 62, 65, 68, 70, 75];
+    lateLifeEvents.bucket = function() {
+        const L = getLivingCost(), yrs = ECON.retire.bucketYears;
+        const next = function() { if (needsPensionChoice()) triggerLateEvent('pension'); };
+        return {
+            title: '🧺 リタイア直後の暴落にどう備えますか？',
+            desc: 'リタイアしてすぐに株が大きく下がると、安くなった株を売って生活費にあてることになり、資産が回復しにくくなります（シーケンスリスク）。取り崩し方を決めておきましょう。',
+            beginnerTip: '【取り崩しのガイド】\n・バケット戦略：生活費' + yrs + '年分（' + fmtShort(L * yrs) + '）を現金と金で持っておき、株が下がった年はそこから使います。株が上がった年に株を売って補充します。\n・株中心：毎年、株から売って生活費にあてます。株の比率が高いぶん長期では増えやすい一方、下がった年にも安値で売ることになります。\nどちらを選んでも暴落の起きやすさは変わりません。平均の成績を上げる方法ではなく、暴落の年に株を安値で売らずに済むための備えです。',
+            choices: [
+                { key: 'bucket', label: '🧺 生活費' + yrs + '年分を現金と金で確保する（バケット戦略）', whatIf: '株中心にしていたら、株の比率が高いぶん増えやすい一方、暴落の年にも株を売って生活費にあてることになっていました。', action: function() {
+                    g.bucketMode = 'bucket';
+                    const got = refillBucket();
+                    showEventResult('🧺 バケット戦略で備えました', (got > 0 ? 'インデックス株などを ' + fmtShort(got) + ' 売って、' : '') + '現金と金で生活費' + yrs + '年分（' + fmtShort(L * yrs) + '）を確保しました。株が下がった年は、ここから生活費を払います。', false);
+                    next();
+                }},
+                { key: 'stock', label: '📈 株中心のまま運用を続ける', whatIf: 'バケット戦略にしていたら、現金と金で生活費' + yrs + '年分を持ち、株が下がった年に株を売らずに済んでいました（そのぶん株の比率は下がります）。', action: function() {
+                    g.bucketMode = 'stock';
+                    showEventResult('📈 株中心で運用を続けます', '毎年、インデックス株から売って生活費にあてます。暴落の年には、安くなった株を売ることになる点に注意しましょう。', false);
+                    next();
+                }}
+            ]
+        };
+    };
     lateLifeEvents.pension = function() {
         const P = ECON.pension;
         let ages = PENSION_AGE_OPTIONS.filter(function(a) { return a >= g.age && a >= P.minAge && a <= P.maxAge; });
@@ -4129,6 +4174,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             livingPaid = getLivingCost();
             g.cash -= livingPaid;
             withdraw = withdrawForLiving(indRate);
+            if (g.bucketMode === 'bucket' && indRate >= 0) withdraw.refill = refillBucket();
             if (withdraw.shortfall > 0) { g.lastShortfall = withdraw.shortfall; g.depletedEver = true; g.pendingLate = 'depleted'; }
             g.freeYears = (g.freeYears || 0) + 1;
         }
@@ -4164,6 +4210,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             if (pensionIncome > 0) lifeText += (livingPaid > 0 ? '、' : '') + '年金 +' + fmtShort(pensionIncome);
             const soldParts = withdraw ? Object.keys(withdraw.sold).map(function(k) { return WITHDRAW_NAMES[k] + fmtShort(withdraw.sold[k]); }) : [];
             if (soldParts.length) lifeText += '。生活費のため ' + soldParts.join('・') + ' を売却';
+            if (withdraw && withdraw.refill > 0) lifeText += '。株が上がったので、株を' + fmtShort(withdraw.refill) + '売って現金の備え（生活費' + ECON.retire.bucketYears + '年分）を補充';
             if (withdraw && withdraw.shortfall > 0) lifeText += '。⚠️資産が尽きました';
             newsText += lifeText + '。';
         }
