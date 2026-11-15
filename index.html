@@ -2126,7 +2126,7 @@
 
         if (!g.everBoughtAsset && nw >= 10000) unlockTitle('t_imp_salary_only');
         if (gameMode === 'hard' && !g.isCorp && nw >= 100000) unlockTitle('t_imp_hard_no_corp');
-        if (g.ownedProps.length >= 15 && g.debt <= 0) unlockTitle('t_imp_re_leviathan');
+        if (countRentalProps() >= 15 && g.debt <= 0) unlockTitle('t_imp_re_leviathan');
         if (g.ipoWinCount >= 5) unlockTitle('t_imp_ipo_god');
         if (cryptoTotal >= 500000) unlockTitle('t_imp_crypto_king');
         if (g.goldAsset >= 300000) unlockTitle('t_imp_gold_emperor');
@@ -2172,10 +2172,20 @@
         return Math.max(0, amount) - remaining;
     }
 
+    // 収益不動産（マイホームを除く）の棟数
+    function countRentalProps() {
+        return g.ownedProps.filter(function(p) { return !p.isHome; }).length;
+    }
+    // 物件1件あたりの年間CF（家賃 − ローン利息）。マイホームは家賃収入なし・利息のみ
+    function calcPropCF(p, spec) {
+        const rent = p.isHome ? 0 : p.price * (p.yield + spec.propYieldBoost);
+        return rent - p.debt * spec.loanInterest;
+    }
+
     function calcRECashFlow() {
         const spec = marketSpecs[market];
         let cf = 0;
-        g.ownedProps.forEach(function(p) { cf += (p.price * (p.yield + spec.propYieldBoost) - p.debt * spec.loanInterest); });
+        g.ownedProps.forEach(function(p) { cf += calcPropCF(p, spec); });
         return Math.round(cf);
     }
 
@@ -2511,9 +2521,13 @@
                         return;
                     }
                     g.cash -= down;
-                    g.debt += down * 4;
+                    // 自宅を不動産として資産に計上し、住宅ローン（頭金の4倍）を物件の残債として管理する（毎年、元本返済と利息が発生）
+                    g.ownedProps.push({ nameJa: 'マイホーム（自宅）', nameEn: 'My Home', price: down * 5, yield: 0, debt: down * 4, isHome: true });
+                    g.realEstateAsset = g.ownedProps.reduce(function(sum, x) { return sum + x.price; }, 0);
+                    g.everTookDebt = true;
+                    syncDebt();
                     g.salary = Math.round(g.salary * 1.04);
-                    showEventResult("🏡 マイホーム取得！", "頭金 -" + fmtShort(down) + " を支払い、住宅ローンを組みました。家賃負担がなくなり、家計に +4% の余裕が生まれました！", true);
+                    showEventResult("🏡 マイホーム取得！", "頭金 -" + fmtShort(down) + " を支払い、評価額 " + fmtShort(down * 5) + " の自宅を購入、住宅ローン " + fmtShort(down * 4) + " を組みました。自宅は不動産として資産に計上され、ローンは毎年の元本返済と利息で減っていきます。家賃負担がなくなり、家計に +4% の余裕が生まれました！", true);
                 }},
                 { label: "🏢 身軽な賃貸暮らしを続ける", whatIf: "もしマイホームを購入していたら、頭金（現金の20%、最低200）と借入と引き換えに、家計に+4%の余裕が生まれていました。", action: function() {
                     showEventResult("🏢 身軽なライフスタイル継続", "借金を背負わず、住み替えの自由度を保ちました。", false);
@@ -3073,8 +3087,18 @@
         const owned = document.getElementById('owned-prop-container');
         owned.innerHTML = g.ownedProps.length === 0 ? '<div style="font-size:0.7rem; color:var(--text-sub);">' + d.noProp + '</div>' : '';
         g.ownedProps.forEach(function(p, idx) {
-            let cf = Math.round(p.price * (p.yield + spec.propYieldBoost) - p.debt * spec.loanInterest);
+            let cf = Math.round(calcPropCF(p, spec));
             let dispName = currentLang === 'ja' ? p.nameJa : p.nameEn;
+            if (p.isHome) {
+                const isJa = currentLang === 'ja';
+                owned.innerHTML +=
+                    '<div class="asset-card" style="display:flex; justify-content:space-between; align-items:center;">' +
+                        '<div><strong>🏡 ' + dispName + '</strong><br><span style="font-size:0.66rem; color:var(--text-sub);">' +
+                        (isJa ? '評価額 ' + fmtShort(p.price) + ' / 残債 ' + fmtShort(p.debt) + ' / 年間ローン利息: ' : 'Value ' + fmtShort(p.price) + ' / Loan ' + fmtShort(p.debt) + ' / Annual interest: ') + '-' + fmtShort(Math.abs(cf)) + '</span></div>' +
+                        '<span style="font-size:0.62rem; color:var(--text-sub); white-space:nowrap;">' + (isJa ? '自宅（売却不可）' : 'Home (not for sale)') + '</span>' +
+                    '</div>';
+                return;
+            }
             owned.innerHTML +=
                 '<div class="asset-card" style="display:flex; justify-content:space-between; align-items:center;">' +
                     '<div><strong>🏢 ' + dispName + '</strong><br><span style="font-size:0.66rem; color:var(--accent-green);">' + d.rentCfLbl + fmtShort(cf) + '</span></div>' +
@@ -3111,7 +3135,7 @@
         g.realEstateAsset = g.ownedProps.reduce(function(sum, x) { return sum + x.price; }, 0);
 
         unlockTitle('t_landlord');
-        if (g.ownedProps.length >= 3) unlockTitle('t_re_king');
+        if (countRentalProps() >= 3) unlockTitle('t_re_king');
 
         if (isForcedTutorialActive && gameMode === 'easy' && navStep === 7 && id === 0) {
             navStep = 8; renderRealEstate(); updateUI(); triggerNavStepPopup(); return;
@@ -3122,6 +3146,7 @@
 
     function sellProp(idx) {
         let p = g.ownedProps[idx];
+        if (!p || p.isHome) return;
         g.cash += (p.price - p.debt);
         g.ownedProps.splice(idx, 1);
         syncDebt();
