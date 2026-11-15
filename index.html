@@ -142,6 +142,13 @@
         .chart-section { background: #050811; border: 1px solid var(--border); border-radius: 10px; padding: 8px; margin-bottom: 8px; }
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 0.66rem; font-weight: 800; color: var(--text-sub); }
         canvas { width: 100%; height: 80px; display: block; }
+        #simChart { height: 170px; touch-action: pan-y; }
+        .chart-canvas-wrap { position: relative; }
+        .chart-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.75rem; color: var(--text-sub); font-weight: 700; margin-bottom: 4px; }
+        .chart-legend strong { color: var(--text-main); }
+        .lg-swatch { display: inline-block; width: 18px; height: 0; border-top: 3px solid #c98500; vertical-align: middle; margin-right: 4px; }
+        .lg-swatch.rival { border-top: 3px dashed #3987e5; }
+        .chart-tip { position: absolute; top: 4px; pointer-events: none; background: rgba(15,23,42,0.95); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font-size: 0.75rem; font-weight: 700; color: var(--text-main); white-space: nowrap; line-height: 1.5; }
         .insight-panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 0 10px; margin-bottom: 10px; }
         .insight-panel > summary { min-height: 48px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-weight: 900; font-size: 0.9rem; list-style: none; }
         .insight-panel > summary::-webkit-details-marker { display: none; }
@@ -546,10 +553,17 @@
             <summary>📊 資産グラフ・AIコーチの診断</summary>
             <div class="chart-section">
                 <div class="chart-header">
-                    <span id="lbl-chart-title">📈 総資産の推移グラフ</span>
+                    <span id="lbl-chart-title">📈 純資産の推移</span>
                     <span><span id="lbl-total-assets">総資産</span>: <strong id="disp-total-assets-top" style="color:var(--accent-gold);">¥600万</strong></span>
                 </div>
-                <canvas id="simChart" width="500" height="80"></canvas>
+                <div class="chart-legend" aria-hidden="true">
+                    <span><i class="lg-swatch you"></i>あなた（純資産） <strong id="chart-lg-you">¥600万</strong></span>
+                    <span><i class="lg-swatch rival"></i>ライバル <strong id="chart-lg-rival">¥600万</strong></span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="simChart" role="img" aria-label="純資産の推移グラフ"></canvas>
+                    <div class="chart-tip hidden" id="chart-tip"></div>
+                </div>
             </div>
 
             <div class="coach-box" id="coach-box">
@@ -1360,7 +1374,7 @@
             { id: 1, nameJa: '高利回り一棟アパート', price: 5000, yield: 0.10 },
             { id: 2, nameJa: '都心タワー商業ビル', price: 18000, yield: 0.09 }
         ],
-        history: { net: [600] },
+        history: { net: [600], nw: [600], rival: [600] },
         academy: [
             { id: 1, title: '1. 複利の法則（雪だるま式にお金が増える秘密）', level: 'basic', desc: '【基礎編】\n投資で出た利益を元本に組み入れると「利益がさらに新しい利益を生む」状態になります。年利10%なら約7年で資産は2倍、30年後には約17倍にも膨れ上がります！' },
             { id: 2, title: '2. インデックス株とは？（初心者の最強の味方）', level: 'basic', desc: '【基礎編】\n世界中の優秀な企業数百〜数千社に「まるごとパック」で分散投資する仕組みです。1社が倒産しても他の成長企業がカバーしてくれる王道の投資法です。' },
@@ -2118,7 +2132,7 @@
         g.bestNetWorthBeaten = false; g.tutorialIpoRewarded = false;
         g.challengeMode = (gameMode === 'scenario') ? 'none' : selectedChallenge;
         if (gameMode === 'easy' && g.challengeMode === 'crypto_only') g.challengeMode = 'none';
-        ipoAppliedThisTurn = false; g.history.net = [600];
+        ipoAppliedThisTurn = false; g.history.net = [600]; g.history.nw = [600]; g.history.rival = [600];
 
         if (gameMode === 'scenario') {
             g.maxTurns = historicalScenarios[selectedScenarioId].rates.length;
@@ -3132,8 +3146,11 @@
         const netWorth = getNetWorth();
         const rObj = getRankObj(netWorth);
 
+        ensureChartHistory();
         if (g.history.net.length > 0) {
             g.history.net[g.history.net.length - 1] = totalAssets;
+            g.history.nw[g.history.nw.length - 1] = netWorth;
+            g.history.rival[g.history.rival.length - 1] = g.rivalNetWorth;
         }
 
         document.getElementById('turn-disp').innerText = g.turn;
@@ -3245,6 +3262,7 @@
         g.prevNetWorth = getNetWorth();
         ipoAppliedThisTurn = false;
         document.getElementById('title-toast').classList.add('hidden');
+        chartHoverIdx = null;
 
         const spec = marketSpecs[market];
         const easyBoost = gameMode === 'easy' ? 0.04 : 0.01;
@@ -3362,7 +3380,10 @@
 
         g.turn++;
         g.age++;
+        ensureChartHistory();
         g.history.net.push(getTotalAssets());
+        g.history.nw.push(getNetWorth());
+        g.history.rival.push(g.rivalNetWorth);
 
         const d = i18n.ja;
         const snippet = d.mktSnippets[Math.floor(Math.random() * d.mktSnippets.length)];
@@ -3724,27 +3745,161 @@
     }
     function closeAcademyModal() { document.getElementById('academy-modal').classList.add('hidden'); }
 
+    // --- 📈 純資産とライバルの推移グラフ（軸・目盛り付き、高解像度画面でもくっきり、タップで値を表示）---
+    const CHART_COLORS = { you: '#c98500', rival: '#3987e5', grid: '#1e293b', axis: '#334155', label: '#94a3b8' };
+    let chartHoverIdx = null;
+
+    // 古いセーブデータには純資産・ライバルの履歴がないので、足りない年は空欄（null）で埋める
+    function ensureChartHistory() {
+        const n = g.history.net.length;
+        ['nw', 'rival'].forEach(function(k) {
+            if (!Array.isArray(g.history[k])) g.history[k] = [];
+            while (g.history[k].length < n) g.history[k].unshift(null);
+        });
+    }
+
+    function fmtAxis(v) {
+        if (market === 'jp') {
+            const a = Math.abs(v);
+            if (a >= 100000000) return (v / 100000000).toFixed(a >= 1000000000 ? 0 : 1).replace(/\.0$/, '') + '兆';
+            if (a >= 10000) return (v / 10000).toFixed(a >= 100000 ? 0 : 1).replace(/\.0$/, '') + '億';
+            return v === 0 ? '0' : Math.round(v).toLocaleString() + '万';
+        }
+        const usd = v * 100, au = Math.abs(usd);
+        if (au >= 1e9) return '$' + (usd / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+        if (au >= 1e6) return '$' + (usd / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (au >= 1e3) return '$' + Math.round(usd / 1e3) + 'K';
+        return '$' + Math.round(usd);
+    }
+    function niceStep(range, count) {
+        const raw = range / Math.max(1, count);
+        const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+        const norm = raw / mag;
+        return (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10) * mag;
+    }
+
     function drawChart() {
         const canvas = document.getElementById('simChart');
         if (!canvas) return;
+        ensureChartHistory();
+        const you = g.history.nw, rival = g.history.rival;
+        const lgYou = document.getElementById('chart-lg-you');
+        const lgRival = document.getElementById('chart-lg-rival');
+        const lastYou = you[you.length - 1], lastRival = rival[rival.length - 1];
+        if (lgYou && lastYou !== null && lastYou !== undefined) lgYou.innerText = fmtShort(lastYou);
+        if (lgRival && lastRival !== null && lastRival !== undefined) lgRival.innerText = fmtShort(lastRival);
+        canvas.setAttribute('aria-label', '純資産の推移グラフ。現在 ' + g.age + '歳で、あなた ' + fmtShort(lastYou || 0) + '、ライバル ' + fmtShort(lastRival || 0) + '。');
+
+        const cssW = canvas.clientWidth, cssH = canvas.clientHeight;
+        if (!cssW || !cssH) return; // 折りたたみ中などで表示されていない
+        const dpr = window.devicePixelRatio || 1;
+        if (canvas.width !== Math.round(cssW * dpr) || canvas.height !== Math.round(cssH * dpr)) {
+            canvas.width = Math.round(cssW * dpr);
+            canvas.height = Math.round(cssH * dpr);
+        }
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const data = g.history.net;
-        if (data.length === 0) return;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, cssW, cssH);
 
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        let maxVal = Math.max.apply(null, data.concat([700]));
-        let stepX = canvas.width / Math.max(1, data.length - 1);
+        const vals = you.concat(rival).filter(function(v) { return v !== null && v !== undefined; });
+        if (!vals.length) return;
+        let maxV = Math.max.apply(null, vals.concat([1000]));
+        let minV = Math.min(0, Math.min.apply(null, vals));
+        const step = niceStep(maxV - minV, 3);
+        maxV = Math.ceil(maxV / step) * step;
+        minV = Math.floor(minV / step) * step;
 
-        data.forEach(function(val, i) {
-            let x = i * stepX;
-            let y = canvas.height - ((val / maxVal) * (canvas.height - 14)) - 7;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
+        ctx.font = '600 12px -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif';
+        let labelW = 0;
+        for (let v = minV; v <= maxV + step / 2; v += step) labelW = Math.max(labelW, ctx.measureText(fmtAxis(v)).width);
+        const pad = { l: Math.ceil(labelW) + 8, r: 10, t: 8, b: 22 };
+        const plotW = cssW - pad.l - pad.r, plotH = cssH - pad.t - pad.b;
+        const total = Math.max(2, g.maxTurns || 66);
+        const xAt = function(i) { return pad.l + (i / (total - 1)) * plotW; };
+        const yAt = function(v) { return pad.t + (1 - (v - minV) / (maxV - minV)) * plotH; };
+
+        // 目盛り（横線）と金額ラベル
+        ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        for (let v = minV; v <= maxV + step / 2; v += step) {
+            const y = Math.round(yAt(v)) + 0.5;
+            ctx.strokeStyle = v === 0 ? CHART_COLORS.axis : CHART_COLORS.grid;
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(cssW - pad.r, y); ctx.stroke();
+            ctx.fillStyle = CHART_COLORS.label;
+            ctx.fillText(fmtAxis(v), pad.l - 6, y);
+        }
+        // 年齢の目盛り（開始・中間・終了）
+        ctx.textBaseline = 'alphabetic';
+        [0, Math.round((total - 1) / 2), total - 1].forEach(function(i, k) {
+            ctx.textAlign = k === 0 ? 'left' : (k === 2 ? 'right' : 'center');
+            ctx.fillStyle = CHART_COLORS.label;
+            ctx.fillText((25 + i) + '歳', xAt(i), cssH - 5);
         });
-        ctx.stroke();
+
+        const drawLine = function(arr, color, dashed) {
+            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            ctx.setLineDash(dashed ? [6, 4] : []);
+            ctx.beginPath();
+            let started = false;
+            arr.forEach(function(v, i) {
+                if (v === null || v === undefined) { started = false; return; }
+                if (!started) { ctx.moveTo(xAt(i), yAt(v)); started = true; } else ctx.lineTo(xAt(i), yAt(v));
+            });
+            ctx.stroke();
+            ctx.setLineDash([]);
+        };
+        const drawDot = function(i, v, color) {
+            if (v === null || v === undefined) return;
+            ctx.beginPath(); ctx.arc(xAt(i), yAt(v), 4.5, 0, Math.PI * 2);
+            ctx.fillStyle = color; ctx.fill();
+            ctx.lineWidth = 2; ctx.strokeStyle = '#050811'; ctx.stroke();
+        };
+        drawLine(rival, CHART_COLORS.rival, true);
+        drawLine(you, CHART_COLORS.you, false);
+
+        const tip = document.getElementById('chart-tip');
+        const hi = (chartHoverIdx !== null && chartHoverIdx < you.length) ? chartHoverIdx : null;
+        if (hi !== null) {
+            ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(Math.round(xAt(hi)) + 0.5, pad.t); ctx.lineTo(Math.round(xAt(hi)) + 0.5, pad.t + plotH); ctx.stroke();
+            drawDot(hi, rival[hi], CHART_COLORS.rival);
+            drawDot(hi, you[hi], CHART_COLORS.you);
+            if (tip) {
+                tip.innerHTML = '<div>' + (25 + hi) + '歳</div>'
+                    + '<div><i class="lg-swatch you"></i>あなた ' + (you[hi] === null ? '—' : fmtShort(you[hi])) + '</div>'
+                    + '<div><i class="lg-swatch rival"></i>ライバル ' + (rival[hi] === null ? '—' : fmtShort(rival[hi])) + '</div>';
+                tip.classList.remove('hidden');
+                const x = xAt(hi);
+                tip.style.left = (x > cssW / 2 ? Math.max(0, x - tip.offsetWidth - 10) : x + 10) + 'px';
+            }
+        } else {
+            // 最新の年は点で強調
+            drawDot(you.length - 1, lastRival, CHART_COLORS.rival);
+            drawDot(you.length - 1, lastYou, CHART_COLORS.you);
+            if (tip) tip.classList.add('hidden');
+        }
+        canvas._chartGeom = { xAt: xAt, total: total, padL: pad.l, plotW: plotW };
+    }
+
+    // グラフをなぞる・タップすると、その年の値を表示する
+    function initChartInteraction() {
+        const canvas = document.getElementById('simChart');
+        if (!canvas) return;
+        const pick = function(clientX) {
+            const geo = canvas._chartGeom;
+            if (!geo) return;
+            const rect = canvas.getBoundingClientRect();
+            const i = Math.round(((clientX - rect.left - geo.padL) / geo.plotW) * (geo.total - 1));
+            const last = g.history.nw.length - 1;
+            chartHoverIdx = Math.max(0, Math.min(last, i));
+            drawChart();
+        };
+        canvas.addEventListener('pointermove', function(e) { pick(e.clientX); });
+        canvas.addEventListener('pointerdown', function(e) { pick(e.clientX); });
+        // マウスは外れたら消す。タッチは次にタップするか年が進むまで表示を残す
+        canvas.addEventListener('pointerleave', function(e) { if (e.pointerType === 'mouse') { chartHoverIdx = null; drawChart(); } });
+        let resizeTimer = null;
+        window.addEventListener('resize', function() { clearTimeout(resizeTimer); resizeTimer = setTimeout(drawChart, 100); });
     }
 
     function openRankingModal() {
@@ -4073,6 +4228,7 @@
 
     loadSavedTitles();
     initInsightPanel();
+    initChartInteraction();
     initAppDialog();
     initModalA11y();
     initModalQueueWatcher();
