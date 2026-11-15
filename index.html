@@ -1186,7 +1186,7 @@
         hedgeActive: false,
         academyRead: {}, lessonsSeen: {}, firstBuy: { index: false, gold: false, stock: false, crypto: false, realestate: false },
         everBoughtCrypto: false, everBoughtIndivStock: false, everTookDebt: false,
-        bestNetWorthBeaten: false, challengeMode: 'none',
+        bestNetWorthBeaten: false, challengeMode: 'none', tutorialIpoRewarded: false,
         stocks: [
             { id: 0, nameJa: 'AI半導体メガ', nameEn: 'AI Semiconductor Mega', price: 100, shares: 0 },
             { id: 1, nameJa: '世界高配当キング', nameEn: 'Global High-Dividend King', price: 80, shares: 0 }
@@ -1785,7 +1785,7 @@
         g.academyRead = {}; g.lessonsSeen = {};
         g.firstBuy = { index: false, gold: false, stock: false, crypto: false, realestate: false };
         g.everBoughtCrypto = false; g.everBoughtIndivStock = false; g.everTookDebt = false;
-        g.bestNetWorthBeaten = false;
+        g.bestNetWorthBeaten = false; g.tutorialIpoRewarded = false;
         g.challengeMode = (gameMode === 'scenario') ? 'none' : selectedChallenge;
         ipoAppliedThisTurn = false; g.history.net = [600];
 
@@ -2650,10 +2650,14 @@
 
         if (isForcedTutorialActive && gameMode !== 'easy' && navStep === 5) {
             navStep = 6;
-            g.cash += 180;
-            g.everBoughtAsset = true;
-            g.ipoWinCount++;
-            unlockTitle('t_ipo_hunter');
+            // チュートリアルの体験当選の報酬は1ゲームにつき1回だけ（ナビ再体験で何度も受け取れないようにする）
+            if (!g.tutorialIpoRewarded) {
+                g.tutorialIpoRewarded = true;
+                g.cash += 180;
+                g.everBoughtAsset = true;
+                g.ipoWinCount++;
+                unlockTitle('t_ipo_hunter');
+            }
             updateUI();
             triggerNavStepPopup();
             return;
