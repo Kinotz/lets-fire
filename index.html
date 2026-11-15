@@ -519,8 +519,8 @@
             </div>
             <button type="button" class="asset-btn buy" id="career-up-btn" style="width:100%; padding:10px; font-weight:900; margin-bottom:8px;" onclick="upgradeCareer()">✨ <span id="lbl-car-btn">スキルアップ自己投資で昇進する (+12%)</span> (<span id="lbl-car-cost-prefix">費用</span>: <span id="career-cost">¥50万</span>)</button>
             <div style="border-top:1px solid var(--border); padding-top:8px;">
-                <div style="font-size:0.875rem; font-weight:900; color:var(--accent-gold); margin-bottom:4px;" id="lbl-corp-head">🏢 資産管理法人 (税金が半分になり手取り爆増！)</div>
-                <button type="button" class="next-btn" id="corp-setup-btn" style="background:var(--accent-gold); color:#030712; padding:9px; font-size:0.875rem;" onclick="setupCorporation()" disabled>法人を設立する (純資産 5,000 以上で解放)</button>
+                <div style="font-size:0.875rem; font-weight:900; color:var(--accent-gold); margin-bottom:4px;" id="lbl-corp-head">🏢 資産管理法人（配当・家賃の税率 18%→10%／設立費150・維持費30/年）</div>
+                <button type="button" class="next-btn" id="corp-setup-btn" style="background:var(--accent-gold); color:#030712; padding:9px; font-size:0.875rem;" onclick="setupCorporation()" disabled>法人を設立する（純資産 5,000 以上で解放）</button>
             </div>
         </div>
 
@@ -1461,7 +1461,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         allocation: { title: "💡 ポートフォリオ（資産配分）とは？", desc: "現金、株、金、不動産などをどういう割合で持つかという「資産の組み合わせ」のことです！" },
         ipo: { title: "💡 IPO（新規公開株）ブックビルディングとは？", desc: "新しく上場する企業の株を抽選で買う仕組みです。現実と同じく「抽選参加自体は無料（外れてもお金は減らない）」ですが、申し込むための買付余力（手元現金300以上）が必要です。当選率は約8%と低く、当選しても稀に『公募割れ（損失）』するリスクがあります！" },
         leverage: { title: "💡 レバレッジ（てこの原理）とは？", desc: "頭金20%だけ自分で出し、残り80%を銀行から借りることで、手元資金の5倍の大きな物件を買って総資産と家賃収入を拡大する仕組みです！" },
-        corp: { title: "💡 法人化（資産管理会社）とは？", desc: "純資産が5,000を超えると自分の資産管理会社を作れます。税金が半分になり手取りが増えます！" }
+        corp: { title: "💡 法人化（資産管理会社）とは？", desc: "純資産が5,000を超えると自分の資産管理会社を作れます。配当・家賃（不労所得）にかかる税率が18%→10%に下がりますが、設立費用150と毎年の維持費30がかかります。\n\n不労所得が年375を超えるまでは、維持費の方が節税額より大きく損になります。資産が育ってから考えるのが現実でも鉄則です。" }
     };
 
     function fmtMoney(val) {
@@ -2557,10 +2557,19 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
 
     // 年間の手取り（給与貯蓄＋家賃CF＋配当）。家賃の赤字は他の所得と相殺する（損益通算）。
     // 所得の合計がマイナスのときは税を0にする（税がマイナスになって赤字が縮むことはない）
+    // 法人化している場合は、不労所得（配当＋家賃）だけを法人税率で課税し、給与は個人の税率のまま（法人と個人の間では相殺しない）
+    const PERSONAL_TAX_RATE = 0.18;
+    const CORP_TAX_RATE = 0.10;
+    const CORP_SETUP_COST = 150;
+    const CORP_ANNUAL_FEE = 30;
     function calcAfterTax(salarySavings, reCF, dividends) {
-        const taxRate = g.isCorp ? 0.10 : 0.18;
         const gross = salarySavings + reCF + dividends;
-        const tax = Math.max(0, gross) * taxRate;
+        let tax;
+        if (g.isCorp) {
+            tax = Math.max(0, salarySavings) * PERSONAL_TAX_RATE + Math.max(0, reCF + dividends) * CORP_TAX_RATE;
+        } else {
+            tax = Math.max(0, gross) * PERSONAL_TAX_RATE;
+        }
         return Math.round(gross - tax);
     }
 
@@ -3525,6 +3534,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const stockDiv = Math.round((g.indexAsset + stockTotal) * spec.divRate);
         const netInflow = calcAfterTax(annualSavings, reCF, stockDiv);
         g.cash += netInflow;
+        // 資産管理法人の維持費（毎年）
+        const corpFee = g.isCorp ? CORP_ANNUAL_FEE : 0;
+        g.cash -= corpFee;
 
         // ローン元本の返済（物件価格の4%/年）：現金から支払い、その分だけ借入が減る（現金が足りない分は翌年へ持ち越し）
         let principalPaid = 0;
@@ -3552,6 +3564,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         let newsText = d.turnNews(g.age, fmtShort(netInflow), snippet);
         if (principalPaid > 0) {
             newsText += (' 🏦ローン元本返済 -' + fmtShort(principalPaid) + '。');
+        }
+        if (corpFee > 0) {
+            newsText += (' 🏢法人維持費 -' + fmtShort(corpFee) + '。');
         }
         if (rateHikeNow) {
             newsText += (' 📈利上げでローン金利+2%（残り' + g.rateHikeYears + '年）。');
@@ -3806,8 +3821,28 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     }
 
     function setupCorporation() {
+        if (g.isCorp || getNetWorth() < 5000) return;
+        const spec = marketSpecs[market];
+        const stockTotal = g.stocks.reduce(function(sum, s) { return sum + s.shares * s.price; }, 0);
+        const passive = Math.max(0, calcRECashFlow() + Math.round((g.indexAsset + stockTotal) * spec.divRate));
+        const saving = Math.round(passive * (PERSONAL_TAX_RATE - CORP_TAX_RATE));
+        const breakEven = Math.round(CORP_ANNUAL_FEE / (PERSONAL_TAX_RATE - CORP_TAX_RATE));
+        showDialog({
+            title: '🏢 資産管理法人を設立しますか？',
+            message: '設立費用 ' + fmtShort(CORP_SETUP_COST) + '（今すぐ）、維持費 ' + fmtShort(CORP_ANNUAL_FEE) + '／年（税理士・法人住民税など）がかかります。\n' +
+                '法人化すると、配当・家賃の税率が18%→10%になります（給与は18%のまま）。\n\n' +
+                '今の不労所得 ' + fmtShort(passive) + '／年 → 節税 約' + fmtShort(saving) + '／年（維持費 ' + fmtShort(CORP_ANNUAL_FEE) + '）\n' +
+                '💡 不労所得が年 ' + fmtShort(breakEven) + ' を超えると維持費より節税が大きくなります。',
+            okLabel: '設立する', cancelLabel: 'やめておく'
+        }).then(function(ok) {
+            if (!ok) return;
+            if (g.cash < CORP_SETUP_COST) { showToast('設立費用（現金' + CORP_SETUP_COST + '）が足りません！', 'warn'); return; }
+            doSetupCorporation();
+        });
+    }
+    function doSetupCorporation() {
         const d = i18n.ja;
-        if (getNetWorth() < 5000) return;
+        g.cash -= CORP_SETUP_COST;
         g.isCorp = true;
         unlockTitle('t_corp_boss');
         document.getElementById('corp-status-pill').classList.remove('hidden');
