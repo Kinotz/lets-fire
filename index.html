@@ -101,6 +101,7 @@
         .challenge-chip-row { display: flex; gap: 5px; flex-wrap: wrap; }
         .challenge-chip { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-sub); font-size: 0.64rem; font-weight: 800; padding: 6px 9px; border-radius: 10px; cursor: pointer; }
         .challenge-chip.active { background: var(--accent-blue); color: #030712; border-color: var(--accent-blue); }
+        .challenge-chip:disabled { opacity: 0.4; cursor: not-allowed; }
         .select-card.scenario-sub { padding: 8px 10px; }
         .select-card.scenario-sub .select-card-top { font-size: 0.74rem; }
         .select-card.scenario-sub.selected { border-color: var(--accent-purple); background: linear-gradient(145deg, #2a1e4a, #1f1530); }
@@ -322,7 +323,7 @@
             <div class="setup-section-title" id="lbl-set-challenge">2. 縛りプレイチャレンジ（任意）</div>
             <div class="challenge-chip-row">
                 <button type="button" class="challenge-chip active" id="chal-none" onclick="selectChallenge('none')">🚫 縛りなし（通常プレイ）</button>
-                <button type="button" class="challenge-chip" id="chal-crypto_only" onclick="selectChallenge('crypto_only')">🪙 暗号資産オンリー</button>
+                <button type="button" class="challenge-chip" id="chal-crypto_only" onclick="selectChallenge('crypto_only')" disabled>🪙 暗号資産オンリー（スタンダード以上）</button>
                 <button type="button" class="challenge-chip" id="chal-real_estate_only" onclick="selectChallenge('real_estate_only')">🏠 不動産王一本勝負</button>
                 <button type="button" class="challenge-chip" id="chal-conservative_only" onclick="selectChallenge('conservative_only')">🛡️ 超保守型（株・金のみ）</button>
             </div>
@@ -1604,6 +1605,10 @@
         if (scenRow) scenRow.classList.toggle('hidden', m !== 'scenario');
         const chalRow = document.getElementById('challenge-pick-row');
         if (chalRow) chalRow.classList.toggle('hidden', m === 'scenario');
+        // ビギナーズでは仮想通貨タブが無いため「暗号資産オンリー」は選べない
+        const cryptoChip = document.getElementById('chal-crypto_only');
+        if (cryptoChip) cryptoChip.disabled = (m === 'easy');
+        if (m === 'easy' && selectedChallenge === 'crypto_only') selectChallenge('none');
         playSound('click');
     }
 
@@ -1642,6 +1647,17 @@
         if (chal === 'conservative_only') return type === 'index' || type === 'gold';
         return true;
     }
+    // 縛りプレイで購入できない資産を扱うナビ手順（その手順は自動でスキップする）
+    const navStepAssetType = {
+        easy: { 1: 'index', 2: 'gold', 6: 'realestate', 7: 'realestate' },
+        adv: { 1: 'index', 2: 'gold', 4: 'stock', 6: 'crypto', 7: 'crypto' }
+    };
+    function isNavStepBlockedByChallenge(step) {
+        const map = gameMode === 'easy' ? navStepAssetType.easy : navStepAssetType.adv;
+        const type = map[step];
+        return !!type && !isAssetAllowed(type);
+    }
+
     function alertChallengeBlocked() {
         alert(currentLang === 'ja'
             ? '🔒 現在の縛りプレイチャレンジでは、この資産クラスは購入できません！'
@@ -1787,6 +1803,7 @@
         g.everBoughtCrypto = false; g.everBoughtIndivStock = false; g.everTookDebt = false;
         g.bestNetWorthBeaten = false; g.tutorialIpoRewarded = false;
         g.challengeMode = (gameMode === 'scenario') ? 'none' : selectedChallenge;
+        if (gameMode === 'easy' && g.challengeMode === 'crypto_only') g.challengeMode = 'none';
         ipoAppliedThisTurn = false; g.history.net = [600];
 
         if (gameMode === 'scenario') {
@@ -1977,6 +1994,9 @@
     function triggerNavStepPopup() {
         if (!isForcedTutorialActive) return;
         const scenario = getNavScenario();
+        // 縛りプレイで購入できない資産の手順は飛ばす（先へ進めなくなるのを防ぐ）
+        let skippedByChallenge = false;
+        while (scenario[navStep] && isNavStepBlockedByChallenge(navStep)) { navStep++; skippedByChallenge = true; }
         const info = scenario[navStep];
         if (!info) return;
         if ((gameMode === 'easy' && navStep === 8) || (gameMode !== 'easy' && navStep === 11)) {
@@ -1988,7 +2008,9 @@
             document.getElementById('btn-nav-skip-modal').classList.remove('hidden');
         }
         document.getElementById('nav-pop-title').innerText = info.title;
-        document.getElementById('nav-pop-desc').innerText = info.desc;
+        document.getElementById('nav-pop-desc').innerText = (skippedByChallenge
+            ? (currentLang === 'ja' ? '🔒 縛りプレイ中のため、購入できない資産の手順はスキップしました。\n\n' : '🔒 Steps for assets locked by your challenge were skipped.\n\n')
+            : '') + info.desc;
         updateNavBannerText();
         document.getElementById('nav-popup-modal').classList.remove('hidden');
         applyStrictLock();
