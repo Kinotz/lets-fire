@@ -2155,6 +2155,23 @@
         playSound('click');
     }
 
+    // 借入の管理を一本化：g.debt は常に「各物件の残債 p.debt の合計」とする
+    function syncDebt() {
+        g.debt = g.ownedProps.reduce(function(sum, p) { return sum + Math.max(0, p.debt || 0); }, 0);
+    }
+    // 繰上返済：指定額を各物件の残債に順番に充てる（実際に返済できた額を返す）
+    function prepayDebt(amount) {
+        let remaining = Math.max(0, amount);
+        g.ownedProps.forEach(function(p) {
+            if (remaining <= 0 || !(p.debt > 0)) return;
+            const pay = Math.min(p.debt, remaining);
+            p.debt -= pay;
+            remaining -= pay;
+        });
+        syncDebt();
+        return Math.max(0, amount) - remaining;
+    }
+
     function calcRECashFlow() {
         const spec = marketSpecs[market];
         let cf = 0;
@@ -2253,7 +2270,7 @@
                 { label: "💳 手元現金を使って借入の繰上返済＆生活防衛を行う", whatIf: "もし対策せずに耐えていたら、株式が12%、現金も最大120減っていました。", action: function() {
                     recordCrisisSurvived();
                     let pay = Math.min(g.cash, 150); g.cash -= pay;
-                    if (g.debt > 0) g.debt = Math.max(0, g.debt - Math.round(pay * 0.8));
+                    if (g.debt > 0) prepayDebt(Math.round(pay * 0.8));
                     showEventResult("🛡️ 金利上昇を乗り切った！", "現金 -" + fmtShort(pay) + " でローン圧縮を行い、利上げショックを防ぎました！", true);
                 }},
                 { label: "🌀 何も対策せずにそのまま耐える", whatIf: "もし繰上返済していたら、現金最大150でローンを圧縮し、株式や現金へのダメージを抑えられていました。", action: function() {
@@ -2907,10 +2924,10 @@
                 let pay = Math.min(p.debt, Math.round(p.price * 0.04), Math.max(0, g.cash));
                 p.debt -= pay;
                 g.cash -= pay;
-                g.debt = Math.max(0, g.debt - pay);
                 principalPaid += pay;
             }
         });
+        syncDebt();
 
         g.turn++;
         g.age++;
@@ -3088,9 +3105,9 @@
         if (g.cash < down) { alert(d.noCashAlert); return; }
         g.cash -= down; g.everBoughtAsset = true;
         let loan = p.price - down;
-        g.debt += loan;
         if (loan > 0) g.everTookDebt = true;
         g.ownedProps.push({ nameJa: p.nameJa, nameEn: p.nameEn, price: p.price, yield: p.yield, debt: loan });
+        syncDebt();
         g.realEstateAsset = g.ownedProps.reduce(function(sum, x) { return sum + x.price; }, 0);
 
         unlockTitle('t_landlord');
@@ -3106,8 +3123,8 @@
     function sellProp(idx) {
         let p = g.ownedProps[idx];
         g.cash += (p.price - p.debt);
-        g.debt = Math.max(0, g.debt - p.debt);
         g.ownedProps.splice(idx, 1);
+        syncDebt();
         g.realEstateAsset = g.ownedProps.reduce(function(sum, x) { return sum + x.price; }, 0);
         renderRealEstate(); updateUI(); playSound('action');
     }
