@@ -37,7 +37,7 @@
         .app-title { font-size: 0.85rem; font-weight: 900; background: linear-gradient(90deg, #fde047, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; cursor: pointer; }
         .header-right { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
         .icon-btn { font-size: 0.58rem; font-weight: 700; padding: 4px 6px; border-radius: 8px; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); cursor: pointer; white-space: nowrap; }
-        .term-btn { display: inline-flex; align-items: center; gap: 2px; background: rgba(56, 189, 248, 0.14); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; padding: 1px 5px; font-size: 0.58rem; font-weight: 800; cursor: pointer; vertical-align: middle; }
+        .term-btn { font-family: inherit; cursor: pointer;  display: inline-flex; align-items: center; gap: 2px; background: rgba(56, 189, 248, 0.14); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; padding: 1px 5px; font-size: 0.58rem; font-weight: 800; cursor: pointer; vertical-align: middle; }
         .fire-badge { font-size: 0.58rem; font-weight: 900; padding: 2px 6px; border-radius: 10px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(16, 185, 129, 0.1)); color: var(--accent-green); border: 1px solid var(--accent-green); animation: pulseGlow 1.5s infinite alternate; }
         @keyframes pulseGlow { from { opacity: 0.8; transform: scale(1); } to { opacity: 1; transform: scale(1.05); } }
         .age-badge { font-size: 0.66rem; font-weight: 800; background: var(--card-bg); padding: 3px 7px; border-radius: 12px; border: 1px solid var(--border); white-space: nowrap; color: var(--accent-gold); }
@@ -119,7 +119,7 @@
         .breakdown-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #030712; margin-bottom: 6px; border: 1px solid var(--border); }
         .bar-seg { height: 100%; transition: width 0.4s ease; }
         .legend-row { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.6rem; color: var(--text-sub); margin-bottom: 8px; font-weight: 800; }
-        .legend-item { display: flex; align-items: center; gap: 3px; cursor: pointer; }
+        .legend-item { display: flex; align-items: center; gap: 3px; cursor: pointer; background: none; border: none; padding: 0; color: inherit; font: inherit; }
         .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
         .cf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; border-top: 1px solid var(--border); padding-top: 8px; text-align: center; }
         .cf-cell span { display: block; font-size: 0.56rem; color: var(--text-sub); font-weight: 700; margin-bottom: 1px; }
@@ -210,6 +210,7 @@
         .mythic-pill { display: inline-block; font-size: 0.52rem; font-weight: 900; padding: 1px 5px; border-radius: 4px; background: linear-gradient(90deg, #ec4899, #8b5cf6); color: #ffffff; margin-right: 4px; vertical-align: middle; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(2, 4, 10, 0.92); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 12px; z-index: 1000; }
         .modal-card { background: linear-gradient(145deg, #151f32, #0b1120); border: 2px solid var(--accent-gold); border-radius: 16px; padding: 18px; max-width: 440px; width: 100%; max-height: 86vh; overflow-y: auto; position: relative; }
+        .modal-card:focus { outline: none; }
         .modal-title { font-size: 1.05rem; font-weight: 900; margin-bottom: 8px; color: var(--accent-gold); }
         .modal-desc { font-size: 0.78rem; color: #e2e8f0; margin-bottom: 14px; line-height: 1.5; font-weight: 600; }
         .choice-btn { display: block; width: 100%; text-align: left; background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); padding: 10px 12px; border-radius: 10px; margin-bottom: 6px; cursor: pointer; font-size: 0.74rem; font-weight: 700; }
@@ -289,7 +290,7 @@
         </div>
         <div class="market-info-bar">
             <span id="market-desc-inline">🇯🇵 <strong>日本市場 (JPY)</strong>: 超低金利(1.5%)で不動産ローンが圧倒的に有利！安定成長と家賃で手堅くFIREできる市場。<br>※ 市場はゲーム開始時に固定され、プレイ中は変更できません</span>
-            <span class="term-btn" onclick="openMarketGuideModal()" id="btn-mkt-guide" style="white-space:nowrap;">？市場の違い</span>
+            <button type="button" class="term-btn" onclick="openMarketGuideModal()" id="btn-mkt-guide" style="white-space:nowrap;">？市場の違い</button>
         </div>
         <div class="cycle-badge cycle-boom" id="cycle-badge">📈 好景気</div>
     </div>
@@ -353,12 +354,12 @@
         <div class="summary-card">
             <div class="rank-strip">
                 <span>👑 <span id="lbl-rank-prefix">資産家ランク</span>: <strong id="disp-rank" style="color:var(--accent-gold);">🌱 ビギナー投資家</strong></span>
-                <span class="term-btn" onclick="openTermHelp('compound')" id="btn-help-comp">💡 複利とは？</span>
+                <button type="button" class="term-btn" onclick="openTermHelp('compound')" id="btn-help-comp">💡 複利とは？</button>
             </div>
             <div class="net-worth-label">
                 <div>
                     <span id="lbl-networth">純資産総額</span>
-                    <span class="term-btn" onclick="openTermHelp('nw')">？意味</span>
+                    <button type="button" class="term-btn" onclick="openTermHelp('nw')">？意味</button>
                     <span id="corp-status-pill" class="fire-badge hidden" style="margin-left:4px;">🏢 法人化済</span>
                 </div>
                 <div style="font-size:0.68rem;">
@@ -373,17 +374,17 @@
                 <div class="bar-seg" style="width:100%; background:var(--accent-blue);"></div>
             </div>
             <div class="legend-row">
-                <div class="legend-item" onclick="openTermHelp('cash')"><span class="dot" style="background:var(--accent-blue);"></span><span id="l-cash">現金(100%)</span></div>
-                <div class="legend-item" onclick="openTermHelp('index')"><span class="dot" style="background:var(--accent-green);"></span><span id="l-stock">株式(0%)</span></div>
-                <div class="legend-item" onclick="openTermHelp('gold')"><span class="dot" style="background:var(--accent-gold);"></span><span id="l-gold">金(0%)</span></div>
-                <div class="legend-item" id="legend-crypto" onclick="openTermHelp('crypto')"><span class="dot" style="background:var(--accent-crypto);"></span><span id="l-crypto">仮想通貨(0%)</span></div>
-                <div class="legend-item" onclick="openTermHelp('reals')"><span class="dot" style="background:var(--accent-purple);"></span><span id="l-prop">不動産(0%)</span></div>
+                <button type="button" class="legend-item" onclick="openTermHelp('cash')"><span class="dot" style="background:var(--accent-blue);"></span><span id="l-cash">現金(100%)</span></button>
+                <button type="button" class="legend-item" onclick="openTermHelp('index')"><span class="dot" style="background:var(--accent-green);"></span><span id="l-stock">株式(0%)</span></button>
+                <button type="button" class="legend-item" onclick="openTermHelp('gold')"><span class="dot" style="background:var(--accent-gold);"></span><span id="l-gold">金(0%)</span></button>
+                <button type="button" class="legend-item" id="legend-crypto" onclick="openTermHelp('crypto')"><span class="dot" style="background:var(--accent-crypto);"></span><span id="l-crypto">仮想通貨(0%)</span></button>
+                <button type="button" class="legend-item" onclick="openTermHelp('reals')"><span class="dot" style="background:var(--accent-purple);"></span><span id="l-prop">不動産(0%)</span></button>
             </div>
             <div class="cf-grid">
-                <div class="cf-cell"><span><span id="lbl-cf-sal">給与貯蓄</span> <span class="term-btn" onclick="openTermHelp('salary')">?</span></span><strong id="disp-salary" style="color:var(--accent-blue);">+¥160万</strong></div>
-                <div class="cf-cell"><span><span id="lbl-cf-pas">不労所得CF</span> <span class="term-btn" onclick="openTermHelp('passive')">?</span></span><strong id="disp-passive" style="color:var(--accent-green);">+¥0</strong></div>
-                <div class="cf-cell"><span><span id="lbl-cf-fire">FIRE目標</span> <span class="term-btn" onclick="openTermHelp('firegoal')">?</span></span><strong id="disp-firegoal" style="color:var(--accent-gold);">¥300万</strong></div>
-                <div class="cf-cell"><span><span id="lbl-cf-debt">銀行借入</span> <span class="term-btn" onclick="openTermHelp('debt')">?</span></span><strong id="disp-debt" style="color:var(--accent-red);">¥0</strong></div>
+                <div class="cf-cell"><span><span id="lbl-cf-sal">給与貯蓄</span> <button type="button" class="term-btn" onclick="openTermHelp('salary')">?</button></span><strong id="disp-salary" style="color:var(--accent-blue);">+¥160万</strong></div>
+                <div class="cf-cell"><span><span id="lbl-cf-pas">不労所得CF</span> <button type="button" class="term-btn" onclick="openTermHelp('passive')">?</button></span><strong id="disp-passive" style="color:var(--accent-green);">+¥0</strong></div>
+                <div class="cf-cell"><span><span id="lbl-cf-fire">FIRE目標</span> <button type="button" class="term-btn" onclick="openTermHelp('firegoal')">?</button></span><strong id="disp-firegoal" style="color:var(--accent-gold);">¥300万</strong></div>
+                <div class="cf-cell"><span><span id="lbl-cf-debt">銀行借入</span> <button type="button" class="term-btn" onclick="openTermHelp('debt')">?</button></span><strong id="disp-debt" style="color:var(--accent-red);">¥0</strong></div>
             </div>
             <div class="rival-row" id="rival-row">
                 <span><span id="lbl-rival">🤖 ライバル投資家(放置インデックス)</span>: <strong id="disp-rival">¥600</strong></span>
@@ -402,7 +403,7 @@
         <div class="coach-box" id="coach-box">
             <div class="coach-head">
                 <span id="lbl-coach-head">📊 AIファイナンシャル・コーチの資産診断</span>
-                <span class="term-btn" onclick="triggerEduQuiz(true)" id="btn-take-quiz">🎓 知識クイズに挑戦</span>
+                <button type="button" class="term-btn" onclick="triggerEduQuiz(true)" id="btn-take-quiz">🎓 知識クイズに挑戦</button>
             </div>
             <div class="coach-body" id="coach-advice-text">
                 現在は現金100%の状態です。インフレ（物価上昇）が起きると現金の実質価値は目減りしてしまうため、まずは「全世界インデックス株」と「金（ゴールド）」に分散して複利を働かせましょう！
@@ -430,10 +431,10 @@
 
         <!-- タブ1: 王道投資 -->
         <div id="tab-portfolio" class="panel-box">
-            <div style="font-size:0.78rem; font-weight:900; margin-bottom:4px;">🌎 <span id="lbl-core-title">王道の資産運用</span> <span class="term-btn" onclick="openTermHelp('allocation')" id="btn-help-port">💡 ポートフォリオとは？</span></div>
+            <div style="font-size:0.78rem; font-weight:900; margin-bottom:4px;">🌎 <span id="lbl-core-title">王道の資産運用</span> <button type="button" class="term-btn" onclick="openTermHelp('allocation')" id="btn-help-port">💡 ポートフォリオとは？</button></div>
             <div style="font-size:0.68rem; color:var(--text-sub); margin-bottom:8px;" id="lbl-core-desc">ボタンを押して「インデックス株」と「金(ゴールド)」を購入しましょう！暴落や急な出費に備えて「金」と「手元現金」も残すのがコツです。</div>
             <div class="asset-card">
-                <div class="asset-card-top"><span class="asset-name">📈 <span id="lbl-ind-name">全世界インデックス株</span> <span class="term-btn" onclick="openTermHelp('index')">?</span></span><span class="asset-holding-val" id="val-index-hold">保有: ¥0</span></div>
+                <div class="asset-card-top"><span class="asset-name">📈 <span id="lbl-ind-name">全世界インデックス株</span> <button type="button" class="term-btn" onclick="openTermHelp('index')">?</button></span><span class="asset-holding-val" id="val-index-hold">保有: ¥0</span></div>
                 <div class="asset-sub-info"><span id="lbl-ind-sub">期待年利: +8%〜+18% (複利成長＋配当)</span><span id="lbl-ind-tag">王道の主力資産</span></div>
                 <div class="asset-actions">
                     <button type="button" class="asset-btn buy" id="btn-buy-ind-100" onclick="tradeCore('ind', 100)">購入 (+100)</button>
@@ -442,7 +443,7 @@
                 </div>
             </div>
             <div class="asset-card">
-                <div class="asset-card-top"><span class="asset-name">🪙 <span id="lbl-gold-name">安全資産・金 (ゴールド)</span> <span class="term-btn" onclick="openTermHelp('gold')">?</span></span><span class="asset-holding-val" id="val-gold-hold">保有: ¥0</span></div>
+                <div class="asset-card-top"><span class="asset-name">🪙 <span id="lbl-gold-name">安全資産・金 (ゴールド)</span> <button type="button" class="term-btn" onclick="openTermHelp('gold')">?</button></span><span class="asset-holding-val" id="val-gold-hold">保有: ¥0</span></div>
                 <div class="asset-sub-info"><span id="lbl-gold-sub">期待年利: +4%〜+10% (金融ショック時の盾)</span><span id="lbl-gold-tag">暴落時の守り神</span></div>
                 <div class="asset-actions">
                     <button type="button" class="asset-btn buy" id="btn-buy-gold-50" onclick="tradeCore('gold', 50)">購入 (+50)</button>
@@ -458,7 +459,7 @@
 
         <!-- タブ2: 個別株・IPO -->
         <div id="tab-stocks" class="panel-box hidden">
-            <div style="font-size:0.78rem; font-weight:900; margin-bottom:6px;">🚀 <span id="lbl-stock-title">ハイテク個別株 & リアルIPO抽選</span> <span class="term-btn" onclick="openTermHelp('ipo')">?</span></div>
+            <div style="font-size:0.78rem; font-weight:900; margin-bottom:6px;">🚀 <span id="lbl-stock-title">ハイテク個別株 & リアルIPO抽選</span> <button type="button" class="term-btn" onclick="openTermHelp('ipo')">?</button></div>
             <div id="stocks-container"></div>
             <div style="background:linear-gradient(135deg, rgba(192,132,252,0.2), rgba(56,189,248,0.12)); border:1px solid rgba(192,132,252,0.6); border-radius:10px; padding:10px; margin-top:8px;">
                 <div style="font-size:0.74rem; font-weight:900; color:var(--accent-purple);" id="lbl-ipo-head">🌟 IPO（新規公開株）ブックビルディング抽選（年1回・当選率 8%）</div>
@@ -469,13 +470,13 @@
 
         <!-- タブ3: 仮想通貨 -->
         <div id="tab-crypto" class="panel-box hidden">
-            <div style="font-size:0.78rem; font-weight:900; margin-bottom:6px;">🔥 <span id="lbl-crypto-title">仮想通貨ドリーム投資</span> <span class="term-btn" onclick="openTermHelp('crypto')">?</span></div>
+            <div style="font-size:0.78rem; font-weight:900; margin-bottom:6px;">🔥 <span id="lbl-crypto-title">仮想通貨ドリーム投資</span> <button type="button" class="term-btn" onclick="openTermHelp('crypto')">?</button></div>
             <div id="crypto-container"></div>
         </div>
 
         <!-- タブ4: 不動産 -->
         <div id="tab-realestate" class="panel-box hidden">
-            <div style="font-size:0.78rem; font-weight:900; margin-bottom:6px;">🏢 <span id="lbl-re-title">収益不動産オーナー投資</span> <span class="term-btn" onclick="openTermHelp('leverage')" id="btn-help-lev">💡 レバレッジとは？</span></div>
+            <div style="font-size:0.78rem; font-weight:900; margin-bottom:6px;">🏢 <span id="lbl-re-title">収益不動産オーナー投資</span> <button type="button" class="term-btn" onclick="openTermHelp('leverage')" id="btn-help-lev">💡 レバレッジとは？</button></div>
             <div style="font-size:0.72rem; font-weight:900; color:var(--accent-blue); margin-bottom:4px;" id="lbl-re-owned">▼ 保有中の物件</div>
             <div id="owned-prop-container" style="margin-bottom:8px;"></div>
             <div style="font-size:0.72rem; font-weight:900; color:var(--accent-green); margin-bottom:4px;" id="lbl-re-mkt">▼ 購入可能な物件 (頭金20%＋銀行融資80%)</div>
@@ -484,7 +485,7 @@
 
         <!-- タブ5: キャリア・法人 -->
         <div id="tab-career" class="panel-box hidden">
-            <div style="font-size:0.78rem; font-weight:900; margin-bottom:6px;">💼 <span id="lbl-car-head">本業キャリア昇進 ＆ 法人化</span> <span class="term-btn" onclick="openTermHelp('corp')">?</span></div>
+            <div style="font-size:0.78rem; font-weight:900; margin-bottom:6px;">💼 <span id="lbl-car-head">本業キャリア昇進 ＆ 法人化</span> <button type="button" class="term-btn" onclick="openTermHelp('corp')">?</button></div>
             <div style="background:#050811; padding:8px 10px; border-radius:8px; margin-bottom:8px; font-size:0.72rem;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span id="lbl-car-pos">現在の役職:</span><strong id="career-title" style="color:var(--accent-blue);">新入社員 (Lv.1 / MAX Lv.6)</strong></div>
                 <div style="display:flex; justify-content:space-between;"><span id="lbl-car-sal">年間給与貯蓄額 (+12%/回):</span><strong id="career-salary" style="color:var(--accent-green);">+¥160万/年</strong></div>
@@ -585,8 +586,8 @@
 </div>
 
 <!-- 🎓 実践マネーリテラシー検定モーダル -->
-<div class="modal-overlay hidden" id="quiz-modal">
-    <div class="modal-card">
+<div class="modal-overlay hidden" id="quiz-modal" role="dialog" aria-modal="true" aria-labelledby="quiz-title">
+    <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="quiz-title">🎓 実践マネーリテラシー検定</div>
         <div style="font-size:0.68rem; color:var(--accent-blue); font-weight:800; margin-bottom:6px;">正解すると知識ボーナス（現金 +80）を獲得！</div>
         <div class="modal-desc" id="quiz-question" style="background:#050811; padding:12px; border-radius:10px; border:1px solid var(--border); white-space:pre-line;">問題文</div>
@@ -595,8 +596,8 @@
 </div>
 
 <!-- 🖼️ 結果シェアカード・プレビューモーダル -->
-<div class="modal-overlay hidden" id="share-card-modal">
-    <div class="modal-card share-card-preview-wrap">
+<div class="modal-overlay hidden" id="share-card-modal" role="dialog" aria-modal="true" aria-labelledby="lbl-share-card-title">
+    <div tabindex="-1" class="modal-card share-card-preview-wrap">
         <div class="modal-title" id="lbl-share-card-title">🖼️ 結果シェアカード</div>
         <div class="modal-desc" style="margin-bottom:10px;" id="lbl-share-card-sub">長押しで画像を保存、またはボタンからダウンロードできます。</div>
         <canvas id="share-card-canvas" width="800" height="1000" style="display:none;"></canvas>
@@ -607,8 +608,8 @@
 </div>
 
 <!-- 🎖️ 称号コレクションモーダル -->
-<div class="modal-overlay hidden" id="titles-modal">
-    <div class="modal-card">
+<div class="modal-overlay hidden" id="titles-modal" role="dialog" aria-modal="true" aria-labelledby="lbl-titles-modal-head">
+    <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="lbl-titles-modal-head">🎖️ 獲得称号コレクション (全43種)</div>
         <div class="modal-desc" id="lbl-titles-modal-sub" style="margin-bottom:10px;">No.1〜24は通過点となる一般称号、No.25〜36は達成不可能に近い【MYTHIC（神話級）】称号です！</div>
         <div class="title-grid" id="titles-list-container"></div>
@@ -618,8 +619,8 @@
 </div>
 
 <!-- 🎓 チュートリアルコーナーモーダル -->
-<div class="modal-overlay hidden" id="tutorial-corner-modal">
-    <div class="modal-card">
+<div class="modal-overlay hidden" id="tutorial-corner-modal" role="dialog" aria-modal="true" aria-labelledby="lbl-tut-corner-title">
+    <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="lbl-tut-corner-title">🎓 チュートリアル ＆ 攻略ステップ</div>
         <div class="modal-desc" id="lbl-tut-corner-sub" style="margin-bottom:10px;">強制ナビゲーションは最初の1回のみです。ここではいつでも基本ステップを見返したり、データを初期化して最初からやり直せます！</div>
         <div id="tutorial-steps-list" style="max-height:240px; overflow-y:auto; margin-bottom:10px;"></div>
@@ -630,8 +631,8 @@
 </div>
 
 <!-- 🔊 BGM・SE 個別音量調整モーダル -->
-<div class="modal-overlay hidden" id="sound-modal">
-    <div class="modal-card">
+<div class="modal-overlay hidden" id="sound-modal" role="dialog" aria-modal="true" aria-labelledby="lbl-snd-title">
+    <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="lbl-snd-title">🔊 BGM・効果音 (SE) 音量設定</div>
         <div class="vol-row">
             <div class="vol-top"><span id="lbl-bgm-vol">🎵 BGM (背景音楽) 音量</span><strong id="disp-bgm-vol" style="color:var(--accent-blue);">30%</strong></div>
@@ -650,8 +651,8 @@
 </div>
 
 <!-- ナビゲーションポップアップモーダル -->
-<div class="modal-overlay hidden" id="nav-popup-modal">
-    <div class="modal-card" style="text-align:center;">
+<div class="modal-overlay hidden" id="nav-popup-modal" role="dialog" aria-modal="true" aria-labelledby="nav-pop-title">
+    <div tabindex="-1" class="modal-card" style="text-align:center;">
         <div style="font-size:2.4rem; margin-bottom:6px;">💁‍♀️✨</div>
         <div class="modal-title" style="justify-content:center;" id="nav-pop-title">ナビゲーターからのご案内</div>
         <div class="modal-desc" id="nav-pop-desc" style="text-align:left; background:#050811; padding:12px; border-radius:10px; border:1px solid var(--border); white-space:pre-line;">説明</div>
@@ -661,8 +662,8 @@
 </div>
 
 <!-- 資産家ランク昇格モーダル -->
-<div class="modal-overlay hidden" id="rankup-modal">
-    <div class="modal-card rankup-card">
+<div class="modal-overlay hidden" id="rankup-modal" role="dialog" aria-modal="true" aria-labelledby="lbl-rankup-head">
+    <div tabindex="-1" class="modal-card rankup-card">
         <div class="rankup-crown">👑</div>
         <div style="font-size:0.76rem; font-weight:900; color:#fde047; letter-spacing:1px; margin-bottom:4px;" id="lbl-rankup-head">✨ おめでとうございます！資産家ランク昇格！ ✨</div>
         <div class="modal-title" style="justify-content:center; font-size:1.25rem;" id="rankup-new-title">💎 憧れの億り人</div>
@@ -675,8 +676,8 @@
 </div>
 
 <!-- 経済イベントモーダル -->
-<div class="modal-overlay hidden" id="event-modal">
-    <div class="modal-card">
+<div class="modal-overlay hidden" id="event-modal" role="dialog" aria-modal="true" aria-labelledby="ev-title">
+    <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="ev-title">臨時マーケットイベント</div>
         <div class="modal-desc" id="ev-desc">説明文</div>
         <div id="ev-beginner-tip" style="background:rgba(56,189,248,0.14); border-left:4px solid var(--accent-blue); padding:10px; border-radius:0 8px 8px 0; font-size:0.74rem; color:#e0f2fe; margin-bottom:12px; font-weight:700; line-height:1.5; white-space:pre-line;">💡 解説</div>
@@ -685,8 +686,8 @@
 </div>
 
 <!-- イベント結果発表モーダル -->
-<div class="modal-overlay hidden" id="event-result-modal">
-    <div class="modal-card" style="text-align:center;">
+<div class="modal-overlay hidden" id="event-result-modal" role="dialog" aria-modal="true" aria-labelledby="ev-res-title">
+    <div tabindex="-1" class="modal-card" style="text-align:center;">
         <div style="font-size:2.6rem; margin-bottom:4px;" id="ev-res-icon">🎊</div>
         <div class="modal-title" style="justify-content:center;" id="ev-res-title">イベント結果発表！</div>
         <div class="event-result-banner" id="ev-res-banner-box">
@@ -698,8 +699,8 @@
 </div>
 
 <!-- 用語・アカデミー詳細モーダル -->
-<div class="modal-overlay hidden" id="academy-modal">
-    <div class="modal-card">
+<div class="modal-overlay hidden" id="academy-modal" role="dialog" aria-modal="true" aria-labelledby="acad-modal-title">
+    <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="acad-modal-title">用語・講座解説</div>
         <div class="modal-desc" id="acad-modal-desc" style="white-space: pre-line; margin-bottom:10px;">解説文</div>
         <div class="aff-elem hidden" style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.4); border-radius:10px; padding:9px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
@@ -712,7 +713,7 @@
 
 <!-- 💬 ゲーム内の確認・お知らせダイアログ（alert / confirm / prompt の代わり）-->
 <div class="modal-overlay dialog-overlay hidden" id="app-dialog" role="alertdialog" aria-modal="true" aria-labelledby="app-dialog-title" aria-describedby="app-dialog-msg">
-    <div class="modal-card">
+    <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="app-dialog-title">確認</div>
         <div class="modal-desc" id="app-dialog-msg" style="white-space:pre-line;"></div>
         <textarea class="dialog-copy-text hidden" id="app-dialog-text" readonly aria-label="コピー用テキスト"></textarea>
@@ -726,8 +727,8 @@
 <div class="toast-host" id="toast-host" role="status" aria-live="polite"></div>
 
 <!-- ランキング・市場解説モーダル -->
-<div class="modal-overlay hidden" id="info-modal">
-    <div class="modal-card">
+<div class="modal-overlay hidden" id="info-modal" role="dialog" aria-modal="true" aria-labelledby="info-modal-title">
+    <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="info-modal-title">情報</div>
         <div class="modal-desc" id="info-modal-body" style="white-space: pre-line;">内容</div>
         <button type="button" class="next-btn" onclick="document.getElementById('info-modal').classList.add('hidden')" id="btn-info-close">閉じる</button>
@@ -2221,7 +2222,7 @@
         const targetId = scenario[navStep] ? scenario[navStep].targetId : null;
         if (!targetId) return;
         allButtons.forEach(function(b) {
-            if (b.id === targetId || b.id === 'btn-skip-tut' || b.classList.contains('term-btn')) {
+            if (b.id === targetId || b.id === 'btn-skip-tut' || b.classList.contains('term-btn') || b.classList.contains('legend-item')) {
                 if (b.id === targetId) b.classList.add('nav-highlight');
             } else {
                 b.classList.add('nav-locked');
@@ -2871,11 +2872,95 @@
         if (next.renderFn) next.renderFn();
         document.getElementById(next.id).classList.remove('hidden');
     }
+    // --- ♿ モーダルの操作性：開いたらモーダル内へフォーカスを移し、閉じたら元へ戻す。
+    //     背景タップ・Escキーで閉じる（選択が必要なイベント・クイズは閉じない）。Tabキーはモーダル内で循環させる ---
+    const MODAL_DISMISS = {
+        'share-card-modal': function() { document.getElementById('share-card-modal').classList.add('hidden'); },
+        'titles-modal': function() { closeTitlesModal(); },
+        'tutorial-corner-modal': function() { closeTutorialCornerModal(); },
+        'sound-modal': function() { closeSoundModal(); },
+        'nav-popup-modal': function() { closeNavPopup(); },
+        'rankup-modal': function() { closeRankUpModal(); },
+        'event-result-modal': function() { closeEventResultModal(); },
+        'academy-modal': function() { closeAcademyModal(); },
+        'info-modal': function() { document.getElementById('info-modal').classList.add('hidden'); },
+        'app-dialog': function() { closeDialog(false); }
+        // 'event-modal' と 'quiz-modal' は選択が必要なので背景タップ・Escでは閉じない
+    };
+    const modalReturnFocus = {};
+    function getTopModal() {
+        const open = document.querySelectorAll('.modal-overlay:not(.hidden)');
+        if (!open.length) return null;
+        let top = open[0];
+        open.forEach(function(el) { if ((parseInt(getComputedStyle(el).zIndex, 10) || 0) >= (parseInt(getComputedStyle(top).zIndex, 10) || 0)) top = el; });
+        return top;
+    }
+    function getFocusable(root) {
+        return Array.prototype.filter.call(root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'), function(el) {
+            return !el.disabled && el.offsetParent !== null;
+        });
+    }
+    function onModalVisibilityChange(el, wasHidden) {
+        const nowHidden = el.classList.contains('hidden');
+        if (wasHidden && !nowHidden) {
+            const active = document.activeElement;
+            if (active && !el.contains(active)) modalReturnFocus[el.id] = active;
+            // ダイアログ側で既にフォーカスを置いている場合はそのまま
+            if (!el.contains(document.activeElement)) {
+                const card = el.querySelector('.modal-card');
+                if (card) card.focus({ preventScroll: true });
+            }
+        } else if (!wasHidden && nowHidden) {
+            const back = modalReturnFocus[el.id];
+            delete modalReturnFocus[el.id];
+            const top = getTopModal();
+            if (top) {
+                // 続けて開いたモーダルを閉じたときに、最初の場所へ戻れるよう戻り先を引き継ぐ
+                if (back && !modalReturnFocus[top.id]) modalReturnFocus[top.id] = back;
+                if (!top.contains(document.activeElement)) { const card = top.querySelector('.modal-card'); if (card) card.focus({ preventScroll: true }); }
+            } else if (back && document.body.contains(back) && back.offsetParent !== null && back.focus) {
+                back.focus({ preventScroll: true });
+            }
+        }
+    }
+    function initModalA11y() {
+        document.querySelectorAll('.modal-overlay').forEach(function(el) {
+            el.addEventListener('click', function(e) {
+                if (e.target !== el) return;
+                const close = MODAL_DISMISS[el.id];
+                if (close) close();
+            });
+        });
+        document.addEventListener('keydown', function(e) {
+            const top = getTopModal();
+            if (!top) return;
+            if (e.key === 'Escape') {
+                const close = MODAL_DISMISS[top.id];
+                if (close) { e.preventDefault(); close(); }
+                return;
+            }
+            if (e.key === 'Tab') {
+                const items = getFocusable(top);
+                if (!items.length) { e.preventDefault(); return; }
+                const first = items[0], last = items[items.length - 1];
+                if (!top.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+                else if (e.shiftKey && (document.activeElement === first || !items.includes(document.activeElement))) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            }
+        });
+    }
+
     function initModalQueueWatcher() {
         if (typeof MutationObserver === 'undefined') return;
-        const obs = new MutationObserver(function() { showNextQueuedModal(); });
+        const obs = new MutationObserver(function(records) {
+            records.forEach(function(r) {
+                const wasHidden = /(^|\s)hidden(\s|$)/.test(r.oldValue || '');
+                if (wasHidden !== r.target.classList.contains('hidden')) onModalVisibilityChange(r.target, wasHidden);
+            });
+            showNextQueuedModal();
+        });
         document.querySelectorAll('.modal-overlay').forEach(function(el) {
-            obs.observe(el, { attributes: true, attributeFilter: ['class'] });
+            obs.observe(el, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
         });
     }
     function closeEventResultModal() { document.getElementById('event-result-modal').classList.add('hidden'); }
@@ -3907,6 +3992,7 @@
 
     loadSavedTitles();
     initAppDialog();
+    initModalA11y();
     initModalQueueWatcher();
     refreshContinueButton();
     // タブを閉じる・裏に回すときにも念のため保存する
