@@ -704,9 +704,7 @@
     </div>
 </div>
 
-<!-- 🌐 共有ランキング用 Firebase SDK（Firestoreにスコアを送受信するためのライブラリ）-->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- 🌐 共有ランキング用 Firebase SDK は、ランキングを開く／登録するときだけ読み込む（ensureFirebase() を参照）-->
 
 <script>
     // ============================================================================
@@ -741,22 +739,41 @@
     };
     const RANKING_CONFIGURED = FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY_HERE" && !!FIREBASE_CONFIG.apiKey;
     let fbDb = null;
-    let fbInitTried = false;
     let fbInitOk = false;
 
-    function initFirebaseIfNeeded() {
-        if (fbInitTried) return fbInitOk;
-        fbInitTried = true;
-        if (!RANKING_CONFIGURED) return false;
-        try {
-            if (typeof firebase === 'undefined') return false;
-            firebase.initializeApp(FIREBASE_CONFIG);
-            fbDb = firebase.firestore();
-            fbInitOk = true;
-        } catch (e) {
-            fbInitOk = false;
+    // Firebase SDK はランキング機能を使うときに初めて読み込む（ページ表示を軽くし、不要な通信をしない）
+    const FIREBASE_SDK_URLS = {
+        app: 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
+        firestore: 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'
+    };
+    let fbLoadPromise = null;
+    function loadExternalScript(src) {
+        return new Promise(function(resolve, reject) {
+            const el = document.createElement('script');
+            el.src = src;
+            el.async = true;
+            el.onload = function() { resolve(); };
+            el.onerror = function() { el.remove(); reject(new Error('load failed: ' + src)); };
+            document.head.appendChild(el);
+        });
+    }
+    // 成功すれば true、設定なし・読み込み失敗なら false で解決する Promise を返す（失敗時は次回また試す）
+    function ensureFirebase() {
+        if (fbInitOk) return Promise.resolve(true);
+        if (!RANKING_CONFIGURED) return Promise.resolve(false);
+        if (!fbLoadPromise) {
+            fbLoadPromise = Promise.resolve()
+                .then(function() { if (typeof firebase === 'undefined') return loadExternalScript(FIREBASE_SDK_URLS.app); })
+                .then(function() { if (typeof firebase.firestore !== 'function') return loadExternalScript(FIREBASE_SDK_URLS.firestore); })
+                .then(function() {
+                    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+                    fbDb = firebase.firestore();
+                    fbInitOk = true;
+                    return true;
+                })
+                .catch(function() { fbLoadPromise = null; return false; });
         }
-        return fbInitOk;
+        return fbLoadPromise;
     }
 
     let isGameStarted = false;
@@ -3448,14 +3465,13 @@
             bodyEl.innerText = ('🚧 オンラインランキング機能は準備中です。\n\n現在のあなたの資産: ' + fmtShort(getNetWorth()));
             return;
         }
-        if (!initFirebaseIfNeeded()) {
-            bodyEl.innerHTML = '';
-            bodyEl.innerText = '⚠️ ランキングを読み込めませんでした。通信環境をご確認ください。';
-            return;
-        }
-        bodyEl.innerHTML = '<div style="padding:16px 0; text-align:center; color:var(--text-sub);">' + ('読み込み中…') + '</div>';
+        bodyEl.innerHTML = '<div style="padding:16px 0; text-align:center; color:var(--text-sub);">読み込み中…</div>';
 
-        fbDb.collection('leaderboard').orderBy('netWorth', 'desc').limit(30).get().then(function(snapshot) {
+        ensureFirebase().then(function(ok) {
+            if (!ok) throw new Error('通信環境をご確認ください。');
+            // オフライン時に空のキャッシュを「記録なし」と表示しないよう、必ずサーバーから取得する
+            return fbDb.collection('leaderboard').orderBy('netWorth', 'desc').limit(30).get({ source: 'server' });
+        }).then(function(snapshot) {
             if (document.getElementById('info-modal').classList.contains('hidden')) return;
             if (snapshot.empty) {
                 bodyEl.innerHTML = '<div style="padding:16px 0; text-align:center; color:var(--text-sub);">' + ('まだ記録がありません。最初の記録者になりましょう！') + '</div>';
@@ -3479,7 +3495,7 @@
             bodyEl.innerHTML = html;
         }).catch(function(err) {
             bodyEl.innerHTML = '';
-            bodyEl.innerText = ('⚠️ ランキングの取得に失敗しました：') + (err && err.message ? err.message : err);
+            bodyEl.innerText = '⚠️ ランキングの取得に失敗しました。通信環境をご確認ください。' + (err && err.code ? '（' + err.code + '）' : '');
         });
     }
 
@@ -3490,10 +3506,6 @@
         if (g.scoreSubmitted) return;
         if (!RANKING_CONFIGURED) {
             if (statusEl) statusEl.innerText = '🚧 オンラインランキング機能は準備中です。';
-            return;
-        }
-        if (!initFirebaseIfNeeded()) {
-            if (statusEl) statusEl.innerText = '⚠️ ランキングに接続できませんでした。通信環境をご確認ください。';
             return;
         }
         const nameInputEl = document.getElementById('ranking-name-input');
@@ -3511,15 +3523,18 @@
             ? ('scenario_' + selectedScenarioId)
             : (gameMode + ((g.challengeMode && g.challengeMode !== 'none') ? ('_' + g.challengeMode) : ''));
         const mythicCount = titleMasterList.filter(function(t) { return t.mythic && unlockedTitlesMap[t.id]; }).length;
-        fbDb.collection('leaderboard').add({
-            name: nm,
-            netWorth: Math.round(nw),
-            age: g.age,
-            mode: modeLabel,
-            fireAchieved: !!fireAchieved,
-            titleCount: countUnlockedTitles(),
-            mythicCount: mythicCount,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        ensureFirebase().then(function(ok) {
+            if (!ok) throw new Error('通信環境をご確認ください。');
+            return fbDb.collection('leaderboard').add({
+                name: nm,
+                netWorth: Math.round(nw),
+                age: g.age,
+                mode: modeLabel,
+                fireAchieved: !!fireAchieved,
+                titleCount: countUnlockedTitles(),
+                mythicCount: mythicCount,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
         }).then(function() {
             g.scoreSubmitted = true;
             if (btn) btn.innerText = '✅ 登録しました！';
@@ -3527,7 +3542,7 @@
             playSound('rankup');
         }).catch(function(err) {
             if (btn) { btn.disabled = false; btn.innerText = '🏆 ランキングに登録する'; }
-            if (statusEl) statusEl.innerText = ('⚠️ 登録に失敗しました：') + (err && err.message ? err.message : err);
+            if (statusEl) statusEl.innerText = '⚠️ 登録に失敗しました：' + (err && err.message ? err.message : err);
         });
     }
 
