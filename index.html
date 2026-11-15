@@ -88,6 +88,8 @@
     max-width: 100%;
 }
 
+        .site-footer { display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 12px; font-size: 0.75rem; color: var(--text-sub); }
+        .footer-link { background: none; border: none; color: var(--text-sub); font: inherit; font-size: 0.75rem; text-decoration: underline; padding: 12px 8px; min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; }
         .op-disclaimer-note { font-size: 0.75rem; color: var(--text-sub); margin: 10px 0 0; line-height: 1.45; }
         .res-disclaimer-note { font-size: 0.75rem; color: var(--text-sub); text-align: left; line-height: 1.5; margin: 0 0 10px; }
         .asset-note { font-size: 0.75rem; color: var(--text-sub); line-height: 1.45; margin: 2px 2px 6px; }
@@ -298,6 +300,7 @@
                     <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openRankingModal)" id="btn-ranking">🏆 ランキング</button>
                     <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openSoundModal)" id="btn-sound">🔊 音量設定</button>
                     <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openDisclaimerModal)" id="btn-disclaimer">📄 免責事項</button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openPrivacyPolicy)" id="btn-privacy">🔒 プライバシーポリシー</button>
                 </div>
             </div>
         </div>
@@ -656,6 +659,11 @@
 <script src="https://adm.shinobi.jp/s/4d3c967f58eb4edc408cdc2736675421"></script>
 <!-- admax -->
     </div>
+    <footer class="site-footer" id="site-footer">
+        <button type="button" class="footer-link" onclick="openDisclaimerModal()">免責事項</button>
+        <span aria-hidden="true">｜</span>
+        <a class="footer-link" href="privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>
+    </footer>
 </div>
 
 <!-- 🎓 実践マネーリテラシー検定モーダル -->
@@ -2131,6 +2139,12 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         body.innerText = DISCLAIMER_BODY;
         document.getElementById('info-modal').classList.remove('hidden');
         playSound('click');
+    }
+
+    // プライバシーポリシーは別ページ（プレイ中の画面を残すため新しいタブで開く。進行は自動保存済み）
+    function openPrivacyPolicy() {
+        saveGameProgress();
+        window.open('privacy.html', '_blank', 'noopener');
     }
 
     function openTermHelp(key) {
