@@ -84,6 +84,7 @@
         .market-switcher { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; background: #050811; padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
         .mkt-btn { background: transparent; border: 1px solid transparent; color: var(--text-sub); font-size: 0.68rem; font-weight: 800; padding: 6px 2px; border-radius: 6px; cursor: pointer; text-align: center; }
         .mkt-btn.active { background: var(--card-bg); color: var(--accent-blue); border-color: var(--accent-blue); }
+        .mkt-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .market-info-bar { background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 6px 8px; margin-bottom: 10px; font-size: 0.64rem; color: #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
         .cycle-badge { text-align: center; font-size: 0.64rem; font-weight: 900; padding: 4px 6px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); background: var(--panel-bg); color: var(--text-sub); transition: background 0.3s, color 0.3s, border-color 0.3s; }
         .cycle-badge.cycle-boom { background: rgba(16, 185, 129, 0.16); color: var(--accent-green); border-color: var(--accent-green); }
@@ -101,6 +102,7 @@
         .challenge-chip-row { display: flex; gap: 5px; flex-wrap: wrap; }
         .challenge-chip { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-sub); font-size: 0.64rem; font-weight: 800; padding: 6px 9px; border-radius: 10px; cursor: pointer; }
         .challenge-chip.active { background: var(--accent-blue); color: #030712; border-color: var(--accent-blue); }
+        .challenge-chip:disabled { opacity: 0.4; cursor: not-allowed; }
         .select-card.scenario-sub { padding: 8px 10px; }
         .select-card.scenario-sub .select-card-top { font-size: 0.74rem; }
         .select-card.scenario-sub.selected { border-color: var(--accent-purple); background: linear-gradient(145deg, #2a1e4a, #1f1530); }
@@ -259,6 +261,7 @@
             <div class="op-feat-item"><span>🎓</span><div id="lbl-op-f2">全24講座＆<br>実践クイズ</div></div>
             <div class="op-feat-item"><span>🎖️</span><div id="lbl-op-f3">神話級を含む<br>全43種の称号</div></div>
         </div>
+        <button type="button" class="op-start-btn hidden" onclick="resumeSavedGame()" id="btn-op-continue" style="margin-bottom:8px; background:linear-gradient(135deg, #38bdf8, #0ea5e9);">▶ 続きから</button>
         <button type="button" class="op-start-btn" onclick="enterSetupFromOpening()" id="lbl-op-start-btn">✨ 資産形成の旅を始める (GAME START)</button>
         <div class="op-sub-actions">
             <button type="button" class="op-sub-btn" onclick="openTitlesModal()" id="lbl-op-titles-btn">🎖️ 獲得称号 (0/43)</button>
@@ -276,7 +279,7 @@
             <button type="button" class="mkt-btn" id="mkt-btn-gl" onclick="switchMarket('gl')">🌐 グローバル</button>
         </div>
         <div class="market-info-bar">
-            <span id="market-desc-inline">🇯🇵 <strong>日本市場 (JPY)</strong>: 超低金利(1.5%)で不動産ローンが圧倒的に有利！安定成長と家賃で手堅くFIREできる市場。</span>
+            <span id="market-desc-inline">🇯🇵 <strong>日本市場 (JPY)</strong>: 超低金利(1.5%)で不動産ローンが圧倒的に有利！安定成長と家賃で手堅くFIREできる市場。<br>※ 市場はゲーム開始時に固定され、プレイ中は変更できません</span>
             <span class="term-btn" onclick="openMarketGuideModal()" id="btn-mkt-guide" style="white-space:nowrap;">？市場の違い</span>
         </div>
         <div class="cycle-badge cycle-boom" id="cycle-badge">📈 好景気</div>
@@ -322,7 +325,7 @@
             <div class="setup-section-title" id="lbl-set-challenge">2. 縛りプレイチャレンジ（任意）</div>
             <div class="challenge-chip-row">
                 <button type="button" class="challenge-chip active" id="chal-none" onclick="selectChallenge('none')">🚫 縛りなし（通常プレイ）</button>
-                <button type="button" class="challenge-chip" id="chal-crypto_only" onclick="selectChallenge('crypto_only')">🪙 暗号資産オンリー</button>
+                <button type="button" class="challenge-chip" id="chal-crypto_only" onclick="selectChallenge('crypto_only')" disabled>🪙 暗号資産オンリー（スタンダード以上）</button>
                 <button type="button" class="challenge-chip" id="chal-real_estate_only" onclick="selectChallenge('real_estate_only')">🏠 不動産王一本勝負</button>
                 <button type="button" class="challenge-chip" id="chal-conservative_only" onclick="selectChallenge('conservative_only')">🛡️ 超保守型（株・金のみ）</button>
             </div>
@@ -533,7 +536,7 @@
             <div id="res-networth" style="color:var(--accent-green); font-size:1.9rem; font-weight:900; margin:6px 0;">¥0</div>
             <div style="font-size:0.82rem; margin-top:6px;"><span id="lbl-res-rank-label">最終資産家ランク</span>: <strong id="res-title" style="color:var(--accent-gold);">👑</strong></div>
             <div style="font-size:0.82rem; margin-top:4px;"><span id="lbl-res-fire-label">FIRE達成</span>: <strong id="res-fire" style="color:var(--accent-blue);">完全達成！</strong></div>
-            <div style="font-size:0.82rem; margin-top:4px;">🎖️ 獲得済み称号数: <strong id="res-titles-count" style="color:var(--accent-purple);">0 / 36</strong></div>
+            <div style="font-size:0.82rem; margin-top:4px;">🎖️ 獲得済み称号数: <strong id="res-titles-count" style="color:var(--accent-purple);">0 / 43</strong></div>
             <div style="font-size:0.82rem; margin-top:4px;"><span id="lbl-res-rival-label">🤖 ライバル投資家(放置インデックス)</span>: <strong id="res-rival">¥0</strong> <strong id="res-rival-result"></strong></div>
         </div>
         <div class="best-record-banner" id="best-record-banner" style="display:none;">
@@ -880,13 +883,14 @@
     function resetAllSavedData() {
         playSound('click');
         const msg = currentLang === 'ja'
-            ? "獲得した「称号コレクション」と「チュートリアル完了記録」をすべて消去して、一番最初の状態に戻しますか？"
+            ? "獲得した「称号コレクション」と「チュートリアル完了記録」（途中のセーブデータを含む）をすべて消去して、一番最初の状態に戻しますか？"
             : "Reset all unlocked Titles and Tutorial progress back to the initial state?";
         if (!confirm(msg)) return;
         try {
             localStorage.removeItem('uws_unlocked_titles_v1');
             localStorage.removeItem('uws_tut_done_easy_v1');
             localStorage.removeItem('uws_tut_done_adv_v1');
+            localStorage.removeItem(SAVE_GAME_KEY);
         } catch (e) {}
         unlockedTitlesMap = {};
         alert(currentLang === 'ja' ? "すべての記録を初期化しました！再スタートします。" : "All data reset! Reloading...");
@@ -939,6 +943,12 @@
         { id: 't_chal_realestate_fire', mythic: true, icon: '🏯', nameJa: '42. 大家一本の不動産王', nameEn: '42. Real-Estate-Only King', descJa: '【縛りプレイ達成】「不動産王一本勝負」チャレンジで、不動産投資だけを使ってFIRE目標を達成した', descEn: '[CHALLENGE CLEAR] Achieved FIRE in the Real-Estate-Only challenge mode' },
         { id: 't_chal_conservative_fire', mythic: true, icon: '🧘', nameJa: '43. 超保守型の守りの達人', nameEn: '43. Ultra-Conservative Master', descJa: '【縛りプレイ達成】「超保守型」チャレンジで、インデックスと金だけを使ってFIRE目標を達成した', descEn: '[CHALLENGE CLEAR] Achieved FIRE in the Ultra-Conservative challenge mode' }
     ];
+    // 称号の総数は常にマスターデータから自動で数える（表記の食い違いを防ぐ）
+    const TITLE_TOTAL = titleMasterList.length;
+    // 獲得済み称号数（マスターデータにある称号だけを数える。保存データ自体は変更しない）
+    function countUnlockedTitles() {
+        return titleMasterList.filter(function(t) { return !!unlockedTitlesMap[t.id]; }).length;
+    }
 
     // --- 📖 投資アカデミー：初回クエスト報酬（レベルごとに金額が変わる）---
     const ACADEMY_REWARD = { basic: 25, adv: 35, pro: 50 };
@@ -961,10 +971,11 @@
         const lesson = onePointLessons[key];
         if (!lesson) return;
         g.lessonsSeen[key] = true;
-        document.getElementById('acad-modal-title').innerText = '💡 ' + lesson.title;
-        document.getElementById('acad-modal-desc').innerText = lesson.desc;
-        document.getElementById('academy-modal').classList.remove('hidden');
-        playSound('click');
+        openModalQueued('academy-modal', function() {
+            document.getElementById('acad-modal-title').innerText = '💡 ' + lesson.title;
+            document.getElementById('acad-modal-desc').innerText = lesson.desc;
+            playSound('click');
+        });
     }
 
     // --- 🎓 実践マネーリテラシー検定クイズデータ（全40問） ---
@@ -1012,17 +1023,24 @@
         { q: "【第40問：キャピタルゲインとインカムゲイン】\n資産運用で得られる利益のうち、『キャピタルゲイン』と『インカムゲイン（配当・利息など）』の違いとして正しいものは？", options: ["キャピタルゲインは資産を売却して得る価格差の利益、インカムゲインは保有している間に得られる配当・利息などの利益", "キャピタルゲインとインカムゲインは全く同じ意味である", "インカムゲインは資産を売らないと絶対に発生しない"], ans: 0, exp: "【正解：売却益と保有中の利益の違い】\nキャピタルゲインは『安く買って高く売る』ことで得る差益、インカムゲインは株の配当や不動産の賃料、債券の利息など『持っているだけ』で得られる利益です。両方を意識して資産運用を考えるとバランスが取りやすくなります！" }
     ];
 
-    function triggerEduQuiz(isManual) {
+    function triggerEduQuiz(isManual, forcedIdx) {
         if (!isGameStarted) return;
-        if (usedQuizIndices.length >= eduQuizzes.length) usedQuizIndices = [];
-        let avail = [];
-        for (let i = 0; i < eduQuizzes.length; i++) {
-            if (usedQuizIndices.indexOf(i) === -1) avail.push(i);
+        let qIdx;
+        if (typeof forcedIdx === 'number' && eduQuizzes[forcedIdx]) {
+            qIdx = forcedIdx;
+        } else {
+            if (usedQuizIndices.length >= eduQuizzes.length) usedQuizIndices = [];
+            let avail = [];
+            for (let i = 0; i < eduQuizzes.length; i++) {
+                if (usedQuizIndices.indexOf(i) === -1) avail.push(i);
+            }
+            qIdx = avail[Math.floor(Math.random() * avail.length)];
+            usedQuizIndices.push(qIdx);
         }
-        const qIdx = avail[Math.floor(Math.random() * avail.length)];
-        usedQuizIndices.push(qIdx);
         const qObj = eduQuizzes[qIdx];
+        setPendingFlow({ type: 'quiz', idx: qIdx, manual: !!isManual });
 
+        openModalQueued('quiz-modal', function() {
         document.getElementById('quiz-question').innerText = qObj.q;
         const cBox = document.getElementById('quiz-choices');
         cBox.innerHTML = '';
@@ -1033,6 +1051,7 @@
             btn.innerHTML = '<strong>選択肢 ' + (idx + 1) + '</strong>' + optText;
             btn.onclick = function() {
                 document.getElementById('quiz-modal').classList.add('hidden');
+                pendingFlow = null;
                 if (idx === qObj.ans) {
                     if (g.quizBonusEarned < QUIZ_BONUS_CAP) {
                         let bonus = Math.min(80, QUIZ_BONUS_CAP - g.quizBonusEarned);
@@ -1049,9 +1068,9 @@
             };
             cBox.appendChild(btn);
         });
-        document.getElementById('quiz-modal').classList.remove('hidden');
         if (isManual) playSound('click');
         else playSound('event');
+        });
     }
 
     function updateCoachAdvice() {
@@ -1096,7 +1115,7 @@
     }
 
     function updateTitlesHeaderBadge() {
-        const count = Object.keys(unlockedTitlesMap).length;
+        const count = countUnlockedTitles();
         const total = titleMasterList.length;
         const btn = document.getElementById('btn-titles');
         if (btn) btn.innerText = (currentLang === 'ja' ? '🎖️ 称号' : '🎖️ Titles') + '(' + count + '/' + total + ')';
@@ -1104,6 +1123,17 @@
         if (opBtn) opBtn.innerText = (currentLang === 'ja' ? '🎖️ 獲得称号' : '🎖️ Titles') + ' (' + count + '/' + total + ')';
         const resCount = document.getElementById('res-titles-count');
         if (resCount) resCount.innerText = count + ' / ' + total;
+        // 称号モーダルの見出し・説明とオープニングの紹介文も総数から自動生成する
+        const isJa = currentLang === 'ja';
+        const mythicTotal = titleMasterList.filter(function(t) { return t.mythic; }).length;
+        const head = document.getElementById('lbl-titles-modal-head');
+        if (head) head.innerText = isJa ? '🎖️ 獲得称号コレクション (全' + total + '種)' : '🎖️ Title Collection (' + total + ' total)';
+        const sub = document.getElementById('lbl-titles-modal-sub');
+        if (sub) sub.innerText = isJa
+            ? '全' + total + '種のうち ' + (total - mythicTotal) + '種は通過点となる一般称号、' + mythicTotal + '種は達成不可能に近い【MYTHIC（神話級）】称号（MYTHICマーク付き）です！'
+            : total + ' titles: ' + (total - mythicTotal) + ' regular titles and ' + mythicTotal + ' near-impossible MYTHIC titles (marked MYTHIC).';
+        const opF3 = document.getElementById('lbl-op-f3');
+        if (opF3) opF3.innerText = (i18n[currentLang] || i18n.ja).opF3;
     }
 
     function unlockTitle(id) {
@@ -1113,7 +1143,7 @@
         const now = new Date();
         const dateStr = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate();
         unlockedTitlesMap[id] = { date: dateStr, age: g.age };
-        if (id !== 't_imp_omni_god' && Object.keys(unlockedTitlesMap).length >= 42 && !unlockedTitlesMap['t_imp_omni_god']) {
+        if (id !== 't_imp_omni_god' && countUnlockedTitles() >= TITLE_TOTAL - 1 && !unlockedTitlesMap['t_imp_omni_god']) {
             unlockedTitlesMap['t_imp_omni_god'] = { date: dateStr, age: g.age };
         }
         saveTitles();
@@ -1186,7 +1216,7 @@
         hedgeActive: false,
         academyRead: {}, lessonsSeen: {}, firstBuy: { index: false, gold: false, stock: false, crypto: false, realestate: false },
         everBoughtCrypto: false, everBoughtIndivStock: false, everTookDebt: false,
-        bestNetWorthBeaten: false, challengeMode: 'none',
+        bestNetWorthBeaten: false, challengeMode: 'none', tutorialIpoRewarded: false,
         stocks: [
             { id: 0, nameJa: 'AI半導体メガ', nameEn: 'AI Semiconductor Mega', price: 100, shares: 0 },
             { id: 1, nameJa: '世界高配当キング', nameEn: 'Global High-Dividend King', price: 80, shares: 0 }
@@ -1275,7 +1305,7 @@
             appTitle: "Lets' FIRE！", tutorialBtn: "🎓 チュートリアル", ranking: "🏆 ランキング", sound: "🔊 音量",
             opCatch: "〜 25歳から90歳まで、66年間の資産帝国育成ゲーム 〜",
             opStory: "【PROLOGUE】\n25歳、社会人のスタートライン。あなたの手元には初期資金「600万円」がある。\nここから90歳までの66年間、どのように働き、どの市場に投資し、どう危機を乗り越えるかはすべてあなた次第。\n\n複利の魔法、不動産レバレッジ、キャリア昇進、そして数々の経済ショック——。\n生きた金融知識を武器に『FIRE（経済的自立）』と『達成不可能級の神話称号』へ挑め！",
-            opF1: "日・米・世界\n3大市場対応", opF2: "全24講座＆\n実践クイズ", opF3: "神話級を含む\n全43種の称号",
+            opF1: "日・米・世界\n3大市場対応", opF2: "全24講座＆\n実践クイズ", opF3: "神話級を含む\n全" + TITLE_TOTAL + "種の称号",
             opStartBtn: "✨ 資産形成の旅を始める (GAME START)", opSoundBtn: "🔊 音量設定", opResetBtn: "🗑️ データ初期化", opDonateBtn: "☕ 開発者を応援",
             yrUnit: "年", ageUnit: "歳", fireBadge: "FIRE達成 🔥", corpPill: "🏢 法人化済",
             mktJp: "🇯🇵 日本市場", mktUs: "🇺🇸 米国市場", mktGl: "🌐 グローバル", mktGuideBtn: "？市場の違い",
@@ -1367,7 +1397,7 @@
 
     const navI18n = {
         ja: {
-            freeBanner: "✨ 自由行動モード：株・金・不動産・キャリアで億り人＆全43種の称号コンプリートを目指そう！",
+            freeBanner: "✨ 自由行動モード：株・金・不動産・キャリアで億り人＆全" + TITLE_TOTAL + "種の称号コンプリートを目指そう！",
             easy: {
                 1: { title: "🌟 ステップ1：まずは「インデックス株」を買おう！", desc: "『Lets' FIRE！』へようこそ！\nまずは王道の『全世界インデックス株』を買ってみましょう！\n\n光っている【購入 (+100)】ボタンを押してください！", banner: "👉 光っている【購入 (+100)】ボタンを押してインデックス株を買いましょう！", targetId: "btn-buy-ind-100" },
                 2: { title: "🌟 ステップ2：次は守りの「金(ゴールド)」！", desc: "続けて、暴落や経済危機の盾になる『金（ゴールド）』も一緒に持っておくのがお金持ちの鉄則です！\n\n光っている【購入 (+50)】ボタンを押して金を買いましょう！", banner: "👉 光っている【購入 (+50)】ボタンを押して金（ゴールド）を買いましょう！", targetId: "btn-buy-gold-50" },
@@ -1376,7 +1406,7 @@
                 5: { title: "🌟 ステップ5：スキルアップ自己投資！", desc: "【スキルアップ自己投資で昇進する (+12%)】ボタンを押すと、毎年の給与貯蓄額が +12% 増えます！", banner: "👉 光っている【スキルアップ自己投資】ボタンを押して昇進しましょう！", targetId: "career-up-btn" },
                 6: { title: "🌟 ステップ6：次は「不動産オーナー」になろう！", desc: "毎年家賃収入が入ってくる『不動産投資』を体験しましょう！光っている【不動産】タブをタップしてください！", banner: "👉 光っている【不動産】タブをタップして物件を見に行きましょう！", targetId: "tab-btn-realestate" },
                 7: { title: "🌟 ステップ7：銀行融資でマンションを買おう！", desc: "一番上の「都心駅チカ区分マンション」の【購入ボタン】を押して、不動産オーナーになりましょう！", banner: "👉 光っているマンションの【購入ボタン】を押しましょう！", targetId: "btn-buy-prop-0" },
-                8: { title: "🎉 チュートリアル完了！自由行動スタート！", desc: "おめでとうございます！4大スキルをすべてマスターしました！全43種の称号コンプリートと大富豪を目指しましょう！", banner: "✨ 自由行動モード：株・金・不動産・キャリアで億り人を目指そう！", targetId: null }
+                8: { title: "🎉 チュートリアル完了！自由行動スタート！", desc: "おめでとうございます！4大スキルをすべてマスターしました！全" + TITLE_TOTAL + "種の称号コンプリートと大富豪を目指しましょう！", banner: "✨ 自由行動モード：株・金・不動産・キャリアで億り人を目指そう！", targetId: null }
             },
             adv: {
                 1: { title: "🔥 実践ナビ1：まずは主力「インデックス株」！", desc: "まずは【購入 (+100)】で全世界インデックス株を買います。", banner: "👉 光っている【購入 (+100)】ボタンでインデックス株を買いましょう！", targetId: "btn-buy-ind-100" },
@@ -1389,11 +1419,11 @@
                 8: { title: "🔥 実践ナビ8：1年進めて値動きを見よう！", desc: "一番下の【次の年へ進む】ボタンを押して1年進めてみましょう！", banner: "👉 一番下の光っている【次の年へ進む】ボタンを押しましょう！", targetId: "next-turn-btn" },
                 9: { title: "🔥 実践ナビ9：キャリア自己投資で給料UP！", desc: "【キャリア】タブを開いてみましょう！", banner: "👉 光っている【キャリア】タブをタップしてください！", targetId: "tab-btn-career" },
                 10: { title: "🔥 実践ナビ10：スキルアップを実行！", desc: "光っている【スキルアップ自己投資】ボタンを押して昇進しましょう！", banner: "👉 光っている【スキルアップ自己投資】ボタンを押しましょう！", targetId: "career-up-btn" },
-                11: { title: "🎉 全チュートリアル完了！自由行動へ！", desc: "全アセットの操作をマスターしました！全43種の称号コンプリートを目指しましょう！", banner: "✨ 自由行動モード：全アセットを駆使して伝説の財閥王を目指そう！", targetId: null }
+                11: { title: "🎉 全チュートリアル完了！自由行動へ！", desc: "全アセットの操作をマスターしました！全" + TITLE_TOTAL + "種の称号コンプリートを目指しましょう！", banner: "✨ 自由行動モード：全アセットを駆使して伝説の財閥王を目指そう！", targetId: null }
             }
         }
     };
-    navI18n.en = { freeBanner: "✨ Free Play Mode: Build your empire and unlock all 36 Titles!", easy: navI18n.ja.easy, adv: navI18n.ja.adv };
+    navI18n.en = { freeBanner: "✨ Free Play Mode: Build your empire and unlock all " + TITLE_TOTAL + " Titles!", easy: navI18n.ja.easy, adv: navI18n.ja.adv };
     navI18n.zh = navI18n.ja; navI18n.ko = navI18n.ja; navI18n.es = navI18n.en;
 
     // --- 4. Web Audio API (BGM & SE) ---
@@ -1604,6 +1634,10 @@
         if (scenRow) scenRow.classList.toggle('hidden', m !== 'scenario');
         const chalRow = document.getElementById('challenge-pick-row');
         if (chalRow) chalRow.classList.toggle('hidden', m === 'scenario');
+        // ビギナーズでは仮想通貨タブが無いため「暗号資産オンリー」は選べない
+        const cryptoChip = document.getElementById('chal-crypto_only');
+        if (cryptoChip) cryptoChip.disabled = (m === 'easy');
+        if (m === 'easy' && selectedChallenge === 'crypto_only') selectChallenge('none');
         playSound('click');
     }
 
@@ -1642,6 +1676,17 @@
         if (chal === 'conservative_only') return type === 'index' || type === 'gold';
         return true;
     }
+    // 縛りプレイで購入できない資産を扱うナビ手順（その手順は自動でスキップする）
+    const navStepAssetType = {
+        easy: { 1: 'index', 2: 'gold', 6: 'realestate', 7: 'realestate' },
+        adv: { 1: 'index', 2: 'gold', 4: 'stock', 6: 'crypto', 7: 'crypto' }
+    };
+    function isNavStepBlockedByChallenge(step) {
+        const map = gameMode === 'easy' ? navStepAssetType.easy : navStepAssetType.adv;
+        const type = map[step];
+        return !!type && !isAssetAllowed(type);
+    }
+
     function alertChallengeBlocked() {
         alert(currentLang === 'ja'
             ? '🔒 現在の縛りプレイチャレンジでは、この資産クラスは購入できません！'
@@ -1712,15 +1757,28 @@
     };
 
     function switchMarket(m) {
+        // 市場はゲーム開始時に固定（プレイ中に有利な市場へ乗り換えられないようにする）
+        if (isGameStarted) return;
         document.querySelectorAll('.mkt-btn').forEach(function(el) { el.classList.remove('active'); });
         document.getElementById('mkt-btn-' + m).classList.add('active');
         market = m;
         const d = i18n[currentLang] || i18n.ja;
-        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market];
-        if (isGameStarted) {
-            renderStocks(); renderCrypto(); renderRealEstate(); renderCareer(); updateUI();
-        }
+        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market] + getMarketLockNote();
         playSound('click');
+    }
+
+    function getMarketLockNote() {
+        if (!isGameStarted) return currentLang === 'ja' ? '<br>※ 市場はゲーム開始時に固定され、プレイ中は変更できません' : '<br>* The market is locked once the game starts.';
+        return currentLang === 'ja' ? '<br>🔒 市場はゲーム開始時に固定されています（プレイ中は変更できません）' : '<br>🔒 Market is locked for this game.';
+    }
+    // ゲーム開始時に、選択中以外の市場ボタンを無効化する
+    function lockMarketSelection() {
+        document.querySelectorAll('.mkt-btn').forEach(function(el) {
+            el.classList.toggle('active', el.id === 'mkt-btn-' + market);
+            el.disabled = el.id !== 'mkt-btn-' + market;
+        });
+        const d = i18n[currentLang] || i18n.ja;
+        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market] + getMarketLockNote();
     }
 
     function openMarketGuideModal() {
@@ -1771,6 +1829,134 @@
         return { isNewBest: isNewBest, prevBest: prevBest };
     }
 
+    // --- 💾 ゲーム進行の自動保存と「続きから」（リロードやスマホのタブ破棄で進行が消えないようにする）---
+    const SAVE_GAME_KEY = 'uws_save_game_v1';
+    let pendingFlow = null;       // 選択待ちのイベント・ライフイベント・クイズ（リロードで回避できないよう保存する）
+    let isGameFinished = false;
+
+    function setPendingFlow(obj) {
+        pendingFlow = obj;
+        saveGameProgress();
+    }
+
+    function saveGameProgress() {
+        if (!isGameStarted || isGameFinished) return;
+        try {
+            const gCopy = {};
+            Object.keys(g).forEach(function(k) { if (k !== 'academy') gCopy[k] = g[k]; });
+            const fireBadgeEl = document.getElementById('fire-badge');
+            const data = {
+                v: 1,
+                savedAt: new Date().toISOString(),
+                gameMode: gameMode,
+                market: market,
+                scenarioId: selectedScenarioId,
+                navStep: navStep,
+                tutorialActive: isForcedTutorialActive,
+                ipoApplied: ipoAppliedThisTurn,
+                usedQuiz: usedQuizIndices,
+                sponsorClaimed: sponsorClaimed,
+                fireShown: !!(fireBadgeEl && !fireBadgeEl.classList.contains('hidden')),
+                news: document.getElementById('news-strip').innerText,
+                pendingFlow: pendingFlow,
+                g: gCopy
+            };
+            localStorage.setItem(SAVE_GAME_KEY, JSON.stringify(data));
+        } catch (e) {}
+    }
+
+    function loadSavedGameData() {
+        try {
+            const raw = localStorage.getItem(SAVE_GAME_KEY);
+            if (!raw) return null;
+            const data = JSON.parse(raw);
+            if (!data || data.v !== 1 || !data.g || typeof data.g.turn !== 'number') return null;
+            if (data.g.turn > (data.g.maxTurns || 66)) return null;
+            return data;
+        } catch (e) { return null; }
+    }
+
+    function clearSavedGame() {
+        try { localStorage.removeItem(SAVE_GAME_KEY); } catch (e) {}
+    }
+
+    // オープニングに「続きから」ボタンを出す（保存データがある場合のみ）
+    function refreshContinueButton() {
+        const btn = document.getElementById('btn-op-continue');
+        if (!btn) return;
+        const data = loadSavedGameData();
+        if (!data) { btn.classList.add('hidden'); return; }
+        const sg = data.g;
+        const assets = (sg.cash || 0) + (sg.indexAsset || 0) + (sg.goldAsset || 0) + (sg.realEstateAsset || 0)
+            + (sg.stocks || []).reduce(function(sum, x) { return sum + x.shares * x.price; }, 0)
+            + (sg.cryptos || []).reduce(function(sum, x) { return sum + x.holdings * x.price; }, 0);
+        const nw = assets - (sg.debt || 0);
+        btn.innerText = currentLang === 'ja'
+            ? '▶ 続きから（' + sg.age + '歳・純資産 ' + fmtShort(nw) + '）'
+            : '▶ Continue (Age ' + sg.age + ' / Net worth ' + fmtShort(nw) + ')';
+        btn.classList.remove('hidden');
+    }
+
+    function resumeSavedGame() {
+        const data = loadSavedGameData();
+        if (!data) { refreshContinueButton(); return; }
+        const academy = g.academy;
+        Object.assign(g, data.g);
+        g.academy = academy;
+        gameMode = data.gameMode || 'easy';
+        market = data.market || 'jp';
+        if (data.scenarioId && historicalScenarios[data.scenarioId]) selectedScenarioId = data.scenarioId;
+        navStep = data.navStep || 99;
+        isForcedTutorialActive = !!data.tutorialActive;
+        ipoAppliedThisTurn = !!data.ipoApplied;
+        usedQuizIndices = Array.isArray(data.usedQuiz) ? data.usedQuiz : [];
+        sponsorClaimed = !!data.sponsorClaimed;
+        syncDebt();
+
+        const isEasy = gameMode === 'easy';
+        document.getElementById('main-tabs-container').classList.toggle('easy-grid', isEasy);
+        document.getElementById('tab-btn-stocks').classList.toggle('hidden', isEasy);
+        document.getElementById('tab-btn-crypto').classList.toggle('hidden', isEasy);
+        document.getElementById('legend-crypto').classList.toggle('hidden', isEasy);
+        if (g.isCorp) {
+            const d0 = i18n[currentLang] || i18n.ja;
+            document.getElementById('corp-status-pill').classList.remove('hidden');
+            document.getElementById('corp-setup-btn').innerText = d0.corpBtnDone;
+            document.getElementById('corp-setup-btn').setAttribute('disabled', 'true');
+        }
+        if (data.fireShown) document.getElementById('fire-badge').classList.remove('hidden');
+
+        isGameStarted = true;
+        lockMarketSelection();
+        document.getElementById('news-strip').innerText = data.news || (i18n[currentLang] || i18n.ja).initNews;
+        document.getElementById('opening-view').classList.add('hidden');
+        document.getElementById('setup-view').classList.add('hidden');
+        document.getElementById('market-bar-wrap').classList.remove('hidden');
+        document.getElementById('header-age-badge').classList.remove('hidden');
+        document.getElementById('game-view').classList.remove('hidden');
+        initMonetizationView();
+        startBGM();
+        updateBgmMood(g.cycleId);
+
+        switchTab('portfolio');
+        renderStocks(); renderCrypto(); renderRealEstate(); renderCareer(); renderAcademy();
+        updateNavBannerText();
+        updateUI();
+        playSound('action');
+
+        if (isForcedTutorialActive) triggerNavStepPopup();
+        // 選択前にリロードされたイベント・クイズは、同じ内容をもう一度表示する
+        const pf = data.pendingFlow;
+        if (pf && pf.type === 'event') {
+            triggerDynamicEvent(pf.idx);
+        } else if (pf && pf.type === 'milestone') {
+            const ms = lifeMilestones.find(function(m) { return m.id === pf.id; });
+            if (ms) triggerLifeMilestone(ms);
+        } else if (pf && pf.type === 'quiz') {
+            triggerEduQuiz(!!pf.manual, pf.idx);
+        }
+    }
+
     function startInitialSimulation() {
         const nameInput = document.getElementById('player-name-input').value.trim();
         if (nameInput) g.name = nameInput;
@@ -1785,8 +1971,9 @@
         g.academyRead = {}; g.lessonsSeen = {};
         g.firstBuy = { index: false, gold: false, stock: false, crypto: false, realestate: false };
         g.everBoughtCrypto = false; g.everBoughtIndivStock = false; g.everTookDebt = false;
-        g.bestNetWorthBeaten = false;
+        g.bestNetWorthBeaten = false; g.tutorialIpoRewarded = false;
         g.challengeMode = (gameMode === 'scenario') ? 'none' : selectedChallenge;
+        if (gameMode === 'easy' && g.challengeMode === 'crypto_only') g.challengeMode = 'none';
         ipoAppliedThisTurn = false; g.history.net = [600];
 
         if (gameMode === 'scenario') {
@@ -1813,6 +2000,7 @@
         }
 
         isGameStarted = true;
+        lockMarketSelection();
         const d = i18n[currentLang] || i18n.ja;
         document.getElementById('news-strip').innerText = d.initNews;
 
@@ -1853,9 +2041,10 @@
     function showScenarioIntro() {
         const scen = historicalScenarios[selectedScenarioId];
         if (!scen) return;
-        document.getElementById('acad-modal-title').innerText = scen.introTitle;
-        document.getElementById('acad-modal-desc').innerText = scen.introDesc;
-        document.getElementById('academy-modal').classList.remove('hidden');
+        openModalQueued('academy-modal', function() {
+            document.getElementById('acad-modal-title').innerText = scen.introTitle;
+            document.getElementById('acad-modal-desc').innerText = scen.introDesc;
+        });
     }
 
     function skipTutorialNow() {
@@ -1916,6 +2105,7 @@
         document.getElementById('lbl-op-f2').innerText = d.opF2;
         document.getElementById('lbl-op-f3').innerText = d.opF3;
         document.getElementById('lbl-op-start-btn').innerText = d.opStartBtn;
+        if (!isGameStarted) refreshContinueButton();
         document.getElementById('lbl-op-sound-btn').innerText = d.opSoundBtn;
         document.getElementById('lbl-op-reset-btn').innerText = d.opResetBtn;
         document.getElementById('lbl-op-donate-btn').innerText = d.opDonateBtn;
@@ -1924,7 +2114,7 @@
         document.getElementById('mkt-btn-us').innerText = d.mktUs;
         document.getElementById('mkt-btn-gl').innerText = d.mktGl;
         document.getElementById('btn-mkt-guide').innerText = d.mktGuideBtn;
-        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market];
+        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market] + getMarketLockNote();
         document.getElementById('lbl-set-name').innerText = d.setName;
         document.getElementById('lbl-set-mode').innerText = d.setMode;
         document.getElementById('lbl-start-btn').innerText = d.startBtn;
@@ -1977,6 +2167,9 @@
     function triggerNavStepPopup() {
         if (!isForcedTutorialActive) return;
         const scenario = getNavScenario();
+        // 縛りプレイで購入できない資産の手順は飛ばす（先へ進めなくなるのを防ぐ）
+        let skippedByChallenge = false;
+        while (scenario[navStep] && isNavStepBlockedByChallenge(navStep)) { navStep++; skippedByChallenge = true; }
         const info = scenario[navStep];
         if (!info) return;
         if ((gameMode === 'easy' && navStep === 8) || (gameMode !== 'easy' && navStep === 11)) {
@@ -1987,12 +2180,16 @@
         } else {
             document.getElementById('btn-nav-skip-modal').classList.remove('hidden');
         }
-        document.getElementById('nav-pop-title').innerText = info.title;
-        document.getElementById('nav-pop-desc').innerText = info.desc;
+        const navDescText = (skippedByChallenge
+            ? (currentLang === 'ja' ? '🔒 縛りプレイ中のため、購入できない資産の手順はスキップしました。\n\n' : '🔒 Steps for assets locked by your challenge were skipped.\n\n')
+            : '') + info.desc;
         updateNavBannerText();
-        document.getElementById('nav-popup-modal').classList.remove('hidden');
+        openModalQueued('nav-popup-modal', function() {
+            document.getElementById('nav-pop-title').innerText = info.title;
+            document.getElementById('nav-pop-desc').innerText = navDescText;
+            playSound('event');
+        });
         applyStrictLock();
-        playSound('event');
     }
 
     function closeNavPopup() {
@@ -2126,7 +2323,7 @@
 
         if (!g.everBoughtAsset && nw >= 10000) unlockTitle('t_imp_salary_only');
         if (gameMode === 'hard' && !g.isCorp && nw >= 100000) unlockTitle('t_imp_hard_no_corp');
-        if (g.ownedProps.length >= 15 && g.debt <= 0) unlockTitle('t_imp_re_leviathan');
+        if (countRentalProps() >= 15 && g.debt <= 0) unlockTitle('t_imp_re_leviathan');
         if (g.ipoWinCount >= 5) unlockTitle('t_imp_ipo_god');
         if (cryptoTotal >= 500000) unlockTitle('t_imp_crypto_king');
         if (g.goldAsset >= 300000) unlockTitle('t_imp_gold_emperor');
@@ -2139,13 +2336,15 @@
         if (rObj.lv > g.rankLevel) {
             g.rankLevel = rObj.lv;
             g.cash += rObj.bonus;
-            spawnConfetti();
-            playSound('rankup');
             const rTitle = getRankTitle(rObj.lv);
-            document.getElementById('rankup-new-title').innerText = rTitle;
-            document.getElementById('rankup-desc').innerText = '純資産が ' + fmtShort(rObj.min) + ' を突破し、【' + rTitle + '】に昇格しました！';
-            document.getElementById('rankup-bonus').innerText = '🎁 昇格お祝いボーナス: +' + fmtShort(rObj.bonus) + ' 獲得！';
-            document.getElementById('rankup-modal').classList.remove('hidden');
+            // 他のモーダル（イベント・クイズ等）が開いている間は待機し、閉じてから表示する
+            openModalQueued('rankup-modal', function() {
+                spawnConfetti();
+                playSound('rankup');
+                document.getElementById('rankup-new-title').innerText = rTitle;
+                document.getElementById('rankup-desc').innerText = '純資産が ' + fmtShort(rObj.min) + ' を突破し、【' + rTitle + '】に昇格しました！';
+                document.getElementById('rankup-bonus').innerText = '🎁 昇格お祝いボーナス: +' + fmtShort(rObj.bonus) + ' 獲得！';
+            });
         }
     }
 
@@ -2155,10 +2354,37 @@
         playSound('click');
     }
 
+    // 借入の管理を一本化：g.debt は常に「各物件の残債 p.debt の合計」とする
+    function syncDebt() {
+        g.debt = g.ownedProps.reduce(function(sum, p) { return sum + Math.max(0, p.debt || 0); }, 0);
+    }
+    // 繰上返済：指定額を各物件の残債に順番に充てる（実際に返済できた額を返す）
+    function prepayDebt(amount) {
+        let remaining = Math.max(0, amount);
+        g.ownedProps.forEach(function(p) {
+            if (remaining <= 0 || !(p.debt > 0)) return;
+            const pay = Math.min(p.debt, remaining);
+            p.debt -= pay;
+            remaining -= pay;
+        });
+        syncDebt();
+        return Math.max(0, amount) - remaining;
+    }
+
+    // 収益不動産（マイホームを除く）の棟数
+    function countRentalProps() {
+        return g.ownedProps.filter(function(p) { return !p.isHome; }).length;
+    }
+    // 物件1件あたりの年間CF（家賃 − ローン利息）。マイホームは家賃収入なし・利息のみ
+    function calcPropCF(p, spec) {
+        const rent = p.isHome ? 0 : p.price * (p.yield + spec.propYieldBoost);
+        return rent - p.debt * spec.loanInterest;
+    }
+
     function calcRECashFlow() {
         const spec = marketSpecs[market];
         let cf = 0;
-        g.ownedProps.forEach(function(p) { cf += (p.price * (p.yield + spec.propYieldBoost) - p.debt * spec.loanInterest); });
+        g.ownedProps.forEach(function(p) { cf += calcPropCF(p, spec); });
         return Math.round(cf);
     }
 
@@ -2253,7 +2479,7 @@
                 { label: "💳 手元現金を使って借入の繰上返済＆生活防衛を行う", whatIf: "もし対策せずに耐えていたら、株式が12%、現金も最大120減っていました。", action: function() {
                     recordCrisisSurvived();
                     let pay = Math.min(g.cash, 150); g.cash -= pay;
-                    if (g.debt > 0) g.debt = Math.max(0, g.debt - Math.round(pay * 0.8));
+                    if (g.debt > 0) prepayDebt(Math.round(pay * 0.8));
                     showEventResult("🛡️ 金利上昇を乗り切った！", "現金 -" + fmtShort(pay) + " でローン圧縮を行い、利上げショックを防ぎました！", true);
                 }},
                 { label: "🌀 何も対策せずにそのまま耐える", whatIf: "もし繰上返済していたら、現金最大150でローンを圧縮し、株式や現金へのダメージを抑えられていました。", action: function() {
@@ -2494,9 +2720,13 @@
                         return;
                     }
                     g.cash -= down;
-                    g.debt += down * 4;
+                    // 自宅を不動産として資産に計上し、住宅ローン（頭金の4倍）を物件の残債として管理する（毎年、元本返済と利息が発生）
+                    g.ownedProps.push({ nameJa: 'マイホーム（自宅）', nameEn: 'My Home', price: down * 5, yield: 0, debt: down * 4, isHome: true });
+                    g.realEstateAsset = g.ownedProps.reduce(function(sum, x) { return sum + x.price; }, 0);
+                    g.everTookDebt = true;
+                    syncDebt();
                     g.salary = Math.round(g.salary * 1.04);
-                    showEventResult("🏡 マイホーム取得！", "頭金 -" + fmtShort(down) + " を支払い、住宅ローンを組みました。家賃負担がなくなり、家計に +4% の余裕が生まれました！", true);
+                    showEventResult("🏡 マイホーム取得！", "頭金 -" + fmtShort(down) + " を支払い、評価額 " + fmtShort(down * 5) + " の自宅を購入、住宅ローン " + fmtShort(down * 4) + " を組みました。自宅は不動産として資産に計上され、ローンは毎年の元本返済と利息で減っていきます。家賃負担がなくなり、家計に +4% の余裕が生まれました！", true);
                 }},
                 { label: "🏢 身軽な賃貸暮らしを続ける", whatIf: "もしマイホームを購入していたら、頭金（現金の20%、最低200）と借入と引き換えに、家計に+4%の余裕が生まれていました。", action: function() {
                     showEventResult("🏢 身軽なライフスタイル継続", "借金を背負わず、住み替えの自由度を保ちました。", false);
@@ -2549,6 +2779,9 @@
     ];
 
     function renderEventModal(ev) {
+        openModalQueued('event-modal', function() { renderEventModalNow(ev); });
+    }
+    function renderEventModalNow(ev) {
         const d = i18n[currentLang] || i18n.ja;
         document.getElementById('ev-title').innerText = ev.title;
         document.getElementById('ev-desc').innerText = ev.desc;
@@ -2562,6 +2795,7 @@
             btn.innerHTML = '<strong>' + d.evSelectPrefix + '</strong>' + c.label;
             btn.onclick = function() {
                 document.getElementById('event-modal').classList.add('hidden');
+                pendingFlow = null;
                 c.action();
                 updateUI();
                 if (c.whatIf) {
@@ -2577,27 +2811,58 @@
             };
             cBox.appendChild(btn);
         });
-        document.getElementById('event-modal').classList.remove('hidden');
         playSound('event');
     }
 
-    function triggerDynamicEvent() {
-        const ev = dynamicEvents[Math.floor(Math.random() * dynamicEvents.length)];
+    function triggerDynamicEvent(forcedIdx) {
+        const idx = (typeof forcedIdx === 'number') ? forcedIdx : Math.floor(Math.random() * dynamicEvents.length);
+        const ev = dynamicEvents[idx];
+        if (!ev) return;
+        setPendingFlow({ type: 'event', idx: idx });
         renderEventModal(ev);
     }
 
     function triggerLifeMilestone(ev) {
+        setPendingFlow({ type: 'milestone', id: ev.id });
         renderEventModal(ev);
     }
 
     function showEventResult(subtitle, desc, isBad) {
-        document.getElementById('ev-res-icon').innerText = isBad ? '⚠️' : '🎊';
-        const bannerBox = document.getElementById('ev-res-banner-box');
-        if (bannerBox) bannerBox.className = isBad ? 'event-result-banner bad' : 'event-result-banner';
-        document.getElementById('ev-res-subtitle').innerText = subtitle;
-        document.getElementById('ev-res-desc').innerText = desc;
-        document.getElementById('event-result-modal').classList.remove('hidden');
-        playSound(isBad ? 'bad' : 'action');
+        openModalQueued('event-result-modal', function() {
+            document.getElementById('ev-res-icon').innerText = isBad ? '⚠️' : '🎊';
+            const bannerBox = document.getElementById('ev-res-banner-box');
+            if (bannerBox) bannerBox.className = isBad ? 'event-result-banner bad' : 'event-result-banner';
+            document.getElementById('ev-res-subtitle').innerText = subtitle;
+            document.getElementById('ev-res-desc').innerText = desc;
+            playSound(isBad ? 'bad' : 'action');
+        });
+    }
+
+    // --- 🪟 モーダルの順番表示：別のモーダルが開いている間は待ち行列に入れ、閉じたら次を1つずつ表示する ---
+    const modalQueue = [];
+    function isAnyModalOpen() {
+        return !!document.querySelector('.modal-overlay:not(.hidden)');
+    }
+    function openModalQueued(id, renderFn) {
+        if (isAnyModalOpen()) {
+            modalQueue.push({ id: id, renderFn: renderFn });
+            return;
+        }
+        if (renderFn) renderFn();
+        document.getElementById(id).classList.remove('hidden');
+    }
+    function showNextQueuedModal() {
+        if (modalQueue.length === 0 || isAnyModalOpen()) return;
+        const next = modalQueue.shift();
+        if (next.renderFn) next.renderFn();
+        document.getElementById(next.id).classList.remove('hidden');
+    }
+    function initModalQueueWatcher() {
+        if (typeof MutationObserver === 'undefined') return;
+        const obs = new MutationObserver(function() { showNextQueuedModal(); });
+        document.querySelectorAll('.modal-overlay').forEach(function(el) {
+            obs.observe(el, { attributes: true, attributeFilter: ['class'] });
+        });
     }
     function closeEventResultModal() { document.getElementById('event-result-modal').classList.add('hidden'); }
 
@@ -2619,10 +2884,14 @@
 
         if (isForcedTutorialActive && gameMode !== 'easy' && navStep === 5) {
             navStep = 6;
-            g.cash += 180;
-            g.everBoughtAsset = true;
-            g.ipoWinCount++;
-            unlockTitle('t_ipo_hunter');
+            // チュートリアルの体験当選の報酬は1ゲームにつき1回だけ（ナビ再体験で何度も受け取れないようにする）
+            if (!g.tutorialIpoRewarded) {
+                g.tutorialIpoRewarded = true;
+                g.cash += 180;
+                g.everBoughtAsset = true;
+                g.ipoWinCount++;
+                unlockTitle('t_ipo_hunter');
+            }
             updateUI();
             triggerNavStepPopup();
             return;
@@ -2787,6 +3056,7 @@
         drawChart();
         checkAllTitlesAndRank();
         applyStrictLock();
+        saveGameProgress();
     }
 
     function nextTurn() {
@@ -2900,13 +3170,17 @@
         const netInflow = Math.round((annualSavings + reCF + stockDiv) * (1 - taxRate));
         g.cash += netInflow;
 
+        // ローン元本の返済（物件価格の4%/年）：現金から支払い、その分だけ借入が減る（現金が足りない分は翌年へ持ち越し）
+        let principalPaid = 0;
         g.ownedProps.forEach(function(p) {
             if (p.debt > 0) {
-                let pay = Math.min(p.debt, Math.round(p.price * 0.04));
+                let pay = Math.min(p.debt, Math.round(p.price * 0.04), Math.max(0, g.cash));
                 p.debt -= pay;
-                g.debt = Math.max(0, g.debt - pay);
+                g.cash -= pay;
+                principalPaid += pay;
             }
         });
+        syncDebt();
 
         g.turn++;
         g.age++;
@@ -2915,6 +3189,9 @@
         const d = i18n[currentLang] || i18n.ja;
         const snippet = d.mktSnippets[Math.floor(Math.random() * d.mktSnippets.length)];
         let newsText = d.turnNews(g.age, fmtShort(netInflow), snippet);
+        if (principalPaid > 0) {
+            newsText += (currentLang === 'ja' ? ' 🏦ローン元本返済 -' + fmtShort(principalPaid) + '。' : ' 🏦 Loan principal repaid -' + fmtShort(principalPaid) + '.');
+        }
         if (hedgePayout > 0) {
             newsText += (currentLang === 'ja' ? ' 🛡️暴落保険が発動し +' + fmtShort(hedgePayout) + '！' : ' 🛡️ Crash insurance paid out +' + fmtShort(hedgePayout) + '!');
         } else if (hedgeWasActive) {
@@ -3049,8 +3326,18 @@
         const owned = document.getElementById('owned-prop-container');
         owned.innerHTML = g.ownedProps.length === 0 ? '<div style="font-size:0.7rem; color:var(--text-sub);">' + d.noProp + '</div>' : '';
         g.ownedProps.forEach(function(p, idx) {
-            let cf = Math.round(p.price * (p.yield + spec.propYieldBoost) - p.debt * spec.loanInterest);
+            let cf = Math.round(calcPropCF(p, spec));
             let dispName = currentLang === 'ja' ? p.nameJa : p.nameEn;
+            if (p.isHome) {
+                const isJa = currentLang === 'ja';
+                owned.innerHTML +=
+                    '<div class="asset-card" style="display:flex; justify-content:space-between; align-items:center;">' +
+                        '<div><strong>🏡 ' + dispName + '</strong><br><span style="font-size:0.66rem; color:var(--text-sub);">' +
+                        (isJa ? '評価額 ' + fmtShort(p.price) + ' / 残債 ' + fmtShort(p.debt) + ' / 年間ローン利息: ' : 'Value ' + fmtShort(p.price) + ' / Loan ' + fmtShort(p.debt) + ' / Annual interest: ') + '-' + fmtShort(Math.abs(cf)) + '</span></div>' +
+                        '<span style="font-size:0.62rem; color:var(--text-sub); white-space:nowrap;">' + (isJa ? '自宅（売却不可）' : 'Home (not for sale)') + '</span>' +
+                    '</div>';
+                return;
+            }
             owned.innerHTML +=
                 '<div class="asset-card" style="display:flex; justify-content:space-between; align-items:center;">' +
                     '<div><strong>🏢 ' + dispName + '</strong><br><span style="font-size:0.66rem; color:var(--accent-green);">' + d.rentCfLbl + fmtShort(cf) + '</span></div>' +
@@ -3081,13 +3368,13 @@
         if (g.cash < down) { alert(d.noCashAlert); return; }
         g.cash -= down; g.everBoughtAsset = true;
         let loan = p.price - down;
-        g.debt += loan;
         if (loan > 0) g.everTookDebt = true;
         g.ownedProps.push({ nameJa: p.nameJa, nameEn: p.nameEn, price: p.price, yield: p.yield, debt: loan });
+        syncDebt();
         g.realEstateAsset = g.ownedProps.reduce(function(sum, x) { return sum + x.price; }, 0);
 
         unlockTitle('t_landlord');
-        if (g.ownedProps.length >= 3) unlockTitle('t_re_king');
+        if (countRentalProps() >= 3) unlockTitle('t_re_king');
 
         if (isForcedTutorialActive && gameMode === 'easy' && navStep === 7 && id === 0) {
             navStep = 8; renderRealEstate(); updateUI(); triggerNavStepPopup(); return;
@@ -3098,11 +3385,23 @@
 
     function sellProp(idx) {
         let p = g.ownedProps[idx];
-        g.cash += (p.price - p.debt);
-        g.debt = Math.max(0, g.debt - p.debt);
+        if (!p || p.isHome) return;
+        const proceeds = p.price - p.debt;
+        // 売却額が残債を下回る（オーバーローン）場合は、差額を手元現金で返済しないと売却できない
+        if (proceeds < 0 && g.cash < -proceeds) {
+            alert(currentLang === 'ja'
+                ? '🏦 売却額（' + fmtShort(p.price) + '）がローン残債（' + fmtShort(p.debt) + '）を下回っています。\n売却するには差額 ' + fmtShort(-proceeds) + ' を手元現金で返済する必要があります。'
+                : 'The sale price (' + fmtShort(p.price) + ') is below the remaining loan (' + fmtShort(p.debt) + ').\nYou need ' + fmtShort(-proceeds) + ' in cash to cover the shortfall.');
+            return;
+        }
+        g.cash += proceeds;
         g.ownedProps.splice(idx, 1);
+        syncDebt();
         g.realEstateAsset = g.ownedProps.reduce(function(sum, x) { return sum + x.price; }, 0);
         renderRealEstate(); updateUI(); playSound('action');
+        if (proceeds < 0) {
+            showEventResult("🏦 オーバーローンでの売却", "売却額がローン残債を下回ったため、差額 " + fmtShort(-proceeds) + " を手元現金で返済して売却しました。\n\n💡 物件価格が下がると、売っても借金が残ることがあります。これがレバレッジのリスクです。", true);
+        }
     }
 
     function renderCareer() {
@@ -3233,7 +3532,6 @@
     function openAcademyDetail(id) {
         let ac = g.academy.find(function(x) { return x.id === id; });
         if (!ac) return;
-        document.getElementById('acad-modal-title').innerText = ac.title;
         let descText = ac.desc;
         if (!g.academyRead[id]) {
             g.academyRead[id] = true;
@@ -3243,8 +3541,10 @@
             updateUI();
             renderAcademy();
         }
-        document.getElementById('acad-modal-desc').innerText = descText;
-        document.getElementById('academy-modal').classList.remove('hidden');
+        openModalQueued('academy-modal', function() {
+            document.getElementById('acad-modal-title').innerText = ac.title;
+            document.getElementById('acad-modal-desc').innerText = descText;
+        });
         playSound('click');
     }
     function closeAcademyModal() { document.getElementById('academy-modal').classList.add('hidden'); }
@@ -3357,7 +3657,7 @@
             age: g.age,
             mode: modeLabel,
             fireAchieved: !!fireAchieved,
-            titleCount: Object.keys(unlockedTitlesMap).length,
+            titleCount: countUnlockedTitles(),
             mythicCount: mythicCount,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(function() {
@@ -3405,9 +3705,12 @@
     }
 
     function endGame() {
+        isGameFinished = true;
+        clearSavedGame();
         if (gameMode !== 'scenario') unlockTitle('t_life_master');
         checkAllTitlesAndRank();
-        // 念のため、結果画面を表示する前に残っている可能性のあるモーダルをすべて閉じておく
+        // 念のため、結果画面を表示する前に残っている可能性のあるモーダルをすべて閉じておく（待ち行列も破棄）
+        modalQueue.length = 0;
         ['rankup-modal', 'event-modal', 'event-result-modal', 'academy-modal', 'quiz-modal', 'nav-popup-modal'].forEach(function(id) {
             const el = document.getElementById(id);
             if (el) el.classList.add('hidden');
@@ -3477,7 +3780,7 @@
     function buildViralShareText() {
         const nw = getNetWorth();
         const rObj = getRankObj(nw);
-        const count = Object.keys(unlockedTitlesMap).length;
+        const count = countUnlockedTitles();
         const shareUrl = getShareGameUrl();
         const urlLine = shareUrl ? ('\n▼ プレイはこちら\n' + shareUrl) : '';
         const isScenario = gameMode === 'scenario';
@@ -3491,12 +3794,12 @@
             return jaHeadline + '\n' +
                    '💰 最終純資産: ' + fmtMoney(nw) + '\n' +
                    '🏆 到達ランク: ' + getRankTitle(rObj.lv) + '\n' +
-                   '🎖️ 獲得称号: ' + count + '/43種' +
+                   '🎖️ 獲得称号: ' + count + '/' + TITLE_TOTAL + '種' +
                    urlLine + '\n#Lets_FIRE #資産形成ゲーム';
         }
         return enHeadline + '\n' +
                '💰 Final Net Worth: ' + fmtMoney(nw) + '\n' +
-               '🏆 Rank: ' + getRankTitle(rObj.lv) + ' | 🎖️ Titles: ' + count + '/43' +
+               '🏆 Rank: ' + getRankTitle(rObj.lv) + ' | 🎖️ Titles: ' + count + '/' + TITLE_TOTAL +
                (shareUrl ? ('\nPlay: ' + shareUrl) : '') + '\n#Lets_FIRE';
     }
 
@@ -3507,7 +3810,7 @@
         const W = canvas.width, H = canvas.height;
         const nw = getNetWorth();
         const rObj = getRankObj(nw);
-        const titleCount = Object.keys(unlockedTitlesMap).length;
+        const titleCount = countUnlockedTitles();
         const isScenario = gameMode === 'scenario';
         const modeLabel = isScenario
             ? historicalScenarios[selectedScenarioId].nameJa
@@ -3561,7 +3864,7 @@
 
         ctx.fillStyle = '#c084fc';
         ctx.font = '700 30px sans-serif';
-        ctx.fillText('🎖️ 獲得称号: ' + titleCount + ' / 40', W / 2, 670);
+        ctx.fillText('🎖️ 獲得称号: ' + titleCount + ' / ' + TITLE_TOTAL, W / 2, 670);
 
         const fireBadgeEl = document.getElementById('fire-badge');
         const fireAchieved = fireBadgeEl && !fireBadgeEl.classList.contains('hidden');
@@ -3606,6 +3909,11 @@
     }
 
     loadSavedTitles();
+    initModalQueueWatcher();
+    refreshContinueButton();
+    // タブを閉じる・裏に回すときにも念のため保存する
+    window.addEventListener('pagehide', saveGameProgress);
+    document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'hidden') saveGameProgress(); });
     initMonetizationView();
     loadAudioPrefs();
     applyAudioPrefsToUI();
