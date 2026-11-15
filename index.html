@@ -1245,7 +1245,29 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         { q: "【第40問：キャピタルゲインとインカムゲイン】\n資産運用で得られる利益のうち、『キャピタルゲイン』と『インカムゲイン（配当・利息など）』の違いとして正しいものは？", options: ["キャピタルゲインは資産を売却して得る価格差の利益、インカムゲインは保有している間に得られる配当・利息などの利益", "キャピタルゲインとインカムゲインは全く同じ意味である", "インカムゲインは資産を売らないと絶対に発生しない"], ans: 0, exp: "【正解：売却益と保有中の利益の違い】\nキャピタルゲインは『安く買って高く売る』ことで得る差益、インカムゲインは株の配当や不動産の賃料、債券の利息など『持っているだけ』で得られる利益です。両方を意識して資産運用を考えるとバランスが取りやすくなります！" }
     ];
 
-    function triggerEduQuiz(isManual, forcedIdx) {
+    // 選択肢の表示順（元の番号の並び）をランダムに作る。正解の判定は元の番号で行う
+    function makeQuizOrder(n) {
+        const order = [];
+        for (let i = 0; i < n; i++) order.push(i);
+        for (let i = n - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const t = order[i]; order[i] = order[j]; order[j] = t;
+        }
+        return order;
+    }
+    // 保存されていた並び順が、その問題の選択肢数と合っているか確かめる（旧セーブには並び順が無い）
+    function isValidQuizOrder(order, n) {
+        if (!Array.isArray(order) || order.length !== n) return false;
+        const seen = {};
+        for (let i = 0; i < n; i++) {
+            const v = order[i];
+            if (typeof v !== 'number' || v < 0 || v >= n || seen[v]) return false;
+            seen[v] = true;
+        }
+        return true;
+    }
+
+    function triggerEduQuiz(isManual, forcedIdx, forcedOrder) {
         if (!isGameStarted) return;
         let qIdx;
         if (typeof forcedIdx === 'number' && eduQuizzes[forcedIdx]) {
@@ -1260,17 +1282,20 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             usedQuizIndices.push(qIdx);
         }
         const qObj = eduQuizzes[qIdx];
-        setPendingFlow({ type: 'quiz', idx: qIdx, manual: !!isManual });
+        // 表示のたびに選択肢を並べ替える（途中でリロードしても同じ並びで出せるよう保存する）
+        const order = isValidQuizOrder(forcedOrder, qObj.options.length) ? forcedOrder : makeQuizOrder(qObj.options.length);
+        setPendingFlow({ type: 'quiz', idx: qIdx, manual: !!isManual, order: order });
 
         openModalQueued('quiz-modal', function() {
         document.getElementById('quiz-question').innerText = qObj.q;
         const cBox = document.getElementById('quiz-choices');
         cBox.innerHTML = '';
-        qObj.options.forEach(function(optText, idx) {
+        order.forEach(function(idx, pos) {
+            const optText = qObj.options[idx];
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'choice-btn';
-            btn.innerHTML = '<strong>選択肢 ' + (idx + 1) + '</strong>' + optText;
+            btn.innerHTML = '<strong>選択肢 ' + (pos + 1) + '</strong>' + optText;
             btn.onclick = function() {
                 document.getElementById('quiz-modal').classList.add('hidden');
                 pendingFlow = null;
@@ -2200,7 +2225,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             const ms = lifeMilestones.find(function(m) { return m.id === pf.id; });
             if (ms) triggerLifeMilestone(ms);
         } else if (pf && pf.type === 'quiz') {
-            triggerEduQuiz(!!pf.manual, pf.idx);
+            triggerEduQuiz(!!pf.manual, pf.idx, pf.order);
         }
     }
 
