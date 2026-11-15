@@ -261,6 +261,7 @@
             <div class="op-feat-item"><span>🎓</span><div id="lbl-op-f2">全24講座＆<br>実践クイズ</div></div>
             <div class="op-feat-item"><span>🎖️</span><div id="lbl-op-f3">神話級を含む<br>全43種の称号</div></div>
         </div>
+        <button type="button" class="op-start-btn hidden" onclick="resumeSavedGame()" id="btn-op-continue" style="margin-bottom:8px; background:linear-gradient(135deg, #38bdf8, #0ea5e9);">▶ 続きから</button>
         <button type="button" class="op-start-btn" onclick="enterSetupFromOpening()" id="lbl-op-start-btn">✨ 資産形成の旅を始める (GAME START)</button>
         <div class="op-sub-actions">
             <button type="button" class="op-sub-btn" onclick="openTitlesModal()" id="lbl-op-titles-btn">🎖️ 獲得称号 (0/43)</button>
@@ -882,13 +883,14 @@
     function resetAllSavedData() {
         playSound('click');
         const msg = currentLang === 'ja'
-            ? "獲得した「称号コレクション」と「チュートリアル完了記録」をすべて消去して、一番最初の状態に戻しますか？"
+            ? "獲得した「称号コレクション」と「チュートリアル完了記録」（途中のセーブデータを含む）をすべて消去して、一番最初の状態に戻しますか？"
             : "Reset all unlocked Titles and Tutorial progress back to the initial state?";
         if (!confirm(msg)) return;
         try {
             localStorage.removeItem('uws_unlocked_titles_v1');
             localStorage.removeItem('uws_tut_done_easy_v1');
             localStorage.removeItem('uws_tut_done_adv_v1');
+            localStorage.removeItem(SAVE_GAME_KEY);
         } catch (e) {}
         unlockedTitlesMap = {};
         alert(currentLang === 'ja' ? "すべての記録を初期化しました！再スタートします。" : "All data reset! Reloading...");
@@ -1021,16 +1023,22 @@
         { q: "【第40問：キャピタルゲインとインカムゲイン】\n資産運用で得られる利益のうち、『キャピタルゲイン』と『インカムゲイン（配当・利息など）』の違いとして正しいものは？", options: ["キャピタルゲインは資産を売却して得る価格差の利益、インカムゲインは保有している間に得られる配当・利息などの利益", "キャピタルゲインとインカムゲインは全く同じ意味である", "インカムゲインは資産を売らないと絶対に発生しない"], ans: 0, exp: "【正解：売却益と保有中の利益の違い】\nキャピタルゲインは『安く買って高く売る』ことで得る差益、インカムゲインは株の配当や不動産の賃料、債券の利息など『持っているだけ』で得られる利益です。両方を意識して資産運用を考えるとバランスが取りやすくなります！" }
     ];
 
-    function triggerEduQuiz(isManual) {
+    function triggerEduQuiz(isManual, forcedIdx) {
         if (!isGameStarted) return;
-        if (usedQuizIndices.length >= eduQuizzes.length) usedQuizIndices = [];
-        let avail = [];
-        for (let i = 0; i < eduQuizzes.length; i++) {
-            if (usedQuizIndices.indexOf(i) === -1) avail.push(i);
+        let qIdx;
+        if (typeof forcedIdx === 'number' && eduQuizzes[forcedIdx]) {
+            qIdx = forcedIdx;
+        } else {
+            if (usedQuizIndices.length >= eduQuizzes.length) usedQuizIndices = [];
+            let avail = [];
+            for (let i = 0; i < eduQuizzes.length; i++) {
+                if (usedQuizIndices.indexOf(i) === -1) avail.push(i);
+            }
+            qIdx = avail[Math.floor(Math.random() * avail.length)];
+            usedQuizIndices.push(qIdx);
         }
-        const qIdx = avail[Math.floor(Math.random() * avail.length)];
-        usedQuizIndices.push(qIdx);
         const qObj = eduQuizzes[qIdx];
+        setPendingFlow({ type: 'quiz', idx: qIdx, manual: !!isManual });
 
         openModalQueued('quiz-modal', function() {
         document.getElementById('quiz-question').innerText = qObj.q;
@@ -1043,6 +1051,7 @@
             btn.innerHTML = '<strong>選択肢 ' + (idx + 1) + '</strong>' + optText;
             btn.onclick = function() {
                 document.getElementById('quiz-modal').classList.add('hidden');
+                pendingFlow = null;
                 if (idx === qObj.ans) {
                     if (g.quizBonusEarned < QUIZ_BONUS_CAP) {
                         let bonus = Math.min(80, QUIZ_BONUS_CAP - g.quizBonusEarned);
@@ -1820,6 +1829,134 @@
         return { isNewBest: isNewBest, prevBest: prevBest };
     }
 
+    // --- 💾 ゲーム進行の自動保存と「続きから」（リロードやスマホのタブ破棄で進行が消えないようにする）---
+    const SAVE_GAME_KEY = 'uws_save_game_v1';
+    let pendingFlow = null;       // 選択待ちのイベント・ライフイベント・クイズ（リロードで回避できないよう保存する）
+    let isGameFinished = false;
+
+    function setPendingFlow(obj) {
+        pendingFlow = obj;
+        saveGameProgress();
+    }
+
+    function saveGameProgress() {
+        if (!isGameStarted || isGameFinished) return;
+        try {
+            const gCopy = {};
+            Object.keys(g).forEach(function(k) { if (k !== 'academy') gCopy[k] = g[k]; });
+            const fireBadgeEl = document.getElementById('fire-badge');
+            const data = {
+                v: 1,
+                savedAt: new Date().toISOString(),
+                gameMode: gameMode,
+                market: market,
+                scenarioId: selectedScenarioId,
+                navStep: navStep,
+                tutorialActive: isForcedTutorialActive,
+                ipoApplied: ipoAppliedThisTurn,
+                usedQuiz: usedQuizIndices,
+                sponsorClaimed: sponsorClaimed,
+                fireShown: !!(fireBadgeEl && !fireBadgeEl.classList.contains('hidden')),
+                news: document.getElementById('news-strip').innerText,
+                pendingFlow: pendingFlow,
+                g: gCopy
+            };
+            localStorage.setItem(SAVE_GAME_KEY, JSON.stringify(data));
+        } catch (e) {}
+    }
+
+    function loadSavedGameData() {
+        try {
+            const raw = localStorage.getItem(SAVE_GAME_KEY);
+            if (!raw) return null;
+            const data = JSON.parse(raw);
+            if (!data || data.v !== 1 || !data.g || typeof data.g.turn !== 'number') return null;
+            if (data.g.turn > (data.g.maxTurns || 66)) return null;
+            return data;
+        } catch (e) { return null; }
+    }
+
+    function clearSavedGame() {
+        try { localStorage.removeItem(SAVE_GAME_KEY); } catch (e) {}
+    }
+
+    // オープニングに「続きから」ボタンを出す（保存データがある場合のみ）
+    function refreshContinueButton() {
+        const btn = document.getElementById('btn-op-continue');
+        if (!btn) return;
+        const data = loadSavedGameData();
+        if (!data) { btn.classList.add('hidden'); return; }
+        const sg = data.g;
+        const assets = (sg.cash || 0) + (sg.indexAsset || 0) + (sg.goldAsset || 0) + (sg.realEstateAsset || 0)
+            + (sg.stocks || []).reduce(function(sum, x) { return sum + x.shares * x.price; }, 0)
+            + (sg.cryptos || []).reduce(function(sum, x) { return sum + x.holdings * x.price; }, 0);
+        const nw = assets - (sg.debt || 0);
+        btn.innerText = currentLang === 'ja'
+            ? '▶ 続きから（' + sg.age + '歳・純資産 ' + fmtShort(nw) + '）'
+            : '▶ Continue (Age ' + sg.age + ' / Net worth ' + fmtShort(nw) + ')';
+        btn.classList.remove('hidden');
+    }
+
+    function resumeSavedGame() {
+        const data = loadSavedGameData();
+        if (!data) { refreshContinueButton(); return; }
+        const academy = g.academy;
+        Object.assign(g, data.g);
+        g.academy = academy;
+        gameMode = data.gameMode || 'easy';
+        market = data.market || 'jp';
+        if (data.scenarioId && historicalScenarios[data.scenarioId]) selectedScenarioId = data.scenarioId;
+        navStep = data.navStep || 99;
+        isForcedTutorialActive = !!data.tutorialActive;
+        ipoAppliedThisTurn = !!data.ipoApplied;
+        usedQuizIndices = Array.isArray(data.usedQuiz) ? data.usedQuiz : [];
+        sponsorClaimed = !!data.sponsorClaimed;
+        syncDebt();
+
+        const isEasy = gameMode === 'easy';
+        document.getElementById('main-tabs-container').classList.toggle('easy-grid', isEasy);
+        document.getElementById('tab-btn-stocks').classList.toggle('hidden', isEasy);
+        document.getElementById('tab-btn-crypto').classList.toggle('hidden', isEasy);
+        document.getElementById('legend-crypto').classList.toggle('hidden', isEasy);
+        if (g.isCorp) {
+            const d0 = i18n[currentLang] || i18n.ja;
+            document.getElementById('corp-status-pill').classList.remove('hidden');
+            document.getElementById('corp-setup-btn').innerText = d0.corpBtnDone;
+            document.getElementById('corp-setup-btn').setAttribute('disabled', 'true');
+        }
+        if (data.fireShown) document.getElementById('fire-badge').classList.remove('hidden');
+
+        isGameStarted = true;
+        lockMarketSelection();
+        document.getElementById('news-strip').innerText = data.news || (i18n[currentLang] || i18n.ja).initNews;
+        document.getElementById('opening-view').classList.add('hidden');
+        document.getElementById('setup-view').classList.add('hidden');
+        document.getElementById('market-bar-wrap').classList.remove('hidden');
+        document.getElementById('header-age-badge').classList.remove('hidden');
+        document.getElementById('game-view').classList.remove('hidden');
+        initMonetizationView();
+        startBGM();
+        updateBgmMood(g.cycleId);
+
+        switchTab('portfolio');
+        renderStocks(); renderCrypto(); renderRealEstate(); renderCareer(); renderAcademy();
+        updateNavBannerText();
+        updateUI();
+        playSound('action');
+
+        if (isForcedTutorialActive) triggerNavStepPopup();
+        // 選択前にリロードされたイベント・クイズは、同じ内容をもう一度表示する
+        const pf = data.pendingFlow;
+        if (pf && pf.type === 'event') {
+            triggerDynamicEvent(pf.idx);
+        } else if (pf && pf.type === 'milestone') {
+            const ms = lifeMilestones.find(function(m) { return m.id === pf.id; });
+            if (ms) triggerLifeMilestone(ms);
+        } else if (pf && pf.type === 'quiz') {
+            triggerEduQuiz(!!pf.manual, pf.idx);
+        }
+    }
+
     function startInitialSimulation() {
         const nameInput = document.getElementById('player-name-input').value.trim();
         if (nameInput) g.name = nameInput;
@@ -1968,6 +2105,7 @@
         document.getElementById('lbl-op-f2').innerText = d.opF2;
         document.getElementById('lbl-op-f3').innerText = d.opF3;
         document.getElementById('lbl-op-start-btn').innerText = d.opStartBtn;
+        if (!isGameStarted) refreshContinueButton();
         document.getElementById('lbl-op-sound-btn').innerText = d.opSoundBtn;
         document.getElementById('lbl-op-reset-btn').innerText = d.opResetBtn;
         document.getElementById('lbl-op-donate-btn').innerText = d.opDonateBtn;
@@ -2657,6 +2795,7 @@
             btn.innerHTML = '<strong>' + d.evSelectPrefix + '</strong>' + c.label;
             btn.onclick = function() {
                 document.getElementById('event-modal').classList.add('hidden');
+                pendingFlow = null;
                 c.action();
                 updateUI();
                 if (c.whatIf) {
@@ -2675,12 +2814,16 @@
         playSound('event');
     }
 
-    function triggerDynamicEvent() {
-        const ev = dynamicEvents[Math.floor(Math.random() * dynamicEvents.length)];
+    function triggerDynamicEvent(forcedIdx) {
+        const idx = (typeof forcedIdx === 'number') ? forcedIdx : Math.floor(Math.random() * dynamicEvents.length);
+        const ev = dynamicEvents[idx];
+        if (!ev) return;
+        setPendingFlow({ type: 'event', idx: idx });
         renderEventModal(ev);
     }
 
     function triggerLifeMilestone(ev) {
+        setPendingFlow({ type: 'milestone', id: ev.id });
         renderEventModal(ev);
     }
 
@@ -2913,6 +3056,7 @@
         drawChart();
         checkAllTitlesAndRank();
         applyStrictLock();
+        saveGameProgress();
     }
 
     function nextTurn() {
@@ -3561,6 +3705,8 @@
     }
 
     function endGame() {
+        isGameFinished = true;
+        clearSavedGame();
         if (gameMode !== 'scenario') unlockTitle('t_life_master');
         checkAllTitlesAndRank();
         // 念のため、結果画面を表示する前に残っている可能性のあるモーダルをすべて閉じておく（待ち行列も破棄）
@@ -3764,6 +3910,10 @@
 
     loadSavedTitles();
     initModalQueueWatcher();
+    refreshContinueButton();
+    // タブを閉じる・裏に回すときにも念のため保存する
+    window.addEventListener('pagehide', saveGameProgress);
+    document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'hidden') saveGameProgress(); });
     initMonetizationView();
     loadAudioPrefs();
     applyAudioPrefsToUI();
