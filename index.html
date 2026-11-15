@@ -2900,11 +2900,15 @@
         const netInflow = Math.round((annualSavings + reCF + stockDiv) * (1 - taxRate));
         g.cash += netInflow;
 
+        // ローン元本の返済（物件価格の4%/年）：現金から支払い、その分だけ借入が減る（現金が足りない分は翌年へ持ち越し）
+        let principalPaid = 0;
         g.ownedProps.forEach(function(p) {
             if (p.debt > 0) {
-                let pay = Math.min(p.debt, Math.round(p.price * 0.04));
+                let pay = Math.min(p.debt, Math.round(p.price * 0.04), Math.max(0, g.cash));
                 p.debt -= pay;
+                g.cash -= pay;
                 g.debt = Math.max(0, g.debt - pay);
+                principalPaid += pay;
             }
         });
 
@@ -2915,6 +2919,9 @@
         const d = i18n[currentLang] || i18n.ja;
         const snippet = d.mktSnippets[Math.floor(Math.random() * d.mktSnippets.length)];
         let newsText = d.turnNews(g.age, fmtShort(netInflow), snippet);
+        if (principalPaid > 0) {
+            newsText += (currentLang === 'ja' ? ' 🏦ローン元本返済 -' + fmtShort(principalPaid) + '。' : ' 🏦 Loan principal repaid -' + fmtShort(principalPaid) + '.');
+        }
         if (hedgePayout > 0) {
             newsText += (currentLang === 'ja' ? ' 🛡️暴落保険が発動し +' + fmtShort(hedgePayout) + '！' : ' 🛡️ Crash insurance paid out +' + fmtShort(hedgePayout) + '!');
         } else if (hedgeWasActive) {
