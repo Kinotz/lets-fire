@@ -229,6 +229,7 @@
     <div class="header">
         <div class="app-title" id="lbl-app-title" onclick="backToOpening()">Lets' FIRE！</div>
         <div class="header-right">
+            <button type="button" class="icon-btn" onclick="toggleMute()" id="btn-mute" aria-pressed="false" aria-label="音を消す（ミュート）">🔊</button>
             <button type="button" class="icon-btn" onclick="openTutorialCornerModal()" id="btn-tutorial" style="border-color:var(--accent-gold); color:var(--accent-gold);">🎓 チュートリアル</button>
             <button type="button" class="icon-btn" onclick="openTitlesModal()" id="btn-titles" style="border-color:var(--accent-purple); color:var(--accent-purple);">🎖️ 称号(0/43)</button>
             <button type="button" class="icon-btn" onclick="openRankingModal()" id="btn-ranking">🏆 ランキング</button>
@@ -619,12 +620,12 @@
     <div class="modal-card">
         <div class="modal-title" id="lbl-snd-title">🔊 BGM・効果音 (SE) 音量設定</div>
         <div class="vol-row">
-            <div class="vol-top"><span id="lbl-bgm-vol">🎵 BGM (背景音楽) 音量</span><strong id="disp-bgm-vol" style="color:var(--accent-blue);">85%</strong></div>
-            <input type="range" class="vol-slider" id="slider-bgm-vol" min="0" max="100" value="85" oninput="changeBgmVolume(this.value)">
+            <div class="vol-top"><span id="lbl-bgm-vol">🎵 BGM (背景音楽) 音量</span><strong id="disp-bgm-vol" style="color:var(--accent-blue);">30%</strong></div>
+            <input type="range" class="vol-slider" id="slider-bgm-vol" min="0" max="100" value="30" oninput="changeBgmVolume(this.value)">
         </div>
         <div class="vol-row">
-            <div class="vol-top"><span id="lbl-se-vol">🔔 SE (効果音・チャイム) 音量</span><strong id="disp-se-vol" style="color:var(--accent-green);">85%</strong></div>
-            <input type="range" class="vol-slider" id="slider-se-vol" min="0" max="100" value="85" oninput="changeSeVolume(this.value)">
+            <div class="vol-top"><span id="lbl-se-vol">🔔 SE (効果音・チャイム) 音量</span><strong id="disp-se-vol" style="color:var(--accent-green);">60%</strong></div>
+            <input type="range" class="vol-slider" id="slider-se-vol" min="0" max="100" value="60" oninput="changeSeVolume(this.value)">
         </div>
         <div style="display:flex; gap:8px; margin-bottom:12px;">
             <button type="button" class="asset-btn buy" style="flex:1; padding:10px;" onclick="playSound('event')" id="btn-se-test">🔔 効果音テスト</button>
@@ -783,8 +784,11 @@
     let isForcedTutorialActive = true;
     let currentAcadFilter = 'all';
     let pendingCrisisLesson = false;
-    let bgmVolume = 0.85;
-    let seVolume = 0.85;
+    // 初期音量は控えめに（保存済みの音量設定がある人は loadAudioPrefs() でそちらを優先）
+    let bgmVolume = 0.3;
+    let seVolume = 0.6;
+    let audioMuted = false;   // ワンタップミュート（音量スライダーの値は保ったまま無音にする）
+    let bgmWanted = false;    // BGMを鳴らす場面か（タブ復帰・ミュート解除時に再開するため）
     let ipoAppliedThisTurn = false;
     let sponsorClaimed = false;
     let usedQuizIndices = [];
@@ -1403,11 +1407,12 @@
     }
 
     function startBGM() {
-        if (bgmTimer) return;
+        bgmWanted = true;
+        if (bgmTimer || audioMuted || document.visibilityState === 'hidden') return;
         initAudio();
         bgmStep = 0;
         bgmTimer = setInterval(function() {
-            if (bgmVolume <= 0.001 || !audioCtx) return;
+            if (audioMuted || bgmVolume <= 0.001 || !audioCtx) return;
             try {
                 const now = audioCtx.currentTime;
                 const activeProg = bgmMood === 'tension' ? bgmProgTension : bgmProg;
@@ -1452,8 +1457,41 @@
         }, 600);
     }
 
+    // BGMを止める（bgmWanted は保つので、タブ復帰やミュート解除で再開できる）
+    function stopBGM() {
+        if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+    }
+
+    // ワンタップでミュート／解除（設定は音量設定と一緒に端末に保存）
+    function toggleMute() {
+        audioMuted = !audioMuted;
+        if (audioMuted) stopBGM();
+        else if (bgmWanted) startBGM();
+        saveAudioPrefs();
+        updateMuteButtonUI();
+        if (!audioMuted) playSound('click');
+    }
+    function updateMuteButtonUI() {
+        const btn = document.getElementById('btn-mute');
+        if (!btn) return;
+        btn.innerText = audioMuted ? '🔇' : '🔊';
+        btn.setAttribute('aria-pressed', audioMuted ? 'true' : 'false');
+        btn.setAttribute('aria-label', audioMuted ? '音を出す（ミュート中）' : '音を消す（ミュート）');
+        btn.title = audioMuted ? 'ミュート中（タップで音を出す）' : 'タップでミュート';
+    }
+
+    // タブを裏に回したら音を止め、戻ったら再開する
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') {
+            stopBGM();
+            if (audioCtx && audioCtx.state === 'running') audioCtx.suspend();
+        } else if (bgmWanted && !audioMuted) {
+            startBGM();
+        }
+    });
+
     function playSound(type) {
-        if (seVolume <= 0.001) return;
+        if (audioMuted || seVolume <= 0.001) return;
         initAudio();
         try {
             const now = audioCtx.currentTime;
@@ -1526,12 +1564,14 @@
     function changeBgmVolume(val) {
         bgmVolume = Number(val) / 100;
         document.getElementById('disp-bgm-vol').innerText = val + '%';
-        if (bgmVolume > 0 && !bgmTimer && isGameStarted) startBGM();
+        if (bgmVolume > 0 && audioMuted) { audioMuted = false; updateMuteButtonUI(); }
+        if (bgmVolume > 0 && bgmWanted) startBGM();
         saveAudioPrefs();
     }
     function changeSeVolume(val) {
         seVolume = Number(val) / 100;
         document.getElementById('disp-se-vol').innerText = val + '%';
+        if (seVolume > 0 && audioMuted) { audioMuted = false; updateMuteButtonUI(); if (bgmWanted) startBGM(); }
         saveAudioPrefs();
     }
     function muteAllAudio() {
@@ -1544,7 +1584,7 @@
     // --- 音量設定の保存・復元（端末に記憶させる）---
     const AUDIO_PREF_KEY = 'uws_audio_vol_v1';
     function saveAudioPrefs() {
-        try { localStorage.setItem(AUDIO_PREF_KEY, JSON.stringify({ bgm: bgmVolume, se: seVolume })); } catch (e) {}
+        try { localStorage.setItem(AUDIO_PREF_KEY, JSON.stringify({ bgm: bgmVolume, se: seVolume, muted: audioMuted })); } catch (e) {}
     }
     function loadAudioPrefs() {
         try {
@@ -1553,6 +1593,7 @@
             const obj = JSON.parse(raw);
             if (typeof obj.bgm === 'number' && obj.bgm >= 0 && obj.bgm <= 1) bgmVolume = obj.bgm;
             if (typeof obj.se === 'number' && obj.se >= 0 && obj.se <= 1) seVolume = obj.se;
+            if (typeof obj.muted === 'boolean') audioMuted = obj.muted;
         } catch (e) {}
     }
     function applyAudioPrefsToUI() {
@@ -1566,6 +1607,7 @@
         if (seSlider) seSlider.value = sePct;
         if (bgmDisp) bgmDisp.innerText = bgmPct + '%';
         if (seDisp) seDisp.innerText = sePct + '%';
+        updateMuteButtonUI();
     }
 
     // --- 5. セットアップ・市場・言語・開始制御 ---
