@@ -31,7 +31,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         /* ピンチ拡大は許可しつつ、ボタン連打時のダブルタップ拡大だけを防ぐ */
         button, select, input, .select-card, .legend-item { touch-action: manipulation; }
-        body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; margin: 0; padding: 8px 8px 80px 8px; display: flex; justify-content: center; line-height: 1.5; }
+        body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; margin: 0; padding: 8px 8px calc(100px + env(safe-area-inset-bottom)) 8px; display: flex; justify-content: center; line-height: 1.5; }
         .container { width: 100%; max-width: 580px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 12px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); position: relative; overflow: hidden; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; gap: 6px; }
         .app-title { font-size: 1.05rem; font-weight: 900; background: linear-gradient(90deg, #fde047, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; cursor: pointer; }
@@ -197,6 +197,9 @@
         .ac-level.adv { background: rgba(192, 132, 252, 0.25); color: var(--accent-purple); }
         .ac-level.pro { background: rgba(251, 191, 36, 0.25); color: var(--accent-gold); }
         .next-btn { background: linear-gradient(135deg, #38bdf8, #0284c7); color: #030712; border: none; width: 100%; padding: 13px; font-size: 0.95rem; font-weight: 900; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4); }
+        .turn-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: linear-gradient(to top, rgba(3,7,18,0.98) 70%, rgba(3,7,18,0)); }
+        .turn-bar-inner { max-width: 580px; margin: 0 auto; }
+        .turn-bar .next-btn { min-height: 56px; font-size: 1.05rem; }
         .hedge-btn { background: var(--panel-bg); border: 1px solid var(--accent-purple); color: var(--accent-purple); width: 100%; padding: 8px; font-size: 0.72rem; font-weight: 800; border-radius: 10px; cursor: pointer; margin-bottom: 8px; }
         .hedge-btn.active { background: rgba(192, 132, 252, 0.22); box-shadow: 0 0 0 1px var(--accent-purple) inset; }
         .hot-flame-tag { font-size: 0.56rem; font-weight: 900; padding: 1px 5px; border-radius: 8px; background: rgba(251, 146, 60, 0.22); color: #fb923c; border: 1px solid #fb923c; margin-left: 3px; animation: pulseGlow 1.5s infinite alternate; }
@@ -544,7 +547,12 @@
         </div>
 
         <button type="button" class="hedge-btn" id="btn-hedge" onclick="toggleHedge()">🛡️ 暴落保険に加入する(現金-50)</button>
-        <button type="button" class="next-btn" id="next-turn-btn" onclick="nextTurn()">次の年へ進む (年齢 +1) →</button>
+        <!-- 毎ターン押すボタンは画面下に固定（スクロール不要）-->
+        <div class="turn-bar" id="turn-bar">
+            <div class="turn-bar-inner">
+                <button type="button" class="next-btn" id="next-turn-btn" onclick="nextTurn()">次の年へ進む (年齢 +1) →</button>
+            </div>
+        </div>
     </div>
 
     <!-- 3. ゲームリザルト画面 -->
