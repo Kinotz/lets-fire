@@ -1371,6 +1371,7 @@
         hotStockId: null, hotStockTurnsLeft: 0, hotStockPopPending: false,
         rivalNetWorth: 600,
         hedgeActive: false,
+        rateHikeYears: 0,
         academyRead: {}, lessonsSeen: {}, firstBuy: { index: false, gold: false, stock: false, crypto: false, realestate: false },
         everBoughtCrypto: false, everBoughtIndivStock: false, everTookDebt: false,
         bestNetWorthBeaten: false, challengeMode: 'none', tutorialIpoRewarded: false,
@@ -2139,7 +2140,7 @@
         g.cycleId = 'boom'; g.cycleTurnsLeft = 5;
         g.hotStockId = null; g.hotStockTurnsLeft = 0; g.hotStockPopPending = false;
         g.rivalNetWorth = 600;
-        g.hedgeActive = false;
+        g.hedgeActive = false; g.rateHikeYears = 0;
         g.academyRead = {}; g.lessonsSeen = {};
         g.firstBuy = { index: false, gold: false, stock: false, crypto: false, realestate: false };
         g.everBoughtCrypto = false; g.everBoughtIndivStock = false; g.everTookDebt = false;
@@ -2498,10 +2499,23 @@
     function countRentalProps() {
         return g.ownedProps.filter(function(p) { return !p.isHome; }).length;
     }
+    // 利上げイベント後、今後3年間はローン金利に +2% を上乗せする
+    const RATE_HIKE_EXTRA = 0.02;
+    const RATE_HIKE_YEARS = 3;
+    function currentLoanRate(spec) {
+        return spec.loanInterest + ((g.rateHikeYears || 0) > 0 ? RATE_HIKE_EXTRA : 0);
+    }
+    // 利上げイベントの共通の打撃：株-8%、今後3年間の金利上乗せ。下がった株の額を返す
+    function applyRateHikeShock() {
+        const drop = Math.round(g.indexAsset * 0.08);
+        g.indexAsset = Math.max(0, g.indexAsset - drop);
+        g.rateHikeYears = RATE_HIKE_YEARS;
+        return drop;
+    }
     // 物件1件あたりの年間CF（家賃 − ローン利息）。マイホームは家賃収入なし・利息のみ
     function calcPropCF(p, spec) {
         const rent = p.isHome ? 0 : p.price * (p.yield + spec.propYieldBoost);
-        return rent - p.debt * spec.loanInterest;
+        return rent - p.debt * currentLoanRate(spec);
     }
 
     function calcRECashFlow() {
@@ -2605,21 +2619,35 @@
         },
         {
             title: "🏦 インフレ加速と中央銀行の緊急利上げ！",
-            desc: "インフレを抑えるため中央銀行が大幅な利上げを実施！借入ローンの金利負担が急増しています！",
-            beginnerTip: "【危機回避ガイド】\n手元現金で借入を少し減らすか、資産全体の目減りを受け止める判断が必要です。",
+            desc: "インフレを抑えるため中央銀行が大幅な利上げを実施！株価は下がり、ローン金利は今後3年間 +2% 上がります。",
+            beginnerTip: "【金利と借金のガイド】\n利上げで株は8%下がります（どちらを選んでも同じ）。\n借入がある人は、繰上返済で金利負担を減らすか、現金を手元に残して急な出費や押し目買いに備えるかを選びます。借入がなければ金利上昇の直撃は受けません。",
             choices: [
-                { label: "💳 手元現金を使って借入の繰上返済＆生活防衛を行う", whatIf: "もし対策せずに耐えていたら、株式が12%、現金も最大120減っていました。", action: function() {
+                { label: function() { return g.debt > 0 ? "💳 手元現金で借入を繰上返済する（最大300）" : "📈 下がった株を現金150で買い増す"; },
+                  whatIf: function() { return g.debt > 0 ? "もし現金を残していたら、借入は減りませんが、急な出費や暴落時の買い増しに使える現金が手元に残っていました。" : "もし現金を残していたら、株は買い増せませんが、急な出費に使える現金が手元に残っていました。"; },
+                  action: function() {
                     recordCrisisSurvived();
-                    let pay = Math.min(g.cash, 150); g.cash -= pay;
-                    if (g.debt > 0) prepayDebt(Math.round(pay * 0.8));
-                    showEventResult("🛡️ 金利上昇を乗り切った！", "現金 -" + fmtShort(pay) + " でローン圧縮を行い、利上げショックを防ぎました！", true);
+                    const stockDrop = applyRateHikeShock();
+                    if (g.debt > 0) {
+                        const paid = prepayDebt(Math.min(g.cash, 300));
+                        g.cash -= paid;
+                        showEventResult("💳 繰上返済で金利負担を軽減", "利上げで株が -" + fmtShort(stockDrop) + " 下がりました。現金 " + fmtShort(paid) + " をすべて元本の返済に充て、借入は残り " + fmtShort(g.debt) + " になりました。\n（今後3年間は残った借入にだけ +2% の金利がかかります。返済した分、手元の現金は減っています）", true);
+                    } else {
+                        const buy = Math.min(g.cash, 150);
+                        g.cash -= buy; g.indexAsset += buy;
+                        if (buy > 0) g.everBoughtAsset = true;
+                        showEventResult("📈 下がった株を買い増し", "借入がないので金利上昇の直撃はありません。利上げで株が -" + fmtShort(stockDrop) + " 下がったところで、現金 " + fmtShort(buy) + " 分を買い増しました。", true);
+                    }
                 }},
-                { label: "🌀 何も対策せずにそのまま耐える", whatIf: "もし繰上返済していたら、現金最大150でローンを圧縮し、株式や現金へのダメージを抑えられていました。", action: function() {
+                { label: function() { return g.debt > 0 ? "💵 現金を手元に残す（生活防衛・押し目買いに備える）" : "💵 現金を手元に残す"; },
+                  whatIf: function() { return g.debt > 0 ? "もし繰上返済していたら、現金最大300を借入の返済に充て、今後3年間の上乗せ金利の負担を減らせていました。" : "もし買い増していたら、現金150で下がった株を仕込めていました。"; },
+                  action: function() {
                     recordCrisisSurvived();
-                    let stockDrop = Math.round(g.indexAsset * 0.12);
-                    let cashDrop = Math.min(g.cash, 120);
-                    g.indexAsset = Math.max(0, g.indexAsset - stockDrop); g.cash -= cashDrop;
-                    showEventResult("📉 インフレ＆利上げの打撃…", "現金が -" + fmtShort(cashDrop) + "、株式が -" + fmtShort(stockDrop) + " 減少しました！", true);
+                    const stockDrop = applyRateHikeShock();
+                    if (g.debt > 0) {
+                        showEventResult("💵 現金を温存", "利上げで株が -" + fmtShort(stockDrop) + " 下がりました。借入 " + fmtShort(g.debt) + " には今後3年間 +2% の金利がかかりますが、手元の現金は守りました。", true);
+                    } else {
+                        showEventResult("💵 現金を温存", "借入がないので金利上昇の直撃はありません。利上げで株が -" + fmtShort(stockDrop) + " 下がりましたが、現金は手元に残しました。", true);
+                    }
                 }}
             ]
         },
@@ -2955,15 +2983,17 @@
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'choice-btn';
-            btn.innerHTML = '<strong>' + d.evSelectPrefix + '</strong>' + c.label;
+            const labelText = (typeof c.label === 'function') ? c.label() : c.label;
+            const whatIfText = (typeof c.whatIf === 'function') ? c.whatIf() : c.whatIf;
+            btn.innerHTML = '<strong>' + d.evSelectPrefix + '</strong>' + labelText;
             btn.onclick = function() {
                 document.getElementById('event-modal').classList.add('hidden');
                 pendingFlow = null;
                 c.action();
                 updateUI();
-                if (c.whatIf) {
+                if (whatIfText) {
                     const descEl = document.getElementById('ev-res-desc');
-                    if (descEl) descEl.innerText = descEl.innerText + "\n\n📊 もし別の選択をしていたら:\n" + c.whatIf;
+                    if (descEl) descEl.innerText = descEl.innerText + "\n\n📊 もし別の選択をしていたら:\n" + whatIfText;
                 }
                 if (pendingCrisisLesson) {
                     pendingCrisisLesson = false;
@@ -3456,6 +3486,8 @@
             }
         });
         syncDebt();
+        const rateHikeNow = (g.rateHikeYears || 0) > 0 && g.debt > 0;
+        if ((g.rateHikeYears || 0) > 0) g.rateHikeYears--;
 
         g.turn++;
         g.age++;
@@ -3469,6 +3501,9 @@
         let newsText = d.turnNews(g.age, fmtShort(netInflow), snippet);
         if (principalPaid > 0) {
             newsText += (' 🏦ローン元本返済 -' + fmtShort(principalPaid) + '。');
+        }
+        if (rateHikeNow) {
+            newsText += (' 📈利上げでローン金利+2%（残り' + g.rateHikeYears + '年）。');
         }
         if (hedgePayout > 0) {
             newsText += (' 🛡️暴落保険が発動し +' + fmtShort(hedgePayout) + '！');
