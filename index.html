@@ -88,6 +88,8 @@
     max-width: 100%;
 }
 
+        .op-disclaimer-note { font-size: 0.75rem; color: var(--text-sub); margin: 10px 0 0; line-height: 1.45; }
+        .res-disclaimer-note { font-size: 0.75rem; color: var(--text-sub); text-align: left; line-height: 1.5; margin: 0 0 10px; }
         .asset-note { font-size: 0.75rem; color: var(--text-sub); line-height: 1.45; margin: 2px 2px 6px; }
         .market-switcher { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; background: #050811; padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
         .mkt-btn { background: transparent; border: 1px solid transparent; color: var(--text-sub); font-size: 0.875rem; font-weight: 800; padding: 6px 2px; border-radius: 6px; cursor: pointer; text-align: center; }
@@ -295,6 +297,7 @@
                     <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openTitlesModal)" id="btn-titles">🎖️ 称号(0/43)</button>
                     <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openRankingModal)" id="btn-ranking">🏆 ランキング</button>
                     <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openSoundModal)" id="btn-sound">🔊 音量設定</button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openDisclaimerModal)" id="btn-disclaimer">📄 免責事項</button>
                 </div>
             </div>
         </div>
@@ -320,10 +323,12 @@
             <div class="op-feat-item"><span>🎓</span><div id="lbl-op-f2">全24講座＆<br>実践クイズ</div></div>
             <div class="op-feat-item"><span>🎖️</span><div id="lbl-op-f3">神話級を含む<br>全43種の称号</div></div>
         </div>
+        <div class="op-disclaimer-note">※ 金融の仕組みを学ぶための教育用ゲームです。投資の勧誘や助言ではありません。</div>
         <div class="op-sub-actions">
             <button type="button" class="op-sub-btn" onclick="openTitlesModal()" id="lbl-op-titles-btn">🎖️ 獲得称号 (0/43)</button>
             <button type="button" class="op-sub-btn" onclick="openSoundModal()" id="lbl-op-sound-btn">🔊 音量設定</button>
             <button type="button" class="op-sub-btn reset" onclick="resetAllSavedData()" id="lbl-op-reset-btn">🗑️ データ初期化</button>
+            <button type="button" class="op-sub-btn" onclick="openDisclaimerModal()" id="lbl-op-disclaimer-btn">📄 免責事項</button>
             <button type="button" class="op-sub-btn donate donate-elem hidden" onclick="openMonetizeLink('donate')" id="lbl-op-donate-btn">☕ 開発者を応援</button>
         </div>
     </div>
@@ -641,6 +646,7 @@
             </div>
         </div>
         <button type="button" class="promo-link-btn donate-btn donate-elem hidden" style="width:100%; margin-bottom:12px;" onclick="openMonetizeLink('donate')" id="btn-res-donate">☕ このゲームが面白かったら開発者を応援する（投げ銭・サポート）</button>
+        <div class="res-disclaimer-note">※ この結果はゲーム内の設定によるもので、現実の将来の運用成果を示すものではありません。 <button type="button" class="term-btn" onclick="openDisclaimerModal()" id="btn-res-disclaimer">📄 免責事項</button></div>
         <button type="button" class="next-btn" onclick="location.reload()" id="lbl-retry-btn">もう一度オープニングから遊ぶ</button>
     </div>
 
@@ -2104,6 +2110,25 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const d = i18n.ja;
         document.getElementById('info-modal-title').innerText = d.mktGuideTitle;
         document.getElementById('info-modal-body').innerText = d.mktGuideBody;
+        document.getElementById('info-modal').classList.remove('hidden');
+        playSound('click');
+    }
+
+    // --- 📄 免責事項（オープニング・メニュー・結果画面・フッターから開ける）---
+    const DISCLAIMER_TITLE = '📄 免責事項（ご利用にあたって）';
+    const DISCLAIMER_BODY = [
+        '・このゲームは、お金や投資の仕組みを学ぶための教育用のシミュレーションゲームです。',
+        '・特定の金融商品・証券会社・投資方法をすすめたり、勧誘したりするものではなく、投資助言でもありません。',
+        '・ゲーム内の利回り・値動き・税率・年金・制度などは、遊びやすくするために簡略化した「ゲーム用の設定」で、現実とは異なります。',
+        '・ゲームの結果は、現実の将来の運用成果を示したり保証したりするものではありません。現実の投資には元本割れのリスクがあります。',
+        '・クイズや講座の内容は作成時点の情報をもとにしています。税制や社会保障の制度は変わることがあるため、実際に判断するときは金融庁・国税庁・日本年金機構などの公的機関の最新情報や、専門家にご確認ください。',
+        '・投資に関する最終的な判断は、ご自身の責任で行ってください。'
+    ].join('\n\n');
+    function openDisclaimerModal() {
+        document.getElementById('info-modal-title').innerText = DISCLAIMER_TITLE;
+        const body = document.getElementById('info-modal-body');
+        body.innerHTML = '';
+        body.innerText = DISCLAIMER_BODY;
         document.getElementById('info-modal').classList.remove('hidden');
         playSound('click');
     }
