@@ -559,7 +559,7 @@
             </div>
         </div>
 
-        <button type="button" class="hedge-btn" id="btn-hedge" onclick="toggleHedge()">🛡️ 暴落保険に加入する(現金-50)</button>
+        <button type="button" class="hedge-btn" id="btn-hedge" onclick="toggleHedge()">🛡️ 暴落保険に加入（株の年間下落5%超を補償）</button>
 
         <!-- 優先度の低い情報（グラフ・AIコーチ）は操作エリアの下にまとめ、折りたためるようにする -->
         <details class="insight-panel" id="insight-panel" open>
@@ -921,10 +921,38 @@
     // --- ライバル投資家（何もせず「放置インデックス」を続けた場合の目安）---
     const RIVAL_ANNUAL_DEPOSIT = 160;
 
-    // --- 暴落保険（任意加入のヘッジ。市場サイクルに応じた確率で「クラッシュ」が発生し、発動するとプレミアムの3倍を払い出す）---
-    const HEDGE_PREMIUM = 50;
-    const HEDGE_PAYOUT = 150;
-    const HEDGE_CRASH_CHANCE = { boom: 0.08, bubble: 0.15, correction: 0.45, recession: 0.25 };
+    // --- 暴落保険（任意加入のヘッジ）---
+    // 加入時のインデックス株の評価額を補償対象とし、その年の実際の下落率（市場の値動き＋同じ年の暴落系イベント）が
+    // 5%を超えた分を補償する。保険料率は市場サイクルとモードで変わり、長い目で見ると期待値がややマイナスになるよう設定する
+    const HEDGE_DEDUCTIBLE = 0.05;
+    const HEDGE_MIN_PREMIUM = 10;
+    const HEDGE_RATE = {
+        easy:   { boom: 0.006, bubble: 0.012, correction: 0.025, recession: 0.015 },
+        normal: { boom: 0.006, bubble: 0.012, correction: 0.025, recession: 0.015 },
+        hard:   { boom: 0.006, bubble: 0.012, correction: 0.025, recession: 0.015 }
+    };
+    const LEGACY_HEDGE_PREMIUM = 50; // 旧版の保険料（旧セーブで加入中だった場合の返金額）
+    function getHedgeRate() {
+        const t = HEDGE_RATE[gameMode] || HEDGE_RATE.normal;
+        return t[g.cycleId] || t.boom;
+    }
+    function quoteHedgePremium() {
+        return Math.max(HEDGE_MIN_PREMIUM, Math.round(g.indexAsset * getHedgeRate()));
+    }
+    // 暴落系イベントでインデックス株が下がったときに呼ぶ（保険が効いていれば、その年の下落率に加算して補償する）
+    let lastIndexShock = null;
+    function noteIndexShock(base, drop) {
+        if (base > 0 && drop > 0) lastIndexShock = { rate: drop / base };
+    }
+    // 下落率を加算し、まだ払っていない補償額を支払う（支払った額を返す）
+    function applyHedgeLoss(lossRate) {
+        if (!g.hedgeInForce) return 0;
+        g.hedgeYearLoss = (g.hedgeYearLoss || 0) + Math.max(0, lossRate);
+        const due = Math.round((g.hedgeInForceCover || 0) * Math.max(0, g.hedgeYearLoss - HEDGE_DEDUCTIBLE));
+        const pay = Math.max(0, due - (g.hedgeYearPaid || 0));
+        if (pay > 0) { g.cash += pay; g.hedgeYearPaid = (g.hedgeYearPaid || 0) + pay; }
+        return pay;
+    }
 
     const rankTiers = [
         { lv: 0, min: 0, bonus: 0 },
@@ -1124,7 +1152,7 @@
         firstCrisisSurvived: { title: "暴落を乗り越える力", desc: "市場が暴落した時にパニックで売ってしまうと、損失を『確定』させてしまいます。\n\n歴史的に見ると、市場はいつか回復する傾向があり、長期で持ち続けた人ほど資産を伸ばしやすいというデータがあります。暴落は『怖いニュース』であり『売る理由』ではありません。" },
         firstCycle: { title: "市場サイクルを理解する", desc: "市場には『好景気→過熱（バブル）→調整→不景気→好景気…』という周期的なサイクルがあります。\n\n今がどのサイクルにいるかを意識すると、相場に振り回されず『今は我慢の時期』『今は攻めの時期』と冷静に判断しやすくなります。" },
         firstHotStock: { title: "『旬のテーマ株』の罠に注意", desc: "SNSやニュースで話題の『旬のテーマ株』は短期的に大きく上昇することがありますが、ブームが去ると急落しやすい傾向があります。\n\n『みんなが買っているから』という理由だけで飛びつく（＝FOMO）のは危険信号。流行に乗るなら、下落リスクも覚悟しておきましょう。" },
-        firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "暴落保険は、少ない保険料（コスト）を払って、暴落が起きた時に大きな補償を受け取れる仕組みです。実際の金融市場の『オプション取引』や『プットオプション』に近い考え方です。\n\n保険料は暴落が起きなければ『使われずに消える』コストである点も覚えておきましょう。" }
+firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "暴落保険は、保険料を払って、インデックス株がその年に5%を超えて下がった分を補償してもらう仕組みです。実際の金融市場の『プットオプション』に近い考え方です。\n\n保険料は相場が荒れている時ほど高くなり、長い目で見ると払った保険料の方が少し多くなります（保険会社の取り分）。保険は『得をするため』ではなく『大きな損を避けるため』に使うものです。" }
     };
     function showOnePointLesson(key) {
         if (g.lessonsSeen[key]) return;
@@ -1370,7 +1398,8 @@
         cycleId: 'boom', cycleTurnsLeft: 5,
         hotStockId: null, hotStockTurnsLeft: 0, hotStockPopPending: false,
         rivalNetWorth: 600,
-        hedgeActive: false,
+        hedgeActive: false, hedgeCover: 0, hedgePremium: 0,
+        hedgeInForce: false, hedgeInForceCover: 0, hedgeYearLoss: 0, hedgeYearPaid: 0,
         rateHikeYears: 0,
         academyRead: {}, lessonsSeen: {}, firstBuy: { index: false, gold: false, stock: false, crypto: false, realestate: false },
         everBoughtCrypto: false, everBoughtIndivStock: false, everTookDebt: false,
@@ -1487,8 +1516,8 @@
             rivalLabel: "🤖 ライバル投資家(放置インデックス)",
             rivalAheadMsg: "あなたが優勢！",
             rivalBehindMsg: "追い越される…！",
-            hedgeBtnOff: "🛡️ 暴落保険に加入する(現金-50)",
-            hedgeBtnOn: "🛡️ 保険加入中（今年の暴落に備え済み）",
+            hedgeBtnOff: function(p, r) { return "🛡️ 暴落保険に加入（保険料 " + p + "・株の" + r + "%／株の年間下落5%超を補償）"; },
+            hedgeBtnOn: function(c) { return "🛡️ 保険加入中（補償対象: 株 " + c + "／タップで解約・返金）"; },
             hotStockTag: "🔥 旬の注目株"
         }
     };
@@ -2508,6 +2537,7 @@
     // 利上げイベントの共通の打撃：株-8%、今後3年間の金利上乗せ。下がった株の額を返す
     function applyRateHikeShock() {
         const drop = Math.round(g.indexAsset * 0.08);
+        noteIndexShock(g.indexAsset, drop);
         g.indexAsset = Math.max(0, g.indexAsset - drop);
         g.rateHikeYears = RATE_HIKE_YEARS;
         return drop;
@@ -2555,10 +2585,12 @@
                     if (g.goldAsset >= 200) {
                         let goldGain = Math.round(g.goldAsset * 0.20);
                         let stockLoss = Math.round(g.indexAsset * 0.08);
+                        noteIndexShock(g.indexAsset, stockLoss);
                         g.goldAsset += goldGain; g.indexAsset = Math.max(0, g.indexAsset - stockLoss);
                         showEventResult("🛡️ ゴールド防衛発動！", "株が -" + fmtShort(stockLoss) + " 下落しましたが、金が +" + fmtShort(goldGain) + " 高騰して資産を守り抜きました！", false);
                     } else {
                         let loss = Math.max(80, Math.round(g.indexAsset * 0.22));
+                        noteIndexShock(g.indexAsset, Math.min(loss, g.indexAsset));
                         g.indexAsset = Math.max(0, g.indexAsset - loss);
                         showEventResult("📉 暴落の直撃…", "金の保有が少なかったため、インデックス株が -" + fmtShort(loss) + " 減少しました。", true);
                     }
@@ -2566,6 +2598,7 @@
                 { label: "💦 パニックになり、株を一部損切りして現金に逃げる", whatIf: "もし金防衛で耐えていたら、金を200以上持っていれば金が20%値上がりして株の下落(8%)を相殺できていました（金が不足していれば株が22%減少）。", action: function() {
                     recordCrisisSurvived();
                     let loss = Math.max(100, Math.round(g.indexAsset * 0.26));
+                    noteIndexShock(g.indexAsset, Math.min(loss, g.indexAsset));
                     g.indexAsset = Math.max(0, g.indexAsset - loss);
                     showEventResult("💸 狼狽売りで大損失…", "底値売りしてしまい、株式資産が -" + fmtShort(loss) + " 失われました。", true);
                 }}
@@ -2789,7 +2822,7 @@
             choices: [
                 { label: "🦅 現金120で割安になった株を逆張り買い増しする！", whatIf: "もし静観していたら、現金120は手元に残り、保有株の-10%だけで済んでいました。", action: function() {
                     recordCrisisSurvived();
-                    let drop = Math.round(g.indexAsset * 0.10); g.indexAsset = Math.max(0, g.indexAsset - drop);
+                    let drop = Math.round(g.indexAsset * 0.10); noteIndexShock(g.indexAsset, drop); g.indexAsset = Math.max(0, g.indexAsset - drop);
                     if (g.cash >= 120) {
                         g.cash -= 120; g.everBoughtAsset = true; unlockTitle('t_dip_buyer');
                         if (Math.random() < 0.60) {
@@ -2805,7 +2838,7 @@
                 }},
                 { label: "🛡️ 嵐が過ぎるのを静観する", whatIf: "もし逆張り買い増ししていたら、現金120を使い、60%の確率で+240、40%の確率で+60になる賭けでした（平均では+48の得）。", action: function() {
                     recordCrisisSurvived();
-                    let drop = Math.round(g.indexAsset * 0.10); g.indexAsset = Math.max(0, g.indexAsset - drop);
+                    let drop = Math.round(g.indexAsset * 0.10); noteIndexShock(g.indexAsset, drop); g.indexAsset = Math.max(0, g.indexAsset - drop);
                     showEventResult("☔ セクター調整（株 -" + fmtShort(drop) + "）", "株式評価額が -" + fmtShort(drop) + " 減少しましたが、現金は手元に残しました。", true);
                 }}
             ]
@@ -2989,11 +3022,18 @@
             btn.onclick = function() {
                 document.getElementById('event-modal').classList.add('hidden');
                 pendingFlow = null;
+                lastIndexShock = null;
                 c.action();
+                const hedgePay = lastIndexShock ? applyHedgeLoss(lastIndexShock.rate) : 0;
+                lastIndexShock = null;
                 updateUI();
                 if (whatIfText) {
                     const descEl = document.getElementById('ev-res-desc');
                     if (descEl) descEl.innerText = descEl.innerText + "\n\n📊 もし別の選択をしていたら:\n" + whatIfText;
+                }
+                if (hedgePay > 0) {
+                    const descH = document.getElementById('ev-res-desc');
+                    if (descH) descH.innerText = descH.innerText + "\n\n🛡️ 暴落保険が発動！今年の株の下落のうち5%を超えた分として +" + fmtShort(hedgePay) + " が支払われました。";
                 }
                 if (pendingCrisisLesson) {
                     pendingCrisisLesson = false;
@@ -3230,16 +3270,23 @@
     }
 
     function toggleHedge() {
+        if (gameMode === 'scenario') return;
         if (g.hedgeActive) {
-            g.cash += HEDGE_PREMIUM;
-            g.hedgeActive = false;
+            // 解約：払った保険料を返金する（旧セーブで加入中だった場合は旧保険料を返す）
+            g.cash += (g.hedgePremium || LEGACY_HEDGE_PREMIUM);
+            g.hedgeActive = false; g.hedgePremium = 0; g.hedgeCover = 0;
         } else {
-            if (g.cash < HEDGE_PREMIUM) {
-                showToast('保険料（現金50）が足りません！', 'warn');
+            if (g.indexAsset < 100) {
+                showToast('🛡️ 暴落保険はインデックス株の下落を補償します。インデックス株を100以上持つと加入できます', 'warn');
                 return;
             }
-            g.cash -= HEDGE_PREMIUM;
-            g.hedgeActive = true;
+            const premium = quoteHedgePremium();
+            if (g.cash < premium) {
+                showToast('保険料（現金' + Math.round(premium) + '）が足りません！', 'warn');
+                return;
+            }
+            g.cash -= premium;
+            g.hedgeActive = true; g.hedgePremium = premium; g.hedgeCover = g.indexAsset;
             if (isFinalNavStep()) showOnePointLesson('firstHedge');
         }
         updateUI();
@@ -3351,8 +3398,11 @@
 
         const hedgeBtn = document.getElementById('btn-hedge');
         if (hedgeBtn) {
-            hedgeBtn.innerText = g.hedgeActive ? d.hedgeBtnOn : d.hedgeBtnOff;
-            hedgeBtn.className = 'hedge-btn' + (g.hedgeActive ? ' active' : '');
+            hedgeBtn.classList.toggle('hidden', gameMode === 'scenario');
+            hedgeBtn.innerText = g.hedgeActive
+                ? d.hedgeBtnOn(fmtShort(g.hedgeCover || g.indexAsset))
+                : d.hedgeBtnOff(fmtShort(quoteHedgePremium()), (getHedgeRate() * 100).toFixed(1));
+            hedgeBtn.className = 'hedge-btn' + (g.hedgeActive ? ' active' : '') + (gameMode === 'scenario' ? ' hidden' : '');
         }
 
         updateIpoButtonUI();
@@ -3371,6 +3421,10 @@
 
         g.prevNetWorth = getNetWorth();
         ipoAppliedThisTurn = false;
+        // 前の年の保険はここで終了（前の年のイベントまでが補償期間）
+        g.hedgeInForce = false; g.hedgeInForceCover = 0; g.hedgeYearLoss = 0; g.hedgeYearPaid = 0;
+        // 旧セーブで加入中だった場合は、補償対象を今のインデックス評価額で補う
+        if (g.hedgeActive && !(g.hedgeCover > 0)) g.hedgeCover = g.indexAsset;
         document.getElementById('title-toast').classList.add('hidden');
         chartHoverIdx = null;
 
@@ -3456,16 +3510,13 @@
         // --- ライバル投資家（何もせず放置インデックスを続けた場合の目安）---
         g.rivalNetWorth = Math.round(g.rivalNetWorth * (1 + indRate)) + RIVAL_ANNUAL_DEPOSIT;
 
-        // --- 暴落保険の判定（市場サイクルに応じた確率でクラッシュ判定。加入中に当たれば配当）---
+        // --- 暴落保険：今年の市場の下落率で補償し、同じ年の暴落系イベントにも補償を続ける ---
         let hedgePayout = 0;
         const hedgeWasActive = g.hedgeActive;
         if (g.hedgeActive) {
-            const crashChance = HEDGE_CRASH_CHANCE[g.cycleId] || 0.08;
-            if (Math.random() < crashChance) {
-                hedgePayout = HEDGE_PAYOUT;
-                g.cash += hedgePayout;
-            }
-            g.hedgeActive = false;
+            g.hedgeInForce = true; g.hedgeInForceCover = g.hedgeCover; g.hedgeYearLoss = 0; g.hedgeYearPaid = 0;
+            hedgePayout = applyHedgeLoss(-indRate);
+            g.hedgeActive = false; g.hedgeCover = 0; g.hedgePremium = 0;
         }
 
         const annualSavings = Math.round(g.salary * 0.35);
@@ -3508,7 +3559,7 @@
         if (hedgePayout > 0) {
             newsText += (' 🛡️暴落保険が発動し +' + fmtShort(hedgePayout) + '！');
         } else if (hedgeWasActive) {
-            newsText += (' （今年は保険の発動なし）');
+            newsText += (' 🛡️今年の株の下落は5%以内（この年の暴落イベントも補償対象です）');
         }
         if (hotPopInfo) {
             newsText += (' 🔥' + hotPopInfo.name + 'がブームの反動で -' + hotPopInfo.pct + '%下落…！');
