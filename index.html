@@ -953,9 +953,11 @@
     const HEDGE_DEDUCTIBLE = 0.05;
     const HEDGE_MIN_PREMIUM = 10;
     const HEDGE_RATE = {
-        easy:   { boom: 0.006, bubble: 0.012, correction: 0.025, recession: 0.015 },
-        normal: { boom: 0.006, bubble: 0.012, correction: 0.025, recession: 0.015 },
-        hard:   { boom: 0.006, bubble: 0.012, correction: 0.025, recession: 0.015 }
+        // 料率は自動シミュレーションで測った期待補償率（年あたり・補償対象比）の約1.1〜1.15倍
+        // 例：スタンダードの期待補償率 好景気0.36%・過熱0.25%・調整0.69%・不景気0.44%
+        easy:   { boom: 0.003, bubble: 0.003, correction: 0.004, recession: 0.0025 },
+        normal: { boom: 0.004, bubble: 0.003, correction: 0.008, recession: 0.005 },
+        hard:   { boom: 0.008, bubble: 0.009, correction: 0.019, recession: 0.011 }
     };
     const LEGACY_HEDGE_PREMIUM = 50; // 旧版の保険料（旧セーブで加入中だった場合の返金額）
     function getHedgeRate() {
