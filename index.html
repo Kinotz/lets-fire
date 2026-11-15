@@ -128,7 +128,7 @@
         .growth-pill.minus { background: rgba(244, 63, 94, 0.2); color: var(--accent-red); }
         .breakdown-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #030712; margin-bottom: 6px; border: 1px solid var(--border); }
         .bar-seg { height: 100%; transition: width 0.4s ease; }
-        .legend-row { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.75rem; color: var(--text-sub); margin-bottom: 8px; font-weight: 800; }
+        .legend-row { display: flex; flex-wrap: wrap; gap: 0 10px; font-size: 0.75rem; color: var(--text-sub); margin-bottom: 8px; font-weight: 800; }
         .legend-item { display: flex; align-items: center; gap: 3px; cursor: pointer; background: none; border: none; padding: 0; color: inherit; font: inherit; }
         .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
         .cf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; border-top: 1px solid var(--border); padding-top: 8px; text-align: center; }
@@ -258,6 +258,18 @@
         .dialog-actions { display: flex; gap: 8px; }
         .dialog-actions button { flex: 1; min-height: 48px; font-size: 0.95rem; font-weight: 900; }
         .dialog-copy-text { width: 100%; min-height: 120px; background: #050811; color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; padding: 8px; font-size: 0.875rem; margin-bottom: 12px; resize: vertical; font-family: inherit; }
+        /* タップ領域：指で押しやすいよう、ボタン類は高さ44px以上にする */
+        .op-sub-btn, .mkt-btn, .m-tab, .asset-btn, .hedge-btn, .ac-filter-btn, .challenge-chip, .nav-skip-btn, .icon-btn, .sponsor-reward-btn, .promo-link-btn, .next-btn, .choice-btn, .share-card-dl-btn, .roadmap-head, .title-toast { min-height: 44px; }
+        .m-tab, .asset-btn, .mkt-btn, .ac-filter-btn, .challenge-chip, .nav-skip-btn { display: inline-flex; align-items: center; justify-content: center; text-align: center; }
+        .share-card-dl-btn { display: flex; align-items: center; justify-content: center; }
+        .asset-btn { min-width: 56px; padding-left: 8px; padding-right: 8px; }
+        .name-input, #ranking-name-input { min-height: 44px; }
+        input[type="range"].vol-slider { height: 44px; }
+        /* 見出しの中にある小さな「？」ボタンや凡例は、見た目の大きさを変えずに押せる範囲だけを広げる */
+        .term-btn, .legend-item { position: relative; }
+        .term-btn::after { content: ''; position: absolute; left: -4px; right: -4px; top: -12px; bottom: -12px; }
+        .legend-item { min-height: 32px; }
+        .legend-item::after { content: ''; position: absolute; left: 0; right: 0; top: -6px; bottom: -6px; }
         .hidden { display: none !important; }
         /* 「視差効果を減らす」設定の端末では、点滅・浮遊などのループアニメーションと画面遷移の動きを止める */
         @media (prefers-reduced-motion: reduce) {
