@@ -84,6 +84,7 @@
         .market-switcher { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; background: #050811; padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
         .mkt-btn { background: transparent; border: 1px solid transparent; color: var(--text-sub); font-size: 0.68rem; font-weight: 800; padding: 6px 2px; border-radius: 6px; cursor: pointer; text-align: center; }
         .mkt-btn.active { background: var(--card-bg); color: var(--accent-blue); border-color: var(--accent-blue); }
+        .mkt-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .market-info-bar { background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 6px 8px; margin-bottom: 10px; font-size: 0.64rem; color: #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
         .cycle-badge { text-align: center; font-size: 0.64rem; font-weight: 900; padding: 4px 6px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); background: var(--panel-bg); color: var(--text-sub); transition: background 0.3s, color 0.3s, border-color 0.3s; }
         .cycle-badge.cycle-boom { background: rgba(16, 185, 129, 0.16); color: var(--accent-green); border-color: var(--accent-green); }
@@ -277,7 +278,7 @@
             <button type="button" class="mkt-btn" id="mkt-btn-gl" onclick="switchMarket('gl')">🌐 グローバル</button>
         </div>
         <div class="market-info-bar">
-            <span id="market-desc-inline">🇯🇵 <strong>日本市場 (JPY)</strong>: 超低金利(1.5%)で不動産ローンが圧倒的に有利！安定成長と家賃で手堅くFIREできる市場。</span>
+            <span id="market-desc-inline">🇯🇵 <strong>日本市場 (JPY)</strong>: 超低金利(1.5%)で不動産ローンが圧倒的に有利！安定成長と家賃で手堅くFIREできる市場。<br>※ 市場はゲーム開始時に固定され、プレイ中は変更できません</span>
             <span class="term-btn" onclick="openMarketGuideModal()" id="btn-mkt-guide" style="white-space:nowrap;">？市場の違い</span>
         </div>
         <div class="cycle-badge cycle-boom" id="cycle-badge">📈 好景気</div>
@@ -1728,15 +1729,28 @@
     };
 
     function switchMarket(m) {
+        // 市場はゲーム開始時に固定（プレイ中に有利な市場へ乗り換えられないようにする）
+        if (isGameStarted) return;
         document.querySelectorAll('.mkt-btn').forEach(function(el) { el.classList.remove('active'); });
         document.getElementById('mkt-btn-' + m).classList.add('active');
         market = m;
         const d = i18n[currentLang] || i18n.ja;
-        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market];
-        if (isGameStarted) {
-            renderStocks(); renderCrypto(); renderRealEstate(); renderCareer(); updateUI();
-        }
+        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market] + getMarketLockNote();
         playSound('click');
+    }
+
+    function getMarketLockNote() {
+        if (!isGameStarted) return currentLang === 'ja' ? '<br>※ 市場はゲーム開始時に固定され、プレイ中は変更できません' : '<br>* The market is locked once the game starts.';
+        return currentLang === 'ja' ? '<br>🔒 市場はゲーム開始時に固定されています（プレイ中は変更できません）' : '<br>🔒 Market is locked for this game.';
+    }
+    // ゲーム開始時に、選択中以外の市場ボタンを無効化する
+    function lockMarketSelection() {
+        document.querySelectorAll('.mkt-btn').forEach(function(el) {
+            el.classList.toggle('active', el.id === 'mkt-btn-' + market);
+            el.disabled = el.id !== 'mkt-btn-' + market;
+        });
+        const d = i18n[currentLang] || i18n.ja;
+        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market] + getMarketLockNote();
     }
 
     function openMarketGuideModal() {
@@ -1830,6 +1844,7 @@
         }
 
         isGameStarted = true;
+        lockMarketSelection();
         const d = i18n[currentLang] || i18n.ja;
         document.getElementById('news-strip').innerText = d.initNews;
 
@@ -1941,7 +1956,7 @@
         document.getElementById('mkt-btn-us').innerText = d.mktUs;
         document.getElementById('mkt-btn-gl').innerText = d.mktGl;
         document.getElementById('btn-mkt-guide').innerText = d.mktGuideBtn;
-        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market];
+        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market] + getMarketLockNote();
         document.getElementById('lbl-set-name').innerText = d.setName;
         document.getElementById('lbl-set-mode').innerText = d.setMode;
         document.getElementById('lbl-start-btn').innerText = d.startBtn;
