@@ -1638,8 +1638,14 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             noCashAlert: "手元の現金が足りません！",
             rankTitleModal: "🏆 世界投資家ランキング",
             initNews: "📰 ニュース: 25歳、投資家ライフがスタート！まずは資産を買ってみましょう。",
-            turnNews: function(age, inflow, s) { return "📰 【" + age + "歳】 給与貯蓄と配当・家賃で現金が +" + inflow + " 増加！ " + s; },
-            mktSnippets: ["世界経済は堅調で、複利効果が順調に働いています。", "優良企業からの配当金と不動産の家賃が資産を押し上げています。", "インフレ対策として株式や金（ゴールド）への注目が続いています。", "長期保有を続ける投資家の総資産が着実に増加中です。"],
+            turnNews: function(age, inflow, s) { return "📰 【" + age + "歳】 給与貯蓄と配当・家賃（税引後）で現金が " + inflow + "！ " + s; },
+            // その年の景気局面に合った一言だけを出す（不景気の年に「堅調」と出さない）
+            mktSnippets: {
+                boom: ["世界経済は堅調で、企業の業績も伸びています。", "長期保有を続ける投資家の資産が着実に増えています。", "企業の配当や不動産の家賃が、家計を下支えしています。"],
+                bubble: ["株価が勢いよく上がり、市場は熱気に包まれています。過熱の反動にも注意が必要です。", "「乗り遅れたくない」と買いが集まっています。高値づかみに気をつけましょう。"],
+                correction: ["相場が大きく下げ、市場には不安が広がっています。", "株価の調整が続いています。慌てて売るかどうかが試される局面です。"],
+                recession: ["景気が冷え込み、企業の業績が伸び悩んでいます。", "不景気で値動きの小さい守りの資産に注目が集まっています。"]
+            },
             ranks: ["🌱 ビギナー投資家", "📈 アッパーマス蓄財家", "✨ 準富裕層エリート", "💎 憧れの億り人 (富裕層)", "🏛️ 超富裕層タイクーン", "👑 伝説の超財閥王", "🌌 世界の経済支配者", "🐉 百億の覇者", "🌠 異次元の資産神", "🪐 一兆円の神話"],
             cycleNames: { boom: "📈 好景気", bubble: "🔥 過熱バブル", correction: "📉 調整局面", recession: "❄️ 不景気" },
             rivalLabel: "🤖 ライバル投資家(放置インデックス)",
@@ -3792,8 +3798,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         g.history.rival.push(g.rivalNetWorth);
 
         const d = i18n.ja;
-        const snippet = d.mktSnippets[Math.floor(Math.random() * d.mktSnippets.length)];
-        let newsText = d.turnNews(g.age, fmtShort(netInflow), snippet);
+        const snipList = d.mktSnippets[g.cycleId] || d.mktSnippets.boom;
+        const snippet = snipList[Math.floor(Math.random() * snipList.length)];
+        let newsText = d.turnNews(g.age, (netInflow >= 0 ? '+' + fmtShort(netInflow) + ' 増加' : '-' + fmtShort(-netInflow) + ' 減少'), snippet);
         if (principalPaid > 0) {
             newsText += (' 🏦ローン元本返済 -' + fmtShort(principalPaid) + '。');
         }
