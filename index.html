@@ -924,19 +924,22 @@
     // --- 個別株・暗号資産の値動きモデル ---
     // 個別株：インデックスより値動きが大きく、まれに業績悪化で急落する。平均ではインデックスに勝ちにくい
     const STOCK_MODEL = { lo: -0.22, hi: 0.30, shockChance: 0.04, shockLo: 0.35, shockHi: 0.55, floor: 5 };
-    // 暗号資産：普段は上下に大きく揺れるだけ。まれに大暴落（-65〜-80%）と爆騰（+150〜+300%）が起き、
-    // 長く持ち続けると多くの人は報われないが、大当たりの夢もある
-    const CRYPTO_MODEL = { lo: -0.35, hi: 0.35, crashChance: 0.08, crashLo: 0.65, crashHi: 0.80, moonChance: 0.06, moonLo: 1.5, moonHi: 3.0, cycleMult: 1.5, floor: 1 };
+    // 暗号資産：普段は上下に大きく揺れるだけ。毎年12%の確率で大暴落（-65〜-80%）、6%の確率で爆騰（+300〜+700%）が起きる。
+    // 価格が moonSoftCap を超えると、爆騰の倍率は小さくなり（青天井にはならない）、大暴落は highCrashMult 倍起きやすくなる。
+    // 長く持ち続けると多くの人は報われない（平均・中央値はインデックス＋金より低い）が、上位数%はインデックス＋金を大きく上回る
+    const CRYPTO_MODEL = { lo: -0.35, hi: 0.35, crashChance: 0.12, crashLo: 0.65, crashHi: 0.80, moonChance: 0.06, moonLo: 3.0, moonHi: 7.0,
+        moonSoftCap: 1000, highCrashMult: 4, cycleMult: 1.5, floor: 1 };
 
     // --- モード別の経済設定 ---
     // growthBoost：株・仮想通貨の毎年の成長率への補正
     // fireGoal：FIRE目標（年間生活費）。純資産でFIREするには、その25倍が必要
     // savingsRate：給与のうち毎年貯蓄に回せる割合（生活費が高いモードほど低い）
+    // cryptoMoonMult：暗号資産の爆騰の起きやすさの倍率（ハードコアは相場が厳しく、夢が当たりにくい）
     const MODE_ECON = {
-        easy:     { growthBoost: 0.04,  fireGoal: 300, savingsRate: 0.35 },
-        normal:   { growthBoost: 0.01,  fireGoal: 400, savingsRate: 0.35 },
-        hard:     { growthBoost: -0.03, fireGoal: 500, savingsRate: 0.30 },
-        scenario: { growthBoost: 0.01,  fireGoal: 300, savingsRate: 0.35 }
+        easy:     { growthBoost: 0.04,  fireGoal: 300, savingsRate: 0.35, cryptoMoonMult: 1 },
+        normal:   { growthBoost: 0.01,  fireGoal: 400, savingsRate: 0.35, cryptoMoonMult: 1 },
+        hard:     { growthBoost: -0.03, fireGoal: 500, savingsRate: 0.30, cryptoMoonMult: 0.7 },
+        scenario: { growthBoost: 0.01,  fireGoal: 300, savingsRate: 0.35, cryptoMoonMult: 1 }
     };
     function getModeEcon() { return MODE_ECON[gameMode] || MODE_ECON.normal; }
     function getAnnualSavings() { return Math.round(g.salary * getModeEcon().savingsRate); }
@@ -3599,15 +3602,21 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 chg = scenRate.crypto + (Math.random() * 0.08 - 0.04);
             } else {
                 const cm = CRYPTO_MODEL;
+                // 価格が moonSoftCap を超えている間は大暴落が起きやすい（高値は長続きしない）
+                const tooHigh = c.price > cm.moonSoftCap;
+                const crashP = cm.crashChance * (tooHigh ? cm.highCrashMult : 1);
+                const moonP = cm.moonChance * (getModeEcon().cryptoMoonMult || 1);
                 const roll = Math.random();
-                if (roll < cm.crashChance) {
+                if (roll < crashP) {
                     chg = -(cm.crashLo + Math.random() * (cm.crashHi - cm.crashLo));
                     cryptoBigMove = 'crash';
-                } else if (roll < cm.crashChance + cm.moonChance) {
+                } else if (roll < crashP + moonP) {
                     chg = cm.moonLo + Math.random() * (cm.moonHi - cm.moonLo);
+                    // すでに価格が高いほど、爆騰の倍率は小さくなる（市場が成熟し、青天井にはならない）
+                    if (c.price > cm.moonSoftCap) chg *= cm.moonSoftCap / c.price;
                     cryptoBigMove = 'moon';
                 } else {
-                    chg = (cm.lo + Math.random() * (cm.hi - cm.lo)) + cycleDef.cryptoAdj * cm.cycleMult;
+                    chg = (cm.lo + Math.random() * (cm.hi - cm.lo)) + easyBoost + cycleDef.cryptoAdj * cm.cycleMult;
                 }
             }
             c.price = Math.max(CRYPTO_MODEL.floor, Math.round(c.price * (1 + chg)));
@@ -3687,7 +3696,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         if (cryptoBigMove === 'crash') {
             newsText += ' 🧊暗号資産が大暴落（-65%以上）…！';
         } else if (cryptoBigMove === 'moon') {
-            newsText += ' 🚀暗号資産が爆騰（+150%以上）！';
+            newsText += ' 🚀暗号資産が爆騰！';
         }
         if (hotPopInfo) {
             newsText += (' 🔥' + hotPopInfo.name + 'がブームの反動で -' + hotPopInfo.pct + '%下落…！');
