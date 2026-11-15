@@ -8,7 +8,7 @@
   gtag('js', new Date());
 </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lets' FIRE！ - 実践金融教育＆66年資産形成シミュレーション</title>
     <meta name="description" content="25歳から90歳まで、66年間の資産形成シミュレーションゲーム。株・不動産・暗号資産に挑み、経済的自立（FIRE）と43種の実績称号を目指そう。みんなの資産ランキングにも参加できます。">
     <!-- 🔗 SNS・noteでリンクをシェアしたときのプレビュー表示用（OGP） -->
@@ -29,6 +29,8 @@
             --accent-gold: #fbbf24; --accent-red: #f43f5e; --accent-purple: #c084fc; --accent-crypto: #ec4899;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* ピンチ拡大は許可しつつ、ボタン連打時のダブルタップ拡大だけを防ぐ */
+        button, select, input, .select-card, .legend-item { touch-action: manipulation; }
         body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; margin: 0; padding: 8px 8px 80px 8px; display: flex; justify-content: center; line-height: 1.5; }
         .container { width: 100%; max-width: 580px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 12px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); position: relative; overflow: hidden; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; gap: 4px; flex-wrap: wrap; }
