@@ -93,6 +93,10 @@
         .mkt-btn.active { background: var(--card-bg); color: var(--accent-blue); border-color: var(--accent-blue); }
         .mkt-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .market-info-bar { background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 6px 8px; margin-bottom: 10px; font-size: 0.64rem; color: #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        #market-bar-wrap.in-game { display: flex; gap: 6px; align-items: stretch; margin-bottom: 8px; }
+        #market-bar-wrap.in-game .market-switcher { display: none; }
+        #market-bar-wrap.in-game .market-info-bar { flex: 1; margin-bottom: 0; }
+        #market-bar-wrap.in-game .cycle-badge { margin-bottom: 0; display: flex; align-items: center; justify-content: center; white-space: nowrap; }
         .cycle-badge { text-align: center; font-size: 0.64rem; font-weight: 900; padding: 4px 6px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); background: var(--panel-bg); color: var(--text-sub); transition: background 0.3s, color 0.3s, border-color 0.3s; }
         .cycle-badge.cycle-boom { background: rgba(16, 185, 129, 0.16); color: var(--accent-green); border-color: var(--accent-green); }
         .cycle-badge.cycle-bubble { background: rgba(251, 191, 36, 0.2); color: var(--accent-gold); border-color: var(--accent-gold); }
@@ -128,6 +132,7 @@
         .legend-item { display: flex; align-items: center; gap: 3px; cursor: pointer; background: none; border: none; padding: 0; color: inherit; font: inherit; }
         .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
         .cf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; border-top: 1px solid var(--border); padding-top: 8px; text-align: center; }
+        .cf-cell { background: rgba(5,8,17,0.5); border: 1px solid var(--border); border-radius: 8px; padding: 6px 2px; color: inherit; font-family: inherit; cursor: pointer; min-height: 48px; }
         .cf-cell span { display: block; font-size: 0.56rem; color: var(--text-sub); font-weight: 700; margin-bottom: 1px; }
         .cf-cell strong { font-size: 0.72rem; font-weight: 900; font-variant-numeric: tabular-nums; }
         .rival-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px; font-size: 0.66rem; font-weight: 800; color: var(--text-sub); }
@@ -137,13 +142,19 @@
         .chart-section { background: #050811; border: 1px solid var(--border); border-radius: 10px; padding: 8px; margin-bottom: 8px; }
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 0.66rem; font-weight: 800; color: var(--text-sub); }
         canvas { width: 100%; height: 80px; display: block; }
+        .insight-panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 0 10px; margin-bottom: 10px; }
+        .insight-panel > summary { min-height: 48px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-weight: 900; font-size: 0.9rem; list-style: none; }
+        .insight-panel > summary::-webkit-details-marker { display: none; }
+        .insight-panel > summary::after { content: '▼ 閉じる'; font-size: 0.75rem; color: var(--text-sub); font-weight: 800; }
+        .insight-panel:not([open]) > summary::after { content: '▶ 開く'; }
+        .insight-panel[open] { padding-bottom: 10px; }
         .nav-guide-banner { background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(56, 189, 248, 0.2)); border: 2px solid var(--accent-gold); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; }
         .nav-guide-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
         .nav-guide-title { font-size: 0.72rem; font-weight: 900; color: var(--accent-gold); }
         .nav-skip-btn { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--accent-gold); color: var(--accent-gold); font-size: 0.58rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; cursor: pointer; }
         .nav-guide-desc { font-size: 0.7rem; color: #ffffff; font-weight: 700; }
         .news-strip { background: rgba(56, 189, 248, 0.1); border-left: 3px solid var(--accent-blue); padding: 7px 9px; border-radius: 0 6px 6px 0; margin-bottom: 8px; font-size: 0.7rem; font-weight: 700; }
-        .title-toast { background: linear-gradient(90deg, rgba(251, 191, 36, 0.25), rgba(16, 185, 129, 0.2)); border: 1px solid var(--accent-gold); color: #fde047; padding: 6px 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.7rem; font-weight: 900; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .title-toast { width: 100%; text-align: left; font-family: inherit;  background: linear-gradient(90deg, rgba(251, 191, 36, 0.25), rgba(16, 185, 129, 0.2)); border: 1px solid var(--accent-gold); color: #fde047; padding: 6px 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.7rem; font-weight: 900; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .main-tabs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; margin-bottom: 8px; }
         .main-tabs.easy-grid { grid-template-columns: repeat(4, 1fr); }
         .m-tab { background: var(--card-bg); color: var(--text-sub); border: 1px solid var(--border); padding: 6px 1px; border-radius: 6px; font-size: 0.58rem; font-weight: 800; cursor: pointer; text-align: center; }
@@ -359,10 +370,10 @@
 
     <!-- 2. ゲームプレイ画面 -->
     <div id="game-view" class="hidden">
-        <div class="title-toast hidden" id="title-toast" onclick="openTitlesModal()">
+        <button type="button" class="title-toast hidden" id="title-toast" data-nav-free onclick="this.classList.add('hidden'); openTitlesModal()">
             <span id="title-toast-text">🎖️ 新称号を獲得しました！</span>
             <span style="font-size:0.62rem; text-decoration:underline;">一覧を見る &gt;</span>
-        </div>
+        </button>
 
         <div class="summary-card">
             <div class="rank-strip">
@@ -388,39 +399,21 @@
                 <div class="bar-seg" style="width:100%; background:var(--accent-blue);"></div>
             </div>
             <div class="legend-row">
-                <button type="button" class="legend-item" onclick="openTermHelp('cash')"><span class="dot" style="background:var(--accent-blue);"></span><span id="l-cash">現金(100%)</span></button>
-                <button type="button" class="legend-item" onclick="openTermHelp('index')"><span class="dot" style="background:var(--accent-green);"></span><span id="l-stock">株式(0%)</span></button>
-                <button type="button" class="legend-item" onclick="openTermHelp('gold')"><span class="dot" style="background:var(--accent-gold);"></span><span id="l-gold">金(0%)</span></button>
-                <button type="button" class="legend-item" id="legend-crypto" onclick="openTermHelp('crypto')"><span class="dot" style="background:var(--accent-crypto);"></span><span id="l-crypto">仮想通貨(0%)</span></button>
-                <button type="button" class="legend-item" onclick="openTermHelp('reals')"><span class="dot" style="background:var(--accent-purple);"></span><span id="l-prop">不動産(0%)</span></button>
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('cash')"><span class="dot" style="background:var(--accent-blue);"></span><span id="l-cash">現金(100%)</span></button>
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('index')"><span class="dot" style="background:var(--accent-green);"></span><span id="l-stock">株式(0%)</span></button>
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('gold')"><span class="dot" style="background:var(--accent-gold);"></span><span id="l-gold">金(0%)</span></button>
+                <button type="button" class="legend-item" data-nav-free id="legend-crypto" onclick="openTermHelp('crypto')"><span class="dot" style="background:var(--accent-crypto);"></span><span id="l-crypto">仮想通貨(0%)</span></button>
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('reals')"><span class="dot" style="background:var(--accent-purple);"></span><span id="l-prop">不動産(0%)</span></button>
             </div>
             <div class="cf-grid">
-                <div class="cf-cell"><span><span id="lbl-cf-sal">給与貯蓄</span> <button type="button" class="term-btn" onclick="openTermHelp('salary')">?</button></span><strong id="disp-salary" style="color:var(--accent-blue);">+¥160万</strong></div>
-                <div class="cf-cell"><span><span id="lbl-cf-pas">不労所得CF</span> <button type="button" class="term-btn" onclick="openTermHelp('passive')">?</button></span><strong id="disp-passive" style="color:var(--accent-green);">+¥0</strong></div>
-                <div class="cf-cell"><span><span id="lbl-cf-fire">FIRE目標</span> <button type="button" class="term-btn" onclick="openTermHelp('firegoal')">?</button></span><strong id="disp-firegoal" style="color:var(--accent-gold);">¥300万</strong></div>
-                <div class="cf-cell"><span><span id="lbl-cf-debt">銀行借入</span> <button type="button" class="term-btn" onclick="openTermHelp('debt')">?</button></span><strong id="disp-debt" style="color:var(--accent-red);">¥0</strong></div>
+                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('salary')" aria-label="給与貯蓄の説明を見る"><span><span id="lbl-cf-sal">給与貯蓄</span> ⓘ</span><strong id="disp-salary" style="color:var(--accent-blue);">+¥160万</strong></button>
+                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('passive')" aria-label="不労所得CFの説明を見る"><span><span id="lbl-cf-pas">不労所得CF</span> ⓘ</span><strong id="disp-passive" style="color:var(--accent-green);">+¥0</strong></button>
+                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('firegoal')" aria-label="FIRE目標の説明を見る"><span><span id="lbl-cf-fire">FIRE目標</span> ⓘ</span><strong id="disp-firegoal" style="color:var(--accent-gold);">¥300万</strong></button>
+                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('debt')" aria-label="銀行借入の説明を見る"><span><span id="lbl-cf-debt">銀行借入</span> ⓘ</span><strong id="disp-debt" style="color:var(--accent-red);">¥0</strong></button>
             </div>
             <div class="rival-row" id="rival-row">
                 <span><span id="lbl-rival">🤖 ライバル投資家(放置インデックス)</span>: <strong id="disp-rival">¥600</strong></span>
                 <span class="rival-diff-badge" id="rival-diff-badge"></span>
-            </div>
-        </div>
-
-        <div class="chart-section">
-            <div class="chart-header">
-                <span id="lbl-chart-title">📈 総資産の推移グラフ</span>
-                <span><span id="lbl-total-assets">総資産</span>: <strong id="disp-total-assets-top" style="color:var(--accent-gold);">¥600万</strong></span>
-            </div>
-            <canvas id="simChart" width="500" height="80"></canvas>
-        </div>
-
-        <div class="coach-box" id="coach-box">
-            <div class="coach-head">
-                <span id="lbl-coach-head">📊 AIファイナンシャル・コーチの資産診断</span>
-                <button type="button" class="term-btn" onclick="triggerEduQuiz(true)" id="btn-take-quiz">🎓 知識クイズに挑戦</button>
-            </div>
-            <div class="coach-body" id="coach-advice-text">
-                現在は現金100%の状態です。インフレ（物価上昇）が起きると現金の実質価値は目減りしてしまうため、まずは「全世界インデックス株」と「金（ゴールド）」に分散して複利を働かせましょう！
             </div>
         </div>
 
@@ -547,6 +540,29 @@
         </div>
 
         <button type="button" class="hedge-btn" id="btn-hedge" onclick="toggleHedge()">🛡️ 暴落保険に加入する(現金-50)</button>
+
+        <!-- 優先度の低い情報（グラフ・AIコーチ）は操作エリアの下にまとめ、折りたためるようにする -->
+        <details class="insight-panel" id="insight-panel" open>
+            <summary>📊 資産グラフ・AIコーチの診断</summary>
+            <div class="chart-section">
+                <div class="chart-header">
+                    <span id="lbl-chart-title">📈 総資産の推移グラフ</span>
+                    <span><span id="lbl-total-assets">総資産</span>: <strong id="disp-total-assets-top" style="color:var(--accent-gold);">¥600万</strong></span>
+                </div>
+                <canvas id="simChart" width="500" height="80"></canvas>
+            </div>
+
+            <div class="coach-box" id="coach-box">
+                <div class="coach-head">
+                    <span id="lbl-coach-head">📊 AIファイナンシャル・コーチの資産診断</span>
+                    <button type="button" class="term-btn" onclick="triggerEduQuiz(true)" id="btn-take-quiz">🎓 知識クイズに挑戦</button>
+                </div>
+                <div class="coach-body" id="coach-advice-text">
+                    現在は現金100%の状態です。インフレ（物価上昇）が起きると現金の実質価値は目減りしてしまうため、まずは「全世界インデックス株」と「金（ゴールド）」に分散して複利を働かせましょう！
+                </div>
+            </div>
+        </details>
+
         <!-- 毎ターン押すボタンは画面下に固定（スクロール不要）-->
         <div class="turn-bar" id="turn-bar">
             <div class="turn-bar-inner">
@@ -1562,6 +1578,18 @@
         }, 600);
     }
 
+    // --- 📊 グラフ・コーチ欄の開閉状態を端末に記憶する ---
+    const INSIGHT_OPEN_KEY = 'uws_ui_insight_open_v1';
+    function initInsightPanel() {
+        const panel = document.getElementById('insight-panel');
+        if (!panel) return;
+        try { if (localStorage.getItem(INSIGHT_OPEN_KEY) === '0') panel.open = false; } catch (e) {}
+        panel.addEventListener('toggle', function() {
+            try { localStorage.setItem(INSIGHT_OPEN_KEY, panel.open ? '1' : '0'); } catch (e) {}
+            if (panel.open) drawChart();
+        });
+    }
+
     // --- ☰ ヘッダーメニュー（チュートリアル・称号・ランキング・音量設定）---
     function toggleHeaderMenu(forceOpen) {
         const menu = document.getElementById('header-menu');
@@ -1893,8 +1921,10 @@
             el.classList.toggle('active', el.id === 'mkt-btn-' + market);
             el.disabled = el.id !== 'mkt-btn-' + market;
         });
-        const d = i18n.ja;
-        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market] + getMarketLockNote();
+        // プレイ中は選んだ市場名だけを1行で表示（詳しい説明は「？市場の違い」から読める）
+        const activeBtn = document.getElementById('mkt-btn-' + market);
+        document.getElementById('market-desc-inline').innerText = (activeBtn ? activeBtn.innerText : '') + '（🔒開始時に固定）';
+        document.getElementById('market-bar-wrap').classList.add('in-game');
     }
 
     function openMarketGuideModal() {
@@ -2216,7 +2246,10 @@
     function updateNavBannerText() {
         const navDict = navI18n.ja;
         const scenario = getNavScenario();
-        if (isFinalNavStep() || !scenario[navStep]) {
+        // ナビ欄はチュートリアル中だけ表示（自由行動中は画面を短くするため隠す）
+        const free = isFinalNavStep() || !scenario[navStep];
+        document.getElementById('nav-guide-banner').classList.toggle('hidden', free);
+        if (free) {
             document.getElementById('nav-guide-desc').innerText = navDict.freeBanner;
             document.getElementById('btn-skip-tut').classList.add('hidden');
         } else {
@@ -2269,7 +2302,7 @@
         const targetId = scenario[navStep] ? scenario[navStep].targetId : null;
         if (!targetId) return;
         allButtons.forEach(function(b) {
-            if (b.id === targetId || b.id === 'btn-skip-tut' || b.classList.contains('term-btn') || b.classList.contains('legend-item')) {
+            if (b.id === targetId || b.id === 'btn-skip-tut' || b.classList.contains('term-btn') || b.hasAttribute('data-nav-free')) {
                 if (b.id === targetId) b.classList.add('nav-highlight');
             } else {
                 b.classList.add('nav-locked');
@@ -3211,6 +3244,7 @@
 
         g.prevNetWorth = getNetWorth();
         ipoAppliedThisTurn = false;
+        document.getElementById('title-toast').classList.add('hidden');
 
         const spec = marketSpecs[market];
         const easyBoost = gameMode === 'easy' ? 0.04 : 0.01;
@@ -4038,6 +4072,7 @@
     }
 
     loadSavedTitles();
+    initInsightPanel();
     initAppDialog();
     initModalA11y();
     initModalQueueWatcher();
