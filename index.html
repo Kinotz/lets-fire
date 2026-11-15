@@ -969,10 +969,11 @@
         const lesson = onePointLessons[key];
         if (!lesson) return;
         g.lessonsSeen[key] = true;
-        document.getElementById('acad-modal-title').innerText = '💡 ' + lesson.title;
-        document.getElementById('acad-modal-desc').innerText = lesson.desc;
-        document.getElementById('academy-modal').classList.remove('hidden');
-        playSound('click');
+        openModalQueued('academy-modal', function() {
+            document.getElementById('acad-modal-title').innerText = '💡 ' + lesson.title;
+            document.getElementById('acad-modal-desc').innerText = lesson.desc;
+            playSound('click');
+        });
     }
 
     // --- 🎓 実践マネーリテラシー検定クイズデータ（全40問） ---
@@ -1031,6 +1032,7 @@
         usedQuizIndices.push(qIdx);
         const qObj = eduQuizzes[qIdx];
 
+        openModalQueued('quiz-modal', function() {
         document.getElementById('quiz-question').innerText = qObj.q;
         const cBox = document.getElementById('quiz-choices');
         cBox.innerHTML = '';
@@ -1057,9 +1059,9 @@
             };
             cBox.appendChild(btn);
         });
-        document.getElementById('quiz-modal').classList.remove('hidden');
         if (isManual) playSound('click');
         else playSound('event');
+        });
     }
 
     function updateCoachAdvice() {
@@ -1902,9 +1904,10 @@
     function showScenarioIntro() {
         const scen = historicalScenarios[selectedScenarioId];
         if (!scen) return;
-        document.getElementById('acad-modal-title').innerText = scen.introTitle;
-        document.getElementById('acad-modal-desc').innerText = scen.introDesc;
-        document.getElementById('academy-modal').classList.remove('hidden');
+        openModalQueued('academy-modal', function() {
+            document.getElementById('acad-modal-title').innerText = scen.introTitle;
+            document.getElementById('acad-modal-desc').innerText = scen.introDesc;
+        });
     }
 
     function skipTutorialNow() {
@@ -2039,14 +2042,16 @@
         } else {
             document.getElementById('btn-nav-skip-modal').classList.remove('hidden');
         }
-        document.getElementById('nav-pop-title').innerText = info.title;
-        document.getElementById('nav-pop-desc').innerText = (skippedByChallenge
+        const navDescText = (skippedByChallenge
             ? (currentLang === 'ja' ? '🔒 縛りプレイ中のため、購入できない資産の手順はスキップしました。\n\n' : '🔒 Steps for assets locked by your challenge were skipped.\n\n')
             : '') + info.desc;
         updateNavBannerText();
-        document.getElementById('nav-popup-modal').classList.remove('hidden');
+        openModalQueued('nav-popup-modal', function() {
+            document.getElementById('nav-pop-title').innerText = info.title;
+            document.getElementById('nav-pop-desc').innerText = navDescText;
+            playSound('event');
+        });
         applyStrictLock();
-        playSound('event');
     }
 
     function closeNavPopup() {
@@ -2193,13 +2198,15 @@
         if (rObj.lv > g.rankLevel) {
             g.rankLevel = rObj.lv;
             g.cash += rObj.bonus;
-            spawnConfetti();
-            playSound('rankup');
             const rTitle = getRankTitle(rObj.lv);
-            document.getElementById('rankup-new-title').innerText = rTitle;
-            document.getElementById('rankup-desc').innerText = '純資産が ' + fmtShort(rObj.min) + ' を突破し、【' + rTitle + '】に昇格しました！';
-            document.getElementById('rankup-bonus').innerText = '🎁 昇格お祝いボーナス: +' + fmtShort(rObj.bonus) + ' 獲得！';
-            document.getElementById('rankup-modal').classList.remove('hidden');
+            // 他のモーダル（イベント・クイズ等）が開いている間は待機し、閉じてから表示する
+            openModalQueued('rankup-modal', function() {
+                spawnConfetti();
+                playSound('rankup');
+                document.getElementById('rankup-new-title').innerText = rTitle;
+                document.getElementById('rankup-desc').innerText = '純資産が ' + fmtShort(rObj.min) + ' を突破し、【' + rTitle + '】に昇格しました！';
+                document.getElementById('rankup-bonus').innerText = '🎁 昇格お祝いボーナス: +' + fmtShort(rObj.bonus) + ' 獲得！';
+            });
         }
     }
 
@@ -2634,6 +2641,9 @@
     ];
 
     function renderEventModal(ev) {
+        openModalQueued('event-modal', function() { renderEventModalNow(ev); });
+    }
+    function renderEventModalNow(ev) {
         const d = i18n[currentLang] || i18n.ja;
         document.getElementById('ev-title').innerText = ev.title;
         document.getElementById('ev-desc').innerText = ev.desc;
@@ -2662,7 +2672,6 @@
             };
             cBox.appendChild(btn);
         });
-        document.getElementById('event-modal').classList.remove('hidden');
         playSound('event');
     }
 
@@ -2676,13 +2685,41 @@
     }
 
     function showEventResult(subtitle, desc, isBad) {
-        document.getElementById('ev-res-icon').innerText = isBad ? '⚠️' : '🎊';
-        const bannerBox = document.getElementById('ev-res-banner-box');
-        if (bannerBox) bannerBox.className = isBad ? 'event-result-banner bad' : 'event-result-banner';
-        document.getElementById('ev-res-subtitle').innerText = subtitle;
-        document.getElementById('ev-res-desc').innerText = desc;
-        document.getElementById('event-result-modal').classList.remove('hidden');
-        playSound(isBad ? 'bad' : 'action');
+        openModalQueued('event-result-modal', function() {
+            document.getElementById('ev-res-icon').innerText = isBad ? '⚠️' : '🎊';
+            const bannerBox = document.getElementById('ev-res-banner-box');
+            if (bannerBox) bannerBox.className = isBad ? 'event-result-banner bad' : 'event-result-banner';
+            document.getElementById('ev-res-subtitle').innerText = subtitle;
+            document.getElementById('ev-res-desc').innerText = desc;
+            playSound(isBad ? 'bad' : 'action');
+        });
+    }
+
+    // --- 🪟 モーダルの順番表示：別のモーダルが開いている間は待ち行列に入れ、閉じたら次を1つずつ表示する ---
+    const modalQueue = [];
+    function isAnyModalOpen() {
+        return !!document.querySelector('.modal-overlay:not(.hidden)');
+    }
+    function openModalQueued(id, renderFn) {
+        if (isAnyModalOpen()) {
+            modalQueue.push({ id: id, renderFn: renderFn });
+            return;
+        }
+        if (renderFn) renderFn();
+        document.getElementById(id).classList.remove('hidden');
+    }
+    function showNextQueuedModal() {
+        if (modalQueue.length === 0 || isAnyModalOpen()) return;
+        const next = modalQueue.shift();
+        if (next.renderFn) next.renderFn();
+        document.getElementById(next.id).classList.remove('hidden');
+    }
+    function initModalQueueWatcher() {
+        if (typeof MutationObserver === 'undefined') return;
+        const obs = new MutationObserver(function() { showNextQueuedModal(); });
+        document.querySelectorAll('.modal-overlay').forEach(function(el) {
+            obs.observe(el, { attributes: true, attributeFilter: ['class'] });
+        });
     }
     function closeEventResultModal() { document.getElementById('event-result-modal').classList.add('hidden'); }
 
@@ -3351,7 +3388,6 @@
     function openAcademyDetail(id) {
         let ac = g.academy.find(function(x) { return x.id === id; });
         if (!ac) return;
-        document.getElementById('acad-modal-title').innerText = ac.title;
         let descText = ac.desc;
         if (!g.academyRead[id]) {
             g.academyRead[id] = true;
@@ -3361,8 +3397,10 @@
             updateUI();
             renderAcademy();
         }
-        document.getElementById('acad-modal-desc').innerText = descText;
-        document.getElementById('academy-modal').classList.remove('hidden');
+        openModalQueued('academy-modal', function() {
+            document.getElementById('acad-modal-title').innerText = ac.title;
+            document.getElementById('acad-modal-desc').innerText = descText;
+        });
         playSound('click');
     }
     function closeAcademyModal() { document.getElementById('academy-modal').classList.add('hidden'); }
@@ -3525,7 +3563,8 @@
     function endGame() {
         if (gameMode !== 'scenario') unlockTitle('t_life_master');
         checkAllTitlesAndRank();
-        // 念のため、結果画面を表示する前に残っている可能性のあるモーダルをすべて閉じておく
+        // 念のため、結果画面を表示する前に残っている可能性のあるモーダルをすべて閉じておく（待ち行列も破棄）
+        modalQueue.length = 0;
         ['rankup-modal', 'event-modal', 'event-result-modal', 'academy-modal', 'quiz-modal', 'nav-popup-modal'].forEach(function(id) {
             const el = document.getElementById(id);
             if (el) el.classList.add('hidden');
@@ -3724,6 +3763,7 @@
     }
 
     loadSavedTitles();
+    initModalQueueWatcher();
     initMonetizationView();
     loadAudioPrefs();
     applyAudioPrefsToUI();
