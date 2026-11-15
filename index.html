@@ -1062,7 +1062,8 @@
         //   fireMultiple：FIRE目標の資産＝生活費×25（4%ルールの目安）、rejobSalaryRate：資産が尽きて再就職したときの給与（以前の何割）、
         //   cutLivingRate：生活を切り詰めたときの生活費（もとの何割。年金額の方が大きければ年金額）
         //   bucketYears：バケット戦略で現金と金で確保しておく生活費の年数
-        retire: { fireMultiple: 25, rejobSalaryRate: 0.5, cutLivingRate: 0.6, bucketYears: 2 },
+        //   reemploySalaryRate：65歳の定年後に再雇用で働くときの給与（以前の何割）、reemployUntilAge：再雇用で働ける年齢の上限
+        retire: { fireMultiple: 25, rejobSalaryRate: 0.5, cutLivingRate: 0.6, bucketYears: 2, reemploySalaryRate: 0.6, reemployUntilAge: 70 },
         // 不動産価格の実質の長期傾向を年-0.5%前後（建物の老朽化）にするための補正（景気サイクルの平均-0.75%に足す）
         realEstateDrift: 0.0025
     };
@@ -1075,7 +1076,7 @@
             priceIndex: 1, inflationRate: ECON.inflation.byCycle.boom,
             retired: false, retireAge: null, lastSalary: null, yearsSinceHire: yrs, workYears: yrs,
             pensionAccrual: Math.round(sal * ECON.pension.kouseiRate * yrs * 10) / 10, pensionStartAge: null,
-            livingCut: false, bucketMode: null, depletedEver: false, lastShortfall: 0, pendingLate: null, freeYears: 0,
+            livingCut: false, bucketMode: null, reemployed: false, depletedEver: false, lastShortfall: 0, pendingLate: null, freeYears: 0,
             fireAchievedAge: null, fireFailed: false, fireReadyNotified: false
         };
     }
@@ -3291,20 +3292,24 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             ]
         },
         {
-            id: 'm_retire', age: 67,
-            title: "🌅 人生の転機：第二の人生",
-            desc: "伝統的な定年の年齢を迎えました。これからの人生をどう過ごしますか？",
-            beginnerTip: "【ライフイベントガイド】退職金を一時金でまとめて受け取るか、働き続けて少しずつ収入を得るかはFIREの出口戦略でもよく議論されるテーマです。",
+            // 65歳の定年（65歳までの雇用確保は事業主の義務、70歳までの就業機会の確保は努力義務：高年齢者雇用安定法）
+            id: 'm_retire', age: 65,
+            title: "🌅 人生の転機：65歳の定年",
+            desc: "会社の定年を迎えました。退職金を受け取ってリタイアするか、再雇用で働き続けるかを選びます。",
+            beginnerTip: "【ライフイベントガイド】\n65歳までの雇用の確保は会社の義務、70歳までの就業機会の確保は努力義務とされています（高年齢者雇用安定法）。再雇用では、以前より賃金が下がるのが一般的です（このゲームでは60%）。\n働き続けるとお金は増えますが、自由に過ごせる時間はそのぶん短くなります。どちらが良いかは、お金だけでは決められません。",
             choices: [
-                { label: "💼 ゆるやかに働き続ける（収入はそのまま継続）", whatIf: "もし一線を退いていたら、退職金として給与ベースの2倍をまとめて受け取れていましたが、以後の本業の給与は半分になっていました。", action: function() {
-                    g.cash += 100;
-                    showEventResult("💼 現役続行！", "第二の人生も現役を続け、臨時収入 +" + fmtShort(100) + " を得ました。", false);
+                { key: 'retire', label: "🏖️ 定年退職する（退職金を受け取り、年金と資産で暮らす）", whatIf: function() { return "もし再雇用を選んでいたら、70歳まで給与（今の" + Math.round(ECON.retire.reemploySalaryRate * 100) + "%）が入ってお金は増えましたが、自由に過ごせる時間は5年短くなっていました。"; }, action: function() {
+                    doRetire();
                 }},
-                { label: "🏖️ 一線を退く（退職金を一時金で受け取り、以後の給与は半分に）", whatIf: "もし働き続けていたら、退職金はありませんが、臨時収入+100を得つつ、本業の給与もそのまま続いていました。", action: function() {
-                    let lump = g.salary * 2;
-                    g.cash += lump;
-                    g.salary = Math.round(g.salary * 0.5);
-                    showEventResult("🏖️ 悠々自適な引退生活へ！", "退職金としてまとまった +" + fmtShort(lump) + " を一括で受け取りました。以後は短時間の仕事などに切り替え、本業の給与は半分になります。資産からの不労所得の比重が大きくなります。", false);
+                { key: 'reemploy', label: function() { return "💼 再雇用で70歳まで働く（給与は今の" + Math.round(ECON.retire.reemploySalaryRate * 100) + "%、退職金は今受け取る）"; }, whatIf: "もし定年退職していたら、給与は止まりますが、65歳から自由な時間を過ごせていました。", action: function() {
+                    const sev = getSeveranceEstimate();
+                    g.cash += sev;
+                    g.yearsSinceHire = 0;
+                    g.reemployed = true;
+                    g.salary = Math.max(1, Math.round(g.salary * ECON.retire.reemploySalaryRate));
+                    renderCareer();
+                    showEventResult("💼 再雇用で働き続けます", "定年の退職金 +" + fmtShort(sev) + " を受け取り、" + ECON.retire.reemployUntilAge + "歳まで年収 " + fmtShort(g.salary) + " で働きます。" + ECON.retire.reemployUntilAge + "歳で退職します（途中でリタイアすることもできます）。", false);
+                    if (needsPensionChoice(true)) triggerLateEvent('pension');
                 }}
             ]
         }
@@ -3554,6 +3559,14 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         return Math.round((f * startAge - base) / (f - 1) * 10) / 10;
     }
     const PENSION_AGE_OPTIONS = [60, 62, 65, 68, 70, 75];
+    lateLifeEvents.reemployEnd = function() {
+        return {
+            title: '🌅 ' + ECON.retire.reemployUntilAge + '歳：再雇用の期間が終わりました',
+            desc: '再雇用で働ける期間が終わりました。ここからは年金と資産で暮らします。',
+            beginnerTip: '【ライフイベントガイド】\n70歳までの就業機会の確保は、会社の努力義務です（高年齢者雇用安定法）。',
+            choices: [{ key: 'retire', label: '🏖️ 退職して、年金と資産で暮らす', whatIf: '', action: function() { doRetire(); } }]
+        };
+    };
     lateLifeEvents.bucket = function() {
         const L = getLivingCost(), yrs = ECON.retire.bucketYears;
         const next = function() { if (needsPensionChoice()) triggerLateEvent('pension'); };
@@ -3611,9 +3624,10 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         renderEventModal(make());
     }
     // 年が進んだあとに、リタイア関連で決めることがあれば表示する（表示したら true）
-    function needsPensionChoice() {
+    // atMandatory：65歳の定年イベントで再雇用を選んだ直後（65歳ちょうどでも選んでもらう）
+    function needsPensionChoice(atMandatory) {
         const P = ECON.pension;
-        return !g.pensionStartAge && g.age >= P.minAge && (g.retired || g.age > P.baseAge);
+        return !g.pensionStartAge && g.age >= P.minAge && (g.retired || g.age > P.baseAge || (atMandatory && g.age >= P.baseAge));
     }
     function checkLateLifeFlow() {
         if (g.pendingLate) {
@@ -3623,6 +3637,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             triggerLateEvent(id);
             return true;
         }
+        if (g.reemployed && !g.retired && g.age >= ECON.retire.reemployUntilAge) { updateUI(); triggerLateEvent('reemployEnd'); return true; }
         if (needsPensionChoice()) { updateUI(); triggerLateEvent('pension'); return true; }
         return false;
     }
@@ -4300,7 +4315,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         if (isFinalNavStep() && !isScenario && checkLateLifeFlow()) return;
 
         if (isFinalNavStep() && !isScenario) {
-            const ms = lifeMilestones.find(function(m) { return m.age === g.age && !g.milestonesSeen[m.id]; });
+            // 定年イベントは、すでにリタイアしていれば出さない。旧セーブで65歳を過ぎてから読み込んだ場合は次の年に出す
+            if (g.retired && g.age >= 65) g.milestonesSeen.m_retire = true;
+            const ms = lifeMilestones.find(function(m) { return (m.age === g.age || (m.id === 'm_retire' && g.age > m.age && !g.retired)) && !g.milestonesSeen[m.id]; });
             if (ms) {
                 g.milestonesSeen[ms.id] = true;
                 updateUI();
