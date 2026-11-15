@@ -2626,9 +2626,9 @@
         {
             title: "🏥 突然の入院とライフイベントの大型出費！",
             desc: "突然の入院と家族の出費が重なり、急遽まとまった現金（150）が必要になりました！",
-            beginnerTip: "【危機回避ガイド】\n手元に現金（生活防衛資金）が150以上あればスムーズに支払えます！",
+            beginnerTip: "【危機回避ガイド】\n手元に現金（生活防衛資金）が150以上あればスムーズに支払えます！\n予防医療（追加100）は給与+5%の効果が長く続くので、若いほど・給与が高いほど元が取りやすくなります。",
             choices: [
-                { label: "💵 手元の生活防衛資金（現金）から支払う", whatIf: "もし予防医療に追加投資していたら、現金最大180と引き換えに、以後の給与ベースが+5%になっていました。", action: function() {
+                { label: "💵 手元の生活防衛資金（現金）から支払う", whatIf: "もし予防医療にも投資していたら、合計250を支払う代わりに、以後の給与ベースが+5%になっていました（元が取れるまで長い年数がかかります）。", action: function() {
                     recordCrisisSurvived();
                     if (g.cash >= 150) {
                         g.cash -= 150;
@@ -2639,10 +2639,18 @@
                         showEventResult("💦 現金不足で株を強制売却…", "株式を -" + fmtShort(penalty) + " 分も安値で強制売却して支払いました。", true);
                     }
                 }},
-                { label: "✨ 予防医療にも追加投資して健康を取り戻す", whatIf: "もし生活防衛資金で支払っていたら、現金が150以上あれば-150で済み、足りなければ資産を不利なレートで取り崩すことになっていました。", action: function() {
+                { label: "✨ 予防医療にも追加投資する（合計250・給与+5%）", whatIf: "もし入院費だけを支払っていたら、-150で済みましたが、給与ベースは上がりませんでした。", action: function() {
                     recordCrisisSurvived();
-                    let cost = Math.min(g.cash, 180); g.cash -= cost; g.salary = Math.round(g.salary * 1.05);
-                    showEventResult("💪 健康回復＆給与アップ", "現金 -" + fmtShort(cost) + " を支払いましたが、本業の給与が +5% アップしました！", true);
+                    const cost = 250;
+                    g.salary = Math.round(g.salary * 1.05);
+                    if (g.cash >= cost) {
+                        g.cash -= cost;
+                        showEventResult("💪 健康回復＆給与アップ", "現金 -" + fmtShort(cost) + " を支払い、本業の給与が +5% アップしました！\n（給与アップで元が取れるまでには長い年数がかかります）", true);
+                    } else {
+                        let rem = cost - g.cash; g.cash = 0; let penalty = Math.round(rem * 1.4);
+                        g.indexAsset = Math.max(0, g.indexAsset - penalty);
+                        showEventResult("💦 現金不足で株を強制売却…", "給与は +5% アップしましたが、現金が足りず株式を -" + fmtShort(penalty) + " 分も安値で強制売却して支払いました。", true);
+                    }
                 }}
             ]
         },
@@ -2688,20 +2696,20 @@
         {
             title: "🦄 親友からの「スタートアップ起業」エンジェル出資依頼！",
             desc: "親友が『次世代クリーンエネルギー技術を発明した！150 出資してくれないか？』と頼んできました！",
-            beginnerTip: "【ハイリスク・ロマンガイド】\n成功して上場すれば一撃で +800 の大化け＆専用称号を獲得できます（失敗すると出資金を失います）！",
+            beginnerTip: "【ハイリスク・ロマンガイド】\n成功すれば +500 に大化け＆専用称号！ただし現実のスタートアップは大半が失敗します。成功率は30%ほどで、平均するとトントンの賭けです。",
             choices: [
                 { label: "👼 親友の夢に賭けてエンジェル出資する（現金 -150）", whatIf: "もし断っていたら、現金を1円も減らさず安全に過ごせていました。", action: function() {
                     if (g.cash < 150) { showEventResult("💦 手元現金が不足…", "手元現金が150に満たず見送りました。", true); return; }
                     g.cash -= 150; g.everBoughtAsset = true;
-                    if (Math.random() < 0.55) {
-                        g.indexAsset += 800; unlockTitle('t_angel_patron');
-                        showEventResult("🦄 ユニコーン企業に大化け！！", "親友の会社が上場！持分が株式 +" + fmtShort(800) + " に化け、称号『🤝 友人の起業サポーター』を獲得しました！", false);
+                    if (Math.random() < 0.30) {
+                        g.indexAsset += 500; unlockTitle('t_angel_patron');
+                        showEventResult("🦄 ユニコーン企業に大化け！！", "親友の会社が上場！持分が株式 +" + fmtShort(500) + " に化け、称号『🤝 友人の起業サポーター』を獲得しました！", false);
                     } else {
                         recordCrisisSurvived();
                         showEventResult("🥀 スタートアップ事業失敗…", "開発競争に敗れ、出資した -" + fmtShort(150) + " は戻ってきませんでした…。", true);
                     }
                 }},
-                { label: "🤝 丁重に断って堅実に守る", whatIf: "もし出資していたら、55%の確率で株+800の大当たり、45%の確率で出資した150を失うギャンブルでした。", action: function() {
+                { label: "🤝 丁重に断って堅実に守る", whatIf: "もし出資していたら、30%の確率で株+500の大当たり、70%の確率で出資した150を失う、平均するとトントンのギャンブルでした。", action: function() {
                     showEventResult("🛡️ 堅実なリスク管理", "手元の現金を1円も減らさずに守りました。", false);
                 }}
             ]
@@ -2749,57 +2757,80 @@
         {
             title: "⚡ ハイテク・グロース株の決算ショック急落！",
             desc: "大手ハイテク企業の決算が予想を下回り、激しい売り浴びせが起きています！",
-            beginnerTip: "【逆張りチャンスガイド】\n手元現金120を使って買い増しを仕掛けると、反発で大きな利益と称号『🛒 バーゲンハンター』を獲得できます！",
+            beginnerTip: "【逆張りチャンスガイド】\nどちらを選んでも保有株は10%下がります。現金120で買い増すと、60%の確率で反発して +240、40%の確率で下げ止まらず +60 にとどまります。買い増せば称号『🛒 バーゲンハンター』も獲得できます。",
             choices: [
-                { label: "🦅 現金120で割安になった株を逆張り買い増しする！", whatIf: "もし静観していたら、保有株がさらに10%下落していました。", action: function() {
-                    if (g.cash >= 120) {
-                        g.cash -= 120; g.indexAsset += 280; g.everBoughtAsset = true; unlockTitle('t_dip_buyer');
-                        showEventResult("🦅 逆張り大成功（差引き +160）！", "急反発で大きな利益と称号『🛒 バーゲンハンター』を獲得しました！", false);
-                    } else {
-                        recordCrisisSurvived();
-                        let drop = Math.round(g.indexAsset * 0.14); g.indexAsset = Math.max(0, g.indexAsset - drop);
-                        showEventResult("📉 資金不足＆株価下落", "保有株が -" + fmtShort(drop) + " 下落しました。", true);
-                    }
-                }},
-                { label: "🛡️ 嵐が過ぎるのを静観する", whatIf: "もし逆張り買い増ししていたら、現金120と引き換えに差引き+160の利益と称号を得られていました（現金不足なら株が14%減少）。", action: function() {
+                { label: "🦅 現金120で割安になった株を逆張り買い増しする！", whatIf: "もし静観していたら、現金120は手元に残り、保有株の-10%だけで済んでいました。", action: function() {
                     recordCrisisSurvived();
                     let drop = Math.round(g.indexAsset * 0.10); g.indexAsset = Math.max(0, g.indexAsset - drop);
-                    showEventResult("☔ セクター調整（株 -" + fmtShort(drop) + "）", "株式評価額が -" + fmtShort(drop) + " 減少しましたが、致命傷は避けました。", true);
+                    if (g.cash >= 120) {
+                        g.cash -= 120; g.everBoughtAsset = true; unlockTitle('t_dip_buyer');
+                        if (Math.random() < 0.60) {
+                            g.indexAsset += 240;
+                            showEventResult("🦅 逆張り成功（買い増し分 +120）！", "保有株は -" + fmtShort(drop) + " 下がりましたが、買い増した120が急反発で +" + fmtShort(240) + " になり、称号『🛒 バーゲンハンター』を獲得しました！", false);
+                        } else {
+                            g.indexAsset += 60;
+                            showEventResult("📉 逆張りは早すぎた…（買い増し分 -60）", "保有株が -" + fmtShort(drop) + " 下がり、買い増した120もさらに下落して " + fmtShort(60) + " に。落ちてくるナイフはつかみにくいものです。（称号『🛒 バーゲンハンター』は獲得）", true);
+                        }
+                    } else {
+                        showEventResult("📉 資金不足で買い増しできず", "手元現金が120に満たず買い増しできませんでした。保有株が -" + fmtShort(drop) + " 下落しました。", true);
+                    }
+                }},
+                { label: "🛡️ 嵐が過ぎるのを静観する", whatIf: "もし逆張り買い増ししていたら、現金120を使い、60%の確率で+240、40%の確率で+60になる賭けでした（平均では+48の得）。", action: function() {
+                    recordCrisisSurvived();
+                    let drop = Math.round(g.indexAsset * 0.10); g.indexAsset = Math.max(0, g.indexAsset - drop);
+                    showEventResult("☔ セクター調整（株 -" + fmtShort(drop) + "）", "株式評価額が -" + fmtShort(drop) + " 減少しましたが、現金は手元に残しました。", true);
                 }}
             ]
         },
         {
             title: "📈 世界的な好景気ボーナス到来！",
             desc: "企業の業績が絶好調で、株価がグングン上がっています！",
-            beginnerTip: "【初心者向けガイド】\n株の成長に乗るか、臨時配当を現金で受け取るかを選べます。",
+            beginnerTip: "【リスクとリターンガイド】\n攻める：70%の確率で株+15%（最低+100）、30%の確率で過熱の反動で-10%。\n手堅く：確実に現金+200（株を多く持っていれば株の4%）。\n平均では攻める方が多くもらえますが、外れることもあります。",
             choices: [
-                { label: "🌟 攻める：インデックス株の評価額を +30% ブーストする！", whatIf: "もし手堅く現金+200を選んでいたら、保有株の評価額アップのチャンスを逃していました。", action: function() {
-                    let gain = Math.max(150, Math.round(g.indexAsset * 0.30)); g.indexAsset += gain;
-                    showEventResult("🚀 資産大爆発！", "インデックス株が +" + fmtShort(gain) + " 増えました！", false);
+                { label: "🌟 攻める：好景気の波に乗って株の値上がりを狙う！", whatIf: "もし手堅く臨時配当を選んでいたら、確実に現金 +200（または株の4%）を受け取れていました。", action: function() {
+                    if (Math.random() < 0.70) {
+                        let gain = Math.max(100, Math.round(g.indexAsset * 0.15)); g.indexAsset += gain;
+                        showEventResult("🚀 波に乗った！", "インデックス株が +" + fmtShort(gain) + " 増えました！", false);
+                    } else {
+                        let drop = Math.round(g.indexAsset * 0.10); g.indexAsset = Math.max(0, g.indexAsset - drop);
+                        showEventResult("🎢 過熱の反動…", "好景気の熱が冷めて株が反落し、インデックス株が -" + fmtShort(drop) + " 減りました。", true);
+                    }
                 }},
-                { label: "💵 手堅く：臨時配当として現金 +200 を受け取る！", whatIf: "もし株をブーストしていたら、保有額の30%（最低150）分、インデックス株が増えていました。", action: function() {
-                    g.cash += 200;
-                    showEventResult("💰 臨時収入ゲット！", "現金 +" + fmtShort(200) + " を受け取りました！", false);
+                { label: "💵 手堅く：臨時配当を現金で受け取る！", whatIf: "もし攻めていたら、70%の確率で株+15%（最低+100）、30%の確率で株-10%になっていました。", action: function() {
+                    let gain = Math.max(200, Math.round(g.indexAsset * 0.04));
+                    g.cash += gain;
+                    showEventResult("💰 臨時収入ゲット！", "現金 +" + fmtShort(gain) + " を受け取りました！", false);
                 }}
             ]
         },
         {
             title: "🛒 一時的な株価のバーゲンセール（押し目チャンス）",
             desc: "一時的なニュースで株が少し安くなっています。安く仕込めるチャンスです！",
-            beginnerTip: "【初心者向けガイド】\n現金100でバーゲン買いを成功させると称号『🛒 バーゲンハンター』も獲得できます！",
+            beginnerTip: "【初心者向けガイド】\n現金100で株を仕込むと、75%の確率で +200、25%の確率で +90 になります（称号『🛒 バーゲンハンター』も獲得）。\n金を仕込むと確実に +130 です。",
             choices: [
-                { label: "🔥 バーゲン買い：現金100を使って株を +240 分仕込む！", whatIf: "もし金の価値を高める方を選んでいたら、保有金の22%（最低90）が増えるにとどまり、株の割安買いチャンスを逃していました。", action: function() {
+                { label: "🔥 バーゲン買い：現金100で株を仕込む！", whatIf: "もし金を仕込んでいたら、現金100が確実に金 +130 になっていました。", action: function() {
                     if (g.cash >= 100) {
-                        g.cash -= 100; g.indexAsset += 240; g.everBoughtAsset = true; unlockTitle('t_dip_buyer');
-                        showEventResult("🎯 逆張り大成功！", "市場が回復し、差引き +" + fmtShort(140) + " の利益と称号を獲得しました！", false);
+                        g.cash -= 100; g.everBoughtAsset = true; unlockTitle('t_dip_buyer');
+                        if (Math.random() < 0.75) {
+                            g.indexAsset += 200;
+                            showEventResult("🎯 逆張り成功！", "市場が回復し、仕込んだ100が株 +" + fmtShort(200) + " になり、称号を獲得しました！", false);
+                        } else {
+                            g.indexAsset += 90;
+                            showEventResult("😐 回復はまだ先…", "仕込んだ100は株 +" + fmtShort(90) + " にとどまりました（称号は獲得）。", true);
+                        }
                     } else {
                         g.indexAsset += 60;
                         showEventResult("✨ 保有継続ボーナス", "回復ボーナス +" + fmtShort(60) + " を得ました！", false);
                     }
                 }},
-                { label: "🛡️ 金（ゴールド）の価値を高める", whatIf: "もしバーゲン買いしていたら、現金100と引き換えに差引き+140の利益と称号を得られていました（現金不足なら株+60にとどまりました）。", action: function() {
-                    let gain = Math.max(90, Math.round(g.goldAsset * 0.22)); g.goldAsset += gain;
-                    showEventResult("🪙 ゴールド上昇！", "金（ゴールド）が買われ、資産が +" + fmtShort(gain) + " 増えました！", false);
+                { label: "🛡️ 現金100で金（ゴールド）を確実に仕込む", whatIf: "もし株を仕込んでいたら、75%の確率で株+200、25%の確率で株+90になっていました（平均では+172）。", action: function() {
+                    if (g.cash >= 100) {
+                        g.cash -= 100; g.goldAsset += 130; g.everBoughtAsset = true;
+                        showEventResult("🪙 ゴールドを確保！", "現金100で仕込んだ金が +" + fmtShort(130) + " になりました！", false);
+                    } else {
+                        g.goldAsset += 40;
+                        showEventResult("✨ 保有継続ボーナス", "金が少し買われ、+" + fmtShort(40) + " 増えました！", false);
+                    }
                 }}
             ]
         },
