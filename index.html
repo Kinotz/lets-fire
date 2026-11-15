@@ -37,7 +37,6 @@
         .app-title { font-size: 0.85rem; font-weight: 900; background: linear-gradient(90deg, #fde047, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; cursor: pointer; }
         .header-right { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
         .icon-btn { font-size: 0.58rem; font-weight: 700; padding: 4px 6px; border-radius: 8px; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); cursor: pointer; white-space: nowrap; }
-        .lang-select { font-size: 0.58rem; font-weight: 800; padding: 3px 4px; border-radius: 8px; background: var(--card-bg); color: var(--accent-blue); border: 1px solid var(--border); cursor: pointer; }
         .term-btn { display: inline-flex; align-items: center; gap: 2px; background: rgba(56, 189, 248, 0.14); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; padding: 1px 5px; font-size: 0.58rem; font-weight: 800; cursor: pointer; vertical-align: middle; }
         .fire-badge { font-size: 0.58rem; font-weight: 900; padding: 2px 6px; border-radius: 10px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(16, 185, 129, 0.1)); color: var(--accent-green); border: 1px solid var(--accent-green); animation: pulseGlow 1.5s infinite alternate; }
         @keyframes pulseGlow { from { opacity: 0.8; transform: scale(1); } to { opacity: 1; transform: scale(1.05); } }
@@ -234,13 +233,6 @@
             <button type="button" class="icon-btn" onclick="openTitlesModal()" id="btn-titles" style="border-color:var(--accent-purple); color:var(--accent-purple);">🎖️ 称号(0/43)</button>
             <button type="button" class="icon-btn" onclick="openRankingModal()" id="btn-ranking">🏆 ランキング</button>
             <button type="button" class="icon-btn" onclick="openSoundModal()" id="btn-sound">🔊 音量</button>
-            <select class="lang-select" id="lang-select" onchange="changeLanguage(this.value)">
-                <option value="ja">日本語</option>
-                <option value="en">English</option>
-                <option value="zh">中文</option>
-                <option value="ko">한국어</option>
-                <option value="es">Español</option>
-            </select>
             <span class="fire-badge hidden" id="fire-badge">FIRE達成 🔥</span>
             <div class="age-badge hidden" id="header-age-badge"><span id="turn-disp">1</span>/<span id="maxturn-disp">66</span><span id="lbl-yr-unit">年</span> (<span id="age-disp">25</span><span id="lbl-age-unit">歳</span>)</div>
         </div>
@@ -768,7 +760,6 @@
     }
 
     let isGameStarted = false;
-    let currentLang = 'ja';
     let market = 'jp';
     let gameMode = 'easy';
     let navStep = 1;
@@ -884,9 +875,7 @@
 
     function resetAllSavedData() {
         playSound('click');
-        const msg = currentLang === 'ja'
-            ? "獲得した「称号コレクション」と「チュートリアル完了記録」（途中のセーブデータを含む）をすべて消去して、一番最初の状態に戻しますか？"
-            : "Reset all unlocked Titles and Tutorial progress back to the initial state?";
+        const msg = "獲得した「称号コレクション」と「チュートリアル完了記録」（途中のセーブデータを含む）をすべて消去して、一番最初の状態に戻しますか？";
         if (!confirm(msg)) return;
         try {
             localStorage.removeItem('uws_unlocked_titles_v1');
@@ -895,55 +884,55 @@
             localStorage.removeItem(SAVE_GAME_KEY);
         } catch (e) {}
         unlockedTitlesMap = {};
-        alert(currentLang === 'ja' ? "すべての記録を初期化しました！再スタートします。" : "All data reset! Reloading...");
+        alert("すべての記録を初期化しました！再スタートします。");
         location.reload();
     }
 
     // --- 🎖️ 全43種の称号コレクションマスターデータ ---
     const titleMasterList = [
-        { id: 't_first_step', mythic: false, icon: '🌱', nameJa: '1. 積立デビュー（投資見習い）', nameEn: '1. Novice Saver', descJa: '初めて全世界インデックス株を購入した', descEn: 'Bought Global Index Fund for the first time' },
-        { id: 't_gold_shield', mythic: false, icon: '🪙', nameJa: '2. ゴールド収集家', nameEn: '2. Gold Collector', descJa: '安全資産の金（ゴールド）を500以上保有した', descEn: 'Held 500+ in Gold safe haven assets' },
-        { id: 't_cash_king', mythic: false, icon: '💴', nameJa: '3. タンス預金マニア', nameEn: '3. Cash Hoarder', descJa: '手元の待機資金（現金）だけで3,000以上を保有した', descEn: 'Held 3,000+ in pure liquid cash reserves' },
-        { id: 't_all_in', mythic: false, icon: '🔥', nameJa: '4. 全力買いチャレンジャー', nameEn: '4. All-In Challenger', descJa: '純資産5,000以上の状態で、現金比率を5%以下に絞って運用した', descEn: 'Invested 95%+ of assets with Net Worth over 5,000' },
-        { id: 't_balancer', mythic: false, icon: '⚖️', nameJa: '5. 分散投資の基本実践者', nameEn: '5. Basic Balancer', descJa: '現金・株式・金・不動産の4資産すべてを同時に各500以上保有した', descEn: 'Held 500+ in Cash, Stocks, Gold, and Real Estate simultaneously' },
-        { id: 't_dip_buyer', mythic: false, icon: '🛒', nameJa: '6. バーゲンハンター（押し目買い）', nameEn: '6. Bargain Hunter', descJa: '株価下落やバーゲンセールのイベントで買い増しを行った', descEn: 'Bought the dip during a market drop event' },
-        { id: 't_career_ace', mythic: false, icon: '💼', nameJa: '7. 出世街道の会社員', nameEn: '7. Corporate Climber', descJa: '本業で自己投資を重ねてLv.5以上に昇進した', descEn: 'Promoted to Lv.5 or higher in your career' },
-        { id: 't_landlord', mythic: false, icon: '🏠', nameJa: '8. 新米大家さん', nameEn: '8. Rookie Landlord', descJa: '銀行融資を使って初めて収益不動産を購入した', descEn: 'Purchased first rental property with bank loan' },
-        { id: 't_re_king', mythic: false, icon: '🏘️', nameJa: '9. 街の不動産オーナー', nameEn: '9. Local Property Owner', descJa: '収益不動産を同時に3棟以上保有した', descEn: 'Owned 3 or more rental properties simultaneously' },
-        { id: 't_corp_boss', mythic: false, icon: '🏢', nameJa: '10. ひとり社長デビュー', nameEn: '10. Solo Corp Founder', descJa: '純資産5,000を達成し、資産管理法人を設立した', descEn: 'Established a Private Asset Management Corporation' },
-        { id: 't_ipo_hunter', mythic: false, icon: '🎯', nameJa: '11. IPOビギナーズラック', nameEn: '11. IPO Beginners Luck', descJa: 'IPO（新規公開株）抽選に1回当選した', descEn: 'Won an IPO lottery once' },
-        { id: 't_crypto_whale', mythic: false, icon: '🪙', nameJa: '12. 仮想通貨ホルダー', nameEn: '12. Crypto Holder', descJa: '仮想通貨の保有評価額が1,000を突破した', descEn: 'Crypto holdings value exceeded 1,000' },
-        { id: 't_scam_buster', mythic: false, icon: '🛡️', nameJa: '13. 詐欺勧誘スルー', nameEn: '13. Scam Dodger', descJa: '怪しい投資詐欺の誘いを断って資産を守った', descEn: 'Rejected a Ponzi scheme invitation' },
-        { id: 't_tax_guardian', mythic: false, icon: '🧾', nameJa: '14. まじめな納税者', nameEn: '14. Honest Taxpayer', descJa: '突然の税務調査イベントで適正申告を行い通過した', descEn: 'Passed a sudden tax audit honestly' },
-        { id: 't_cyber_defender', mythic: false, icon: '🔐', nameJa: '15. 二段階認証ユーザー', nameEn: '15. 2FA Security User', descJa: '証券口座を狙うフィッシング詐欺をセキュリティ対策で防いだ', descEn: 'Blocked a phishing attack with 2FA security' },
-        { id: 't_angel_patron', mythic: false, icon: '🤝', nameJa: '16. 友人の起業サポーター', nameEn: '16. Startup Supporter', descJa: '友人のスタートアップ起業に出資して成功を見届けた', descEn: 'Backed a friend startup that succeeded' },
-        { id: 't_philanthropist', mythic: false, icon: '🕊️', nameJa: '17. 地域チャリティ協力者', nameEn: '17. Charity Donor', descJa: '教育チャリティ基金へ寄付を行った', descEn: 'Donated to an educational charity foundation' },
-        { id: 't_crisis_survivor', mythic: false, icon: '☔', nameJa: '18. 景気の波乗り経験者', nameEn: '18. Market Wave Rider', descJa: '資産減少・経済危機イベントを3回通過した', descEn: 'Experienced 3 economic crisis events' },
-        { id: 't_fire_clear', mythic: false, icon: '🏖️', nameJa: '19. セミリタイア達成', nameEn: '19. Semi-Retire Clear', descJa: '基本となるFIRE目標（不労所得CF300または純資産7,500）に到達した', descEn: 'Reached the baseline FIRE target' },
-        { id: 't_okuribito', mythic: false, icon: '💰', nameJa: '20. 小金持ちの仲間入り', nameEn: '20. Entry Millionaire', descJa: '純資産総額が10,000（1億円 / $1M）に到達した', descEn: 'Total Net Worth reached 10,000 (100M JPY / $1M)' },
-        { id: 't_debt_free_rich', mythic: false, icon: '✨', nameJa: '21. ローン完済の堅実派', nameEn: '21. Debt-Free Saver', descJa: '借入0の状態で純資産30,000を達成した', descEn: 'Reached 30,000+ Net Worth with zero debt' },
-        { id: 't_super_rich', mythic: false, icon: '🏛️', nameJa: '22. 富裕層の仲間入り', nameEn: '22. High Net Worth Club', descJa: '純資産総額が100,000（10億円 / $10M）に到達した', descEn: 'Total Net Worth reached 100,000' },
-        { id: 't_world_ruler', mythic: false, icon: '💎', nameJa: '23. 大資産家ステージ', nameEn: '23. Grand Capitalist', descJa: '純資産総額が300,000（30億円 / $30M）に到達した', descEn: 'Total Net Worth reached 300,000' },
-        { id: 't_life_master', mythic: false, icon: '🎂', nameJa: '24. 90歳までのライフプラン完走', nameEn: '24. 90-Year Life Finisher', descJa: '25歳から90歳までの66年間を最後までプレイした', descEn: 'Finished all 66 turns to age 90' },
-        { id: 't_imp_speed_fire', mythic: true, icon: '⚡', nameJa: '25. 光速の20代FIRE（神速の自由人）', nameEn: '25. Sub-30 Speedrun FIRE', descJa: '【超難関】30歳になる前（29歳以下・開始5年以内）にFIRE目標を達成した', descEn: '[MYTHIC] Achieved FIRE before age 30 (within 5 turns)' },
-        { id: 't_imp_salary_only', mythic: true, icon: '🔨', nameJa: '26. 労働と預金の求道者（投資ゼロ億り人）', nameEn: '26. Pure Labor Millionaire', descJa: '【超難関】株・金・仮想通貨・不動産・IPOを1度も買わず、給与と現金のみで純資産10,000（1億円）を達成した', descEn: '[MYTHIC] Reached 10,000 Net Worth without ever buying any investment asset' },
-        { id: 't_imp_hard_no_corp', mythic: true, icon: '👹', nameJa: '27. 修羅の個人納税王（ハードコア無法人10億）', nameEn: '27. Hardcore Solo Tax King', descJa: '【超難関】最高難易度「ハードコア」かつ「法人化を一切せず」に純資産100,000（10億円）を突破した', descEn: '[MYTHIC] Reached 100,000 Net Worth in Hardcore mode without establishing a Corp' },
-        { id: 't_imp_re_leviathan', mythic: true, icon: '🏰', nameJa: '28. 摩天楼の絶対君主（無借金15棟オーナー）', nameEn: '28. Skyscraper Leviathan', descJa: '【超難関】収益不動産を同時に15棟以上保有し、かつ銀行借入を「0（完全完済）」にした', descEn: '[MYTHIC] Owned 15+ properties simultaneously with ZERO bank debt' },
-        { id: 't_imp_ipo_god', mythic: true, icon: '🎰', nameJa: '29. 神に愛されし抽選王（IPO 5回当選）', nameEn: '29. God of IPO Lottery', descJa: '【超難関】当選率8%のIPOブックビルディング抽選に、1回の人生で5回以上当選する奇跡を起こした', descEn: '[MYTHIC] Won the 8% IPO lottery 5+ times in a single life' },
-        { id: 't_imp_crypto_king', mythic: true, icon: '🚀', nameJa: '30. サトシ・ナカモトの後継者', nameEn: '30. Successor of Satoshi', descJa: '【超難関】仮想通貨（ビットコイン）の保有評価額だけで500,000（50億円）を突破した', descEn: '[MYTHIC] Held 500,000+ value in Bitcoin alone' },
-        { id: 't_imp_gold_emperor', mythic: true, icon: '👑', nameJa: '31. エル・ドラドの黄金皇帝', nameEn: '31. Emperor of El Dorado', descJa: '【超難関】安全資産「金（ゴールド）」の保有額だけで300,000（30億円）を突破した', descEn: '[MYTHIC] Held 300,000+ in Gold safe haven assets alone' },
-        { id: 't_imp_crisis_master', mythic: true, icon: '🛡️', nameJa: '32. 不沈のアイアン・ウォール', nameEn: '32. Unsinkable Iron Wall', descJa: '【超難関】経済危機イベントを10回以上乗り越え、かつ無借金で純資産100,000以上を維持した', descEn: '[MYTHIC] Survived 10+ crisis events with 100,000+ Net Worth and zero debt' },
-        { id: 't_imp_quad_crown', mythic: true, icon: '💠', nameJa: '33. 四皇のクアッド・クラウン', nameEn: '33. Quadruple Asset Crown', descJa: '【超難関】現金・株式・金・不動産の4資産すべてを、同時に各50,000（5億円）以上保有した', descEn: '[MYTHIC] Held 50,000+ in Cash, Stocks, Gold, and Real Estate simultaneously' },
-        { id: 't_imp_100oku', mythic: true, icon: '🐉', nameJa: '34. 百億の覇者（デカ・ビリオネア）', nameEn: '34. Deca-Billionaire Dragon', descJa: '【超難関】純資産総額が1,000,000（100億円 / $100M）の大台を突破した', descEn: '[MYTHIC] Total Net Worth exceeded 1,000,000 (10B JPY / $100M)' },
-        { id: 't_imp_1cho', mythic: true, icon: '🪐', nameJa: '35. 一兆円の神話（トリリオネア・ゴッド）', nameEn: '35. Trillionaire Mythic God', descJa: '【達成不可能級】純資産総額が100,000,000（1兆円 / $10B）という神話領域に到達した', descEn: '[IMPOSSIBLE] Total Net Worth reached 100,000,000 (1 Trillion JPY)' },
-        { id: 't_imp_omni_god', mythic: true, icon: '🌟', nameJa: '36. 全知全能のFIRE神（完全制覇）', nameEn: '36. Omniscient God of FIRE', descJa: '【究極神話】他の42種類すべての称号をコンプリートした伝説のプレイヤー', descEn: '[ULTIMATE] Unlocked all other 42 Titles in the game' },
-        { id: 't_no_crypto_fire', mythic: false, icon: '🧊', nameJa: '37. 堅実王道のFIRE達成者', nameEn: '37. Steady-Path FIRE Achiever', descJa: '【縛りプレイ】仮想通貨に一度も手を出さずにFIRE目標を達成した', descEn: '[CHALLENGE] Achieved FIRE without ever buying crypto' },
-        { id: 't_no_stock_fire', mythic: false, icon: '🧭', nameJa: '38. インデックス一筋の求道者', nameEn: '38. Index-Only Purist', descJa: '【縛りプレイ】個別株に一度も手を出さず、インデックスと金だけでFIRE目標を達成した', descEn: '[CHALLENGE] Achieved FIRE without ever buying individual stocks' },
-        { id: 't_no_debt_fire', mythic: false, icon: '🪨', nameJa: '39. 無借金経営のFIRE達成者', nameEn: '39. Debt-Free FIRE Achiever', descJa: '【縛りプレイ】一度も借金（不動産ローン）をせずにFIRE目標を達成した', descEn: '[CHALLENGE] Achieved FIRE without ever taking on debt' },
-        { id: 't_fire_cash_only', mythic: true, icon: '🐢', nameJa: '40. 亀の歩みの貯金王（無投資FIRE）', nameEn: '40. The Tortoise Saver', descJa: '【超難関】株・金・仮想通貨・不動産を一切買わず、給与の貯金だけでFIRE目標（純資産7,500）を達成した', descEn: '[MYTHIC] Achieved the FIRE target using only salary savings, with zero investments ever' },
-        { id: 't_chal_crypto_fire', mythic: true, icon: '🐺', nameJa: '41. 暗号資産一本の一匹狼', nameEn: '41. Crypto-Only Lone Wolf', descJa: '【縛りプレイ達成】「暗号資産オンリー」チャレンジで、暗号資産（と給与）だけを使ってFIRE目標を達成した', descEn: '[CHALLENGE CLEAR] Achieved FIRE in the Crypto-Only challenge mode' },
-        { id: 't_chal_realestate_fire', mythic: true, icon: '🏯', nameJa: '42. 大家一本の不動産王', nameEn: '42. Real-Estate-Only King', descJa: '【縛りプレイ達成】「不動産王一本勝負」チャレンジで、不動産投資だけを使ってFIRE目標を達成した', descEn: '[CHALLENGE CLEAR] Achieved FIRE in the Real-Estate-Only challenge mode' },
-        { id: 't_chal_conservative_fire', mythic: true, icon: '🧘', nameJa: '43. 超保守型の守りの達人', nameEn: '43. Ultra-Conservative Master', descJa: '【縛りプレイ達成】「超保守型」チャレンジで、インデックスと金だけを使ってFIRE目標を達成した', descEn: '[CHALLENGE CLEAR] Achieved FIRE in the Ultra-Conservative challenge mode' }
+        { id: 't_first_step', mythic: false, icon: '🌱', nameJa: '1. 積立デビュー（投資見習い）', descJa: '初めて全世界インデックス株を購入した' },
+        { id: 't_gold_shield', mythic: false, icon: '🪙', nameJa: '2. ゴールド収集家', descJa: '安全資産の金（ゴールド）を500以上保有した' },
+        { id: 't_cash_king', mythic: false, icon: '💴', nameJa: '3. タンス預金マニア', descJa: '手元の待機資金（現金）だけで3,000以上を保有した' },
+        { id: 't_all_in', mythic: false, icon: '🔥', nameJa: '4. 全力買いチャレンジャー', descJa: '純資産5,000以上の状態で、現金比率を5%以下に絞って運用した' },
+        { id: 't_balancer', mythic: false, icon: '⚖️', nameJa: '5. 分散投資の基本実践者', descJa: '現金・株式・金・不動産の4資産すべてを同時に各500以上保有した' },
+        { id: 't_dip_buyer', mythic: false, icon: '🛒', nameJa: '6. バーゲンハンター（押し目買い）', descJa: '株価下落やバーゲンセールのイベントで買い増しを行った' },
+        { id: 't_career_ace', mythic: false, icon: '💼', nameJa: '7. 出世街道の会社員', descJa: '本業で自己投資を重ねてLv.5以上に昇進した' },
+        { id: 't_landlord', mythic: false, icon: '🏠', nameJa: '8. 新米大家さん', descJa: '銀行融資を使って初めて収益不動産を購入した' },
+        { id: 't_re_king', mythic: false, icon: '🏘️', nameJa: '9. 街の不動産オーナー', descJa: '収益不動産を同時に3棟以上保有した' },
+        { id: 't_corp_boss', mythic: false, icon: '🏢', nameJa: '10. ひとり社長デビュー', descJa: '純資産5,000を達成し、資産管理法人を設立した' },
+        { id: 't_ipo_hunter', mythic: false, icon: '🎯', nameJa: '11. IPOビギナーズラック', descJa: 'IPO（新規公開株）抽選に1回当選した' },
+        { id: 't_crypto_whale', mythic: false, icon: '🪙', nameJa: '12. 仮想通貨ホルダー', descJa: '仮想通貨の保有評価額が1,000を突破した' },
+        { id: 't_scam_buster', mythic: false, icon: '🛡️', nameJa: '13. 詐欺勧誘スルー', descJa: '怪しい投資詐欺の誘いを断って資産を守った' },
+        { id: 't_tax_guardian', mythic: false, icon: '🧾', nameJa: '14. まじめな納税者', descJa: '突然の税務調査イベントで適正申告を行い通過した' },
+        { id: 't_cyber_defender', mythic: false, icon: '🔐', nameJa: '15. 二段階認証ユーザー', descJa: '証券口座を狙うフィッシング詐欺をセキュリティ対策で防いだ' },
+        { id: 't_angel_patron', mythic: false, icon: '🤝', nameJa: '16. 友人の起業サポーター', descJa: '友人のスタートアップ起業に出資して成功を見届けた' },
+        { id: 't_philanthropist', mythic: false, icon: '🕊️', nameJa: '17. 地域チャリティ協力者', descJa: '教育チャリティ基金へ寄付を行った' },
+        { id: 't_crisis_survivor', mythic: false, icon: '☔', nameJa: '18. 景気の波乗り経験者', descJa: '資産減少・経済危機イベントを3回通過した' },
+        { id: 't_fire_clear', mythic: false, icon: '🏖️', nameJa: '19. セミリタイア達成', descJa: '基本となるFIRE目標（不労所得CF300または純資産7,500）に到達した' },
+        { id: 't_okuribito', mythic: false, icon: '💰', nameJa: '20. 小金持ちの仲間入り', descJa: '純資産総額が10,000（1億円 / $1M）に到達した' },
+        { id: 't_debt_free_rich', mythic: false, icon: '✨', nameJa: '21. ローン完済の堅実派', descJa: '借入0の状態で純資産30,000を達成した' },
+        { id: 't_super_rich', mythic: false, icon: '🏛️', nameJa: '22. 富裕層の仲間入り', descJa: '純資産総額が100,000（10億円 / $10M）に到達した' },
+        { id: 't_world_ruler', mythic: false, icon: '💎', nameJa: '23. 大資産家ステージ', descJa: '純資産総額が300,000（30億円 / $30M）に到達した' },
+        { id: 't_life_master', mythic: false, icon: '🎂', nameJa: '24. 90歳までのライフプラン完走', descJa: '25歳から90歳までの66年間を最後までプレイした' },
+        { id: 't_imp_speed_fire', mythic: true, icon: '⚡', nameJa: '25. 光速の20代FIRE（神速の自由人）', descJa: '【超難関】30歳になる前（29歳以下・開始5年以内）にFIRE目標を達成した' },
+        { id: 't_imp_salary_only', mythic: true, icon: '🔨', nameJa: '26. 労働と預金の求道者（投資ゼロ億り人）', descJa: '【超難関】株・金・仮想通貨・不動産・IPOを1度も買わず、給与と現金のみで純資産10,000（1億円）を達成した' },
+        { id: 't_imp_hard_no_corp', mythic: true, icon: '👹', nameJa: '27. 修羅の個人納税王（ハードコア無法人10億）', descJa: '【超難関】最高難易度「ハードコア」かつ「法人化を一切せず」に純資産100,000（10億円）を突破した' },
+        { id: 't_imp_re_leviathan', mythic: true, icon: '🏰', nameJa: '28. 摩天楼の絶対君主（無借金15棟オーナー）', descJa: '【超難関】収益不動産を同時に15棟以上保有し、かつ銀行借入を「0（完全完済）」にした' },
+        { id: 't_imp_ipo_god', mythic: true, icon: '🎰', nameJa: '29. 神に愛されし抽選王（IPO 5回当選）', descJa: '【超難関】当選率8%のIPOブックビルディング抽選に、1回の人生で5回以上当選する奇跡を起こした' },
+        { id: 't_imp_crypto_king', mythic: true, icon: '🚀', nameJa: '30. サトシ・ナカモトの後継者', descJa: '【超難関】仮想通貨（ビットコイン）の保有評価額だけで500,000（50億円）を突破した' },
+        { id: 't_imp_gold_emperor', mythic: true, icon: '👑', nameJa: '31. エル・ドラドの黄金皇帝', descJa: '【超難関】安全資産「金（ゴールド）」の保有額だけで300,000（30億円）を突破した' },
+        { id: 't_imp_crisis_master', mythic: true, icon: '🛡️', nameJa: '32. 不沈のアイアン・ウォール', descJa: '【超難関】経済危機イベントを10回以上乗り越え、かつ無借金で純資産100,000以上を維持した' },
+        { id: 't_imp_quad_crown', mythic: true, icon: '💠', nameJa: '33. 四皇のクアッド・クラウン', descJa: '【超難関】現金・株式・金・不動産の4資産すべてを、同時に各50,000（5億円）以上保有した' },
+        { id: 't_imp_100oku', mythic: true, icon: '🐉', nameJa: '34. 百億の覇者（デカ・ビリオネア）', descJa: '【超難関】純資産総額が1,000,000（100億円 / $100M）の大台を突破した' },
+        { id: 't_imp_1cho', mythic: true, icon: '🪐', nameJa: '35. 一兆円の神話（トリリオネア・ゴッド）', descJa: '【達成不可能級】純資産総額が100,000,000（1兆円 / $10B）という神話領域に到達した' },
+        { id: 't_imp_omni_god', mythic: true, icon: '🌟', nameJa: '36. 全知全能のFIRE神（完全制覇）', descJa: '【究極神話】他の42種類すべての称号をコンプリートした伝説のプレイヤー' },
+        { id: 't_no_crypto_fire', mythic: false, icon: '🧊', nameJa: '37. 堅実王道のFIRE達成者', descJa: '【縛りプレイ】仮想通貨に一度も手を出さずにFIRE目標を達成した' },
+        { id: 't_no_stock_fire', mythic: false, icon: '🧭', nameJa: '38. インデックス一筋の求道者', descJa: '【縛りプレイ】個別株に一度も手を出さず、インデックスと金だけでFIRE目標を達成した' },
+        { id: 't_no_debt_fire', mythic: false, icon: '🪨', nameJa: '39. 無借金経営のFIRE達成者', descJa: '【縛りプレイ】一度も借金（不動産ローン）をせずにFIRE目標を達成した' },
+        { id: 't_fire_cash_only', mythic: true, icon: '🐢', nameJa: '40. 亀の歩みの貯金王（無投資FIRE）', descJa: '【超難関】株・金・仮想通貨・不動産を一切買わず、給与の貯金だけでFIRE目標（純資産7,500）を達成した' },
+        { id: 't_chal_crypto_fire', mythic: true, icon: '🐺', nameJa: '41. 暗号資産一本の一匹狼', descJa: '【縛りプレイ達成】「暗号資産オンリー」チャレンジで、暗号資産（と給与）だけを使ってFIRE目標を達成した' },
+        { id: 't_chal_realestate_fire', mythic: true, icon: '🏯', nameJa: '42. 大家一本の不動産王', descJa: '【縛りプレイ達成】「不動産王一本勝負」チャレンジで、不動産投資だけを使ってFIRE目標を達成した' },
+        { id: 't_chal_conservative_fire', mythic: true, icon: '🧘', nameJa: '43. 超保守型の守りの達人', descJa: '【縛りプレイ達成】「超保守型」チャレンジで、インデックスと金だけを使ってFIRE目標を達成した' }
     ];
     // 称号の総数は常にマスターデータから自動で数える（表記の食い違いを防ぐ）
     const TITLE_TOTAL = titleMasterList.length;
@@ -1120,22 +1109,19 @@
         const count = countUnlockedTitles();
         const total = titleMasterList.length;
         const btn = document.getElementById('btn-titles');
-        if (btn) btn.innerText = (currentLang === 'ja' ? '🎖️ 称号' : '🎖️ Titles') + '(' + count + '/' + total + ')';
+        if (btn) btn.innerText = ('🎖️ 称号') + '(' + count + '/' + total + ')';
         const opBtn = document.getElementById('lbl-op-titles-btn');
-        if (opBtn) opBtn.innerText = (currentLang === 'ja' ? '🎖️ 獲得称号' : '🎖️ Titles') + ' (' + count + '/' + total + ')';
+        if (opBtn) opBtn.innerText = ('🎖️ 獲得称号') + ' (' + count + '/' + total + ')';
         const resCount = document.getElementById('res-titles-count');
         if (resCount) resCount.innerText = count + ' / ' + total;
         // 称号モーダルの見出し・説明とオープニングの紹介文も総数から自動生成する
-        const isJa = currentLang === 'ja';
         const mythicTotal = titleMasterList.filter(function(t) { return t.mythic; }).length;
         const head = document.getElementById('lbl-titles-modal-head');
-        if (head) head.innerText = isJa ? '🎖️ 獲得称号コレクション (全' + total + '種)' : '🎖️ Title Collection (' + total + ' total)';
+        if (head) head.innerText = '🎖️ 獲得称号コレクション (全' + total + '種)';
         const sub = document.getElementById('lbl-titles-modal-sub');
-        if (sub) sub.innerText = isJa
-            ? '全' + total + '種のうち ' + (total - mythicTotal) + '種は通過点となる一般称号、' + mythicTotal + '種は達成不可能に近い【MYTHIC（神話級）】称号（MYTHICマーク付き）です！'
-            : total + ' titles: ' + (total - mythicTotal) + ' regular titles and ' + mythicTotal + ' near-impossible MYTHIC titles (marked MYTHIC).';
+        if (sub) sub.innerText = '全' + total + '種のうち ' + (total - mythicTotal) + '種は通過点となる一般称号、' + mythicTotal + '種は達成不可能に近い【MYTHIC（神話級）】称号（MYTHICマーク付き）です！';
         const opF3 = document.getElementById('lbl-op-f3');
-        if (opF3) opF3.innerText = (i18n[currentLang] || i18n.ja).opF3;
+        if (opF3) opF3.innerText = i18n.ja.opF3;
     }
 
     function unlockTitle(id) {
@@ -1151,7 +1137,7 @@
         saveTitles();
         const toast = document.getElementById('title-toast');
         const toastTxt = document.getElementById('title-toast-text');
-        const dispName = currentLang === 'ja' ? tObj.nameJa : tObj.nameEn;
+        const dispName = tObj.nameJa;
         if (toast && toastTxt) {
             toastTxt.innerText = '🎖️ 新称号獲得：【' + tObj.icon + ' ' + dispName + '】！';
             toast.classList.remove('hidden');
@@ -1165,11 +1151,11 @@
         titleMasterList.forEach(function(t) {
             const unlockedInfo = unlockedTitlesMap[t.id];
             const isUnlocked = !!unlockedInfo;
-            const name = currentLang === 'ja' ? t.nameJa : t.nameEn;
-            const desc = currentLang === 'ja' ? t.descJa : t.descEn;
+            const name = t.nameJa;
+            const desc = t.descJa;
             const statusText = isUnlocked
-                ? (currentLang === 'ja' ? '獲得済 (' + unlockedInfo.date + ')' : 'Unlocked (' + unlockedInfo.date + ')')
-                : (currentLang === 'ja' ? '🔒 未獲得' : '🔒 Locked');
+                ? ('獲得済 (' + unlockedInfo.date + ')')
+                : ('🔒 未獲得');
             const mythicBadge = t.mythic ? '<span class="mythic-pill">MYTHIC</span>' : '';
             listEl.innerHTML +=
                 '<div class="title-card ' + (t.mythic ? 'mythic ' : '') + (isUnlocked ? 'unlocked' : '') + '">' +
@@ -1220,17 +1206,17 @@
         everBoughtCrypto: false, everBoughtIndivStock: false, everTookDebt: false,
         bestNetWorthBeaten: false, challengeMode: 'none', tutorialIpoRewarded: false,
         stocks: [
-            { id: 0, nameJa: 'AI半導体メガ', nameEn: 'AI Semiconductor Mega', price: 100, shares: 0 },
-            { id: 1, nameJa: '世界高配当キング', nameEn: 'Global High-Dividend King', price: 80, shares: 0 }
+            { id: 0, nameJa: 'AI半導体メガ', price: 100, shares: 0 },
+            { id: 1, nameJa: '世界高配当キング', price: 80, shares: 0 }
         ],
         cryptos: [
-            { id: 0, nameJa: 'ビットコイン (BTC)', nameEn: 'Bitcoin (BTC)', price: 100, holdings: 0 }
+            { id: 0, nameJa: 'ビットコイン (BTC)', price: 100, holdings: 0 }
         ],
         ownedProps: [],
         marketProps: [
-            { id: 0, nameJa: '都心駅チカ区分マンション', nameEn: 'Urban Condo', price: 1500, yield: 0.085 },
-            { id: 1, nameJa: '高利回り一棟アパート', nameEn: 'Apartment Building', price: 5000, yield: 0.10 },
-            { id: 2, nameJa: '都心タワー商業ビル', nameEn: 'Commercial Tower', price: 18000, yield: 0.09 }
+            { id: 0, nameJa: '都心駅チカ区分マンション', price: 1500, yield: 0.085 },
+            { id: 1, nameJa: '高利回り一棟アパート', price: 5000, yield: 0.10 },
+            { id: 2, nameJa: '都心タワー商業ビル', price: 18000, yield: 0.09 }
         ],
         history: { net: [600] },
         academy: [
@@ -1282,16 +1268,16 @@
     function fmtMoney(val) {
         const v = Math.round(val);
         if (market === 'jp') {
-            if (currentLang === 'ja' && v >= 100000000) return (v / 100000000).toFixed(2) + '兆円 (¥' + v.toLocaleString() + '万)';
-            if (currentLang === 'ja' && v >= 10000) return (v / 10000).toFixed(2) + '億円 (¥' + v.toLocaleString() + '万)';
-            return '¥' + v.toLocaleString() + (currentLang === 'ja' ? '万' : '0K');
+            if (v >= 100000000) return (v / 100000000).toFixed(2) + '兆円 (¥' + v.toLocaleString() + '万)';
+            if (v >= 10000) return (v / 10000).toFixed(2) + '億円 (¥' + v.toLocaleString() + '万)';
+            return '¥' + v.toLocaleString() + '万';
         }
         return '$' + (v * 100).toLocaleString();
     }
 
     function fmtShort(val) {
         const v = Math.round(val);
-        if (market === 'jp') return '¥' + v.toLocaleString() + (currentLang === 'ja' ? '万' : '0K');
+        if (market === 'jp') return '¥' + v.toLocaleString() + '万';
         return '$' + (v * 100).toLocaleString();
     }
 
@@ -1304,60 +1290,23 @@
 
     const i18n = {
         ja: {
-            appTitle: "Lets' FIRE！", tutorialBtn: "🎓 チュートリアル", ranking: "🏆 ランキング", sound: "🔊 音量",
-            opCatch: "〜 25歳から90歳まで、66年間の資産帝国育成ゲーム 〜",
-            opStory: "【PROLOGUE】\n25歳、社会人のスタートライン。あなたの手元には初期資金「600万円」がある。\nここから90歳までの66年間、どのように働き、どの市場に投資し、どう危機を乗り越えるかはすべてあなた次第。\n\n複利の魔法、不動産レバレッジ、キャリア昇進、そして数々の経済ショック——。\n生きた金融知識を武器に『FIRE（経済的自立）』と『達成不可能級の神話称号』へ挑め！",
-            opF1: "日・米・世界\n3大市場対応", opF2: "全24講座＆\n実践クイズ", opF3: "神話級を含む\n全" + TITLE_TOTAL + "種の称号",
-            opStartBtn: "✨ 資産形成の旅を始める (GAME START)", opSoundBtn: "🔊 音量設定", opResetBtn: "🗑️ データ初期化", opDonateBtn: "☕ 開発者を応援",
-            yrUnit: "年", ageUnit: "歳", fireBadge: "FIRE達成 🔥", corpPill: "🏢 法人化済",
-            mktJp: "🇯🇵 日本市場", mktUs: "🇺🇸 米国市場", mktGl: "🌐 グローバル", mktGuideBtn: "？市場の違い",
+            opF3: "神話級を含む\n全" + TITLE_TOTAL + "種の称号",
+            yrUnit: "年",
             mktDesc: {
                 jp: "🇯🇵 <strong>日本市場 (JPY)</strong>: 超低金利(1.5%)で不動産ローンが圧倒的に有利！安定成長と家賃で手堅くFIREできる市場。",
                 us: "🇺🇸 <strong>米国市場 (USD)</strong>: AI・ハイテク株の成長率が世界最高クラス(+3.5%)！株価成長とIPOで爆発的に億り人を狙える市場。",
                 gl: "🌐 <strong>グローバル市場 (USD)</strong>: 全世界分散で暴落に強く、株式成長(+2.0%)も配当・不動産も高水準な万能マルチ市場。"
             },
             mktGuideTitle: "🌍 選べる3つの投資フィールド（市場）の解説",
-            mktGuideBody: "【🇯🇵 日本市場 (JPY)】超低金利（ローン金利1.5%）で収益不動産のキャッシュフローが最も多く残る市場です。\n\n【🇺🇸 米国市場 (USD)】インデックス株・個別株の成長率に毎年+3.5%のボーナスが乗る高成長市場です。\n\n【🌐 グローバル市場 (USD)】株価成長ボーナス(+2.0%)と高い配当利回り(3.8%)を兼ね備えた万能市場です。",
-            setName: "プレイヤーネーム設定", setMode: "1. ゲームモード（難易度）を選択",
-            mEasy: "🟢 ビギナーズ (初心者向け)", tagEasy: "王道＋不動産ナビ＆爆益", dEasy: "【投資知識ゼロでも安心】インデックス株・金・キャリア・不動産購入までを体験！楽しく学べる入門モード！",
-            mNorm: "🔵 スタンダード (標準)", tagNorm: "個別株・IPO・仮想通貨解放！", dNorm: "【中級者向け】個別株やIPO抽選、仮想通貨までフル解放！好景気も経済危機も乗りこなす王道モード。",
-            mHard: "🔴 ハードコア (上級者向け)", tagHard: "サバイバル経済", dHard: "【上級者向け】全機能解放に加え、暴落・インフレ・詐欺・税務調査が頻発！神話級称号も狙えるプロモード。",
-            startBtn: "🚀 この設定でシミュレーション開始！", rankPrefix: "資産家ランク", helpComp: "💡 複利とは？",
-            netWorth: "純資産総額", freeCash: "手元現金", totalAssets: "総資産", cfSal: "給与貯蓄", cfPas: "不労所得CF", cfFire: "FIRE目標", cfDebt: "銀行借入",
-            chartTitle: "📈 総資産の推移グラフ", legCash: "現金", legStock: "株式", legGold: "金", legCrypto: "仮想通貨", legProp: "不動産",
-            tabPort: "王道投資", tabStocks: "個別株・IPO", tabCrypto: "仮想通貨", tabRe: "不動産", tabCar: "キャリア", tabAcad: "無料講座(24)",
-            coreTitle: "王道の資産運用", helpPort: "💡 ポートフォリオとは？",
-            coreDesc: "ボタンを押して「インデックス株」と「金(ゴールド)」を購入しましょう！暴落や急な出費に備えて「金」と「手元現金」も残すのがコツです。",
-            indName: "全世界インデックス株", indSub: "期待年利: +8%〜+18% (複利成長＋配当)", indTag: "王道の主力資産",
-            goldName: "安全資産・金 (ゴールド)", goldSub: "期待年利: +4%〜+10% (金融ショック時の盾)", goldTag: "暴落時の守り神",
-            btnBuy100: "購入 (+100)", btnBuyHalf: "半額分購入", btnSell100: "売却 (-100)",
-            btnBuy50: "購入 (+50)", btnBuy200: "購入 (+200)", btnSell50: "売却 (-50)",
-            holdPrefix: "保有: ", evalPrefix: "評価額: ", yoyPrefix: "前年比 ",
-            stockTitle: "ハイテク個別株 & リアルIPO抽選", priceLbl: "価格: ", shareLbl: "保有: ", shareUnit: "株", unitLbl: "単位",
+            mktGuideBody: "【🇯🇵 日本市場 (JPY)】超低金利（ローン金利1.5%）で収益不動産のキャッシュフローが最も多く残る市場です。\n\n【🇺🇸 米国市場 (USD)】インデックス株・個別株の成長率に毎年+3.5%のボーナスが乗る高成長市場です。\n\n【🌐 グローバル市場 (USD)】株価成長ボーナス(+2.0%)と高い配当利回り(3.8%)を兼ね備えた万能市場です。", legCash: "現金", legStock: "株式", legGold: "金", legCrypto: "仮想通貨", legProp: "不動産",
+            holdPrefix: "保有: ", evalPrefix: "評価額: ", yoyPrefix: "前年比 ", priceLbl: "価格: ", shareLbl: "保有: ", shareUnit: "株", unitLbl: "単位",
             btnBuy1Share: "+1株買う", btnBuy5Share: "+5株買う", btnBuy1Unit: "+1単位買う", btnBuy3Unit: "+3単位買う", btnSellAll: "全売却",
-            ipoHead: "🌟 IPO（新規公開株）ブックビルディング抽選（年1回・当選率 8%）",
-            ipoSub: "【現実のIPOルールを再現】抽選参加自体は無料（外れてもお金は減りません）ですが、申込には「買付余力（手元現金 300以上）」が必要です。当選時は80%で初値高騰、20%で公募割れとなります！",
-            cryptoTitle: "仮想通貨ドリーム投資",
-            reTitle: "収益不動産オーナー投資", helpLev: "💡 レバレッジとは？", reOwned: "▼ 保有中の物件", reMkt: "▼ 購入可能な物件 (頭金20%＋銀行融資80%)",
             noProp: "まだ保有物件はありません", rentCfLbl: "年間家賃収入: +", btnSellProp: "売却", yieldLbl: "利回り ", downLbl: "必要な頭金(20%): ",
-            buyPropBtn: function(d) { return "頭金 " + d + " で銀行融資(80%)を使って購入する"; },
-            carHead: "本業キャリア昇進 ＆ 法人化", carPos: "現在の役職:", carSal: "年間給与貯蓄額 (+12%/回):", carBtn: "スキルアップ自己投資で昇進する (+12%)", carMaxBtn: "🌟 キャリア最高峰達成 (MAX Lv.6)", costPrefix: "費用",
-            careerTitles: ["新入社員 (Lv.1 / MAX6)", "リーダー (Lv.2 / MAX6)", "マネージャー (Lv.3 / MAX6)", "本部長 (Lv.4 / MAX6)", "執行役員 (Lv.5 / MAX6)", "伝説の経営者 (MAX Lv.6)"],
-            corpHead: "🏢 資産管理法人 (税金が半分になり手取り爆増！)", corpBtnWait: "法人を設立する (純資産 5,000 以上で解放)", corpBtnDone: "🏢 法人設立済み（節税適用中！）",
-            acadHead: "💡 投資アカデミー (完全無料・全24講座)", acadSub: "お金は一切かかりません！初級からFIRE・プロ編まで、タップして学ぼう！",
-            fltAll: "すべて(24)", fltBasic: "🌱 基礎編(8)", fltAdv: "🚀 応用編(8)", fltPro: "👑 プロ・FIRE編(8)",
+            buyPropBtn: function(d) { return "頭金 " + d + " で銀行融資(80%)を使って購入する"; }, carBtn: "スキルアップ自己投資で昇進する (+12%)", carMaxBtn: "🌟 キャリア最高峰達成 (MAX Lv.6)", costPrefix: "費用",
+            careerTitles: ["新入社員 (Lv.1 / MAX6)", "リーダー (Lv.2 / MAX6)", "マネージャー (Lv.3 / MAX6)", "本部長 (Lv.4 / MAX6)", "執行役員 (Lv.5 / MAX6)", "伝説の経営者 (MAX Lv.6)"], corpBtnDone: "🏢 法人設立済み（節税適用中！）",
             badgeBasic: "基礎", badgeAdv: "応用", badgePro: "プロ", readMore: "📖 無料で読む >",
-            nextTurn: "次の年へ進む (年齢 +1) →",
-            resTitle: "🎉 66年間の人生シミュレーション大完走！", resNw: "最終純資産総額", resRankLbl: "最終資産家ランク", resFireLbl: "FIRE達成", resFireVal: "完全達成！",
-            shareBtn: "𝕏 結果とURLをシェア", copyBtn: "📋 コピー", copyDoneAlert: "結果テキストをコピーしました！SNSやLINEに貼り付けてシェアできます！",
-            retryBtn: "もう一度オープニングから遊ぶ",
-            sndTitle: "🔊 BGM・効果音 (SE) 音量設定", bgmVol: "🎵 BGM (背景音楽) 音量", seVol: "🔔 SE (効果音・チャイム) 音量",
-            btnSeTest: "🔔 効果音テスト", btnSeMute: "🔇 すべてミュート(0%)", btnSndClose: "設定を完了する",
-            navHeader: "🌟 ナビゲーション", navOk: "OK！光っているボタンを押す →", navSkipBtn: "⏭️ スキップして自由行動へ", navSkipModal: "⏭️ チュートリアルをスキップして自由に遊ぶ",
-            tutCornerTitle: "🎓 チュートリアル ＆ 攻略ステップ", tutCornerSub: "強制ナビゲーションは最初の1回のみです。ここではいつでも基本ステップを見返したり、データを初期化して最初からやり直せます！",
-            tutRestartBtn: "🔄 ステップナビを最初から再体験する", resetAllBtn: "🗑️ 全データ（称号・チュートリアル）を初期化する", closeBtn: "閉じる", acadCloseBtn: "なるほど！（閉じる）",
-            rankupHead: "✨ おめでとうございます！資産家ランク昇格！ ✨", rankupOk: "最高！さらなる高みを目指す →",
-            evSelectPrefix: "▶ この行動を選ぶ", evResTitle: "イベント結果発表！", evResOk: "確認して進む →",
+            resTitle: "🎉 66年間の人生シミュレーション大完走！", copyDoneAlert: "結果テキストをコピーしました！SNSやLINEに貼り付けてシェアできます！",
+            evSelectPrefix: "▶ この行動を選ぶ",
             noCashAlert: "手元の現金が足りません！",
             rankTitleModal: "🏆 世界投資家ランキング",
             initNews: "📰 ニュース: 25歳、投資家ライフがスタート！まずは資産を買ってみましょう。",
@@ -1373,29 +1322,6 @@
             hotStockTag: "🔥 旬の注目株"
         }
     };
-    i18n.en = Object.assign({}, i18n.ja, {
-        tutorialBtn: "🎓 Tutorial", ranking: "🏆 Rank", sound: "🔊 Audio",
-        opCatch: "~ 66-Year Financial Empire Building RPG (Age 25 to 90) ~",
-        opStartBtn: "✨ START YOUR WEALTH JOURNEY (GAME START)", opSoundBtn: "🔊 Audio", opResetBtn: "🗑️ Reset Data", opDonateBtn: "☕ Support",
-        yrUnit: "y", ageUnit: "yo", fireBadge: "FIRE 🔥", corpPill: "🏢 CORP",
-        mktJp: "🇯🇵 Japan (JPY)", mktUs: "🇺🇸 USA (USD)", mktGl: "🌐 Global", mktGuideBtn: "? Market Info",
-        startBtn: "🚀 Launch Simulation!", rankPrefix: "Wealth Rank", helpComp: "💡 Compound?",
-        netWorth: "Total Net Worth", freeCash: "Free Cash", totalAssets: "Total Assets", cfSal: "Annual Savings", cfPas: "Passive CF", cfFire: "FIRE Goal", cfDebt: "Bank Debt",
-        chartTitle: "📈 Total Assets Growth Chart", legCash: "Cash", legStock: "Stocks", legGold: "Gold", legCrypto: "Crypto", legProp: "Real Estate",
-        tabPort: "Core Invest", tabStocks: "Stocks/IPO", tabCrypto: "Crypto", tabRe: "Real Estate", tabCar: "Career", tabAcad: "Academy(24)",
-        nextTurn: "Next Year (Age +1) →", closeBtn: "Close", acadCloseBtn: "Got it! (Close)",
-        ranks: ["🌱 Beginner Investor", "📈 Upper-Mass Saver", "✨ Near-Affluent Elite", "💎 Millionaire Dream (Affluent)", "🏛️ Ultra-High-Net-Worth Tycoon", "👑 Legendary Conglomerate King", "🌌 World Economic Ruler", "🐉 Centibillionaire Champion", "🌠 Otherworldly Wealth God", "🪐 Trillion-Yen Myth"],
-        cycleNames: { boom: "📈 Bull Market", bubble: "🔥 Overheated Bubble", correction: "📉 Correction", recession: "❄️ Recession" },
-        rivalLabel: "🤖 Rival Investor (Passive Index)",
-        rivalAheadMsg: "You're ahead!",
-        rivalBehindMsg: "Falling behind…!",
-        hedgeBtnOff: "🛡️ Buy Crash Insurance (-50 Cash)",
-        hedgeBtnOn: "🛡️ Insured (protected this year)",
-        hotStockTag: "🔥 Hot Pick"
-    });
-    i18n.zh = Object.assign({}, i18n.en, { opStartBtn: "✨ 开启财富之旅 (GAME START)", opResetBtn: "🗑️ 重置数据", tutorialBtn: "🎓 教程", ranking: "🏆 排行", sound: "🔊 音量", totalAssets: "总资产", chartTitle: "📈 总资产增长趋势图", startBtn: "🚀 开始模拟", nextTurn: "进入下一年 (年龄 +1) →", closeBtn: "关闭" });
-    i18n.ko = Object.assign({}, i18n.en, { opStartBtn: "✨ 자산 형성의 여정 시작 (GAME START)", opResetBtn: "🗑️ 데이터 초기화", tutorialBtn: "🎓 튜토리얼", ranking: "🏆 랭킹", sound: "🔊 음량", totalAssets: "총자산", chartTitle: "📈 총자산 추이 그래프", startBtn: "🚀 시뮬레이션 시작", nextTurn: "다음 해로 진행 (나이 +1) →", closeBtn: "닫기" });
-    i18n.es = Object.assign({}, i18n.en, { opStartBtn: "✨ COMENZAR VIAJE FINANCIERO (GAME START)", opResetBtn: "🗑️ Reiniciar Datos", tutorialBtn: "🎓 Tutorial", ranking: "🏆 Ranking", sound: "🔊 Audio", totalAssets: "Activos Totales", chartTitle: "📈 Gráfico de Activos Totales", startBtn: "🚀 Iniciar Simulación", nextTurn: "Siguiente Año (Edad +1) →", closeBtn: "Cerrar" });
 
     const navI18n = {
         ja: {
@@ -1425,8 +1351,6 @@
             }
         }
     };
-    navI18n.en = { freeBanner: "✨ Free Play Mode: Build your empire and unlock all " + TITLE_TOTAL + " Titles!", easy: navI18n.ja.easy, adv: navI18n.ja.adv };
-    navI18n.zh = navI18n.ja; navI18n.ko = navI18n.ja; navI18n.es = navI18n.en;
 
     // --- 4. Web Audio API (BGM & SE) ---
     let audioCtx = null;
@@ -1690,9 +1614,7 @@
     }
 
     function alertChallengeBlocked() {
-        alert(currentLang === 'ja'
-            ? '🔒 現在の縛りプレイチャレンジでは、この資産クラスは購入できません！'
-            : '🔒 This asset class is locked under your current challenge rules!');
+        alert('🔒 現在の縛りプレイチャレンジでは、この資産クラスは購入できません！');
     }
 
     // --- 🕰️ ヒストリカル・シナリオモード：実際の経済危機を再現したスクリプト済み市場データ ---
@@ -1764,14 +1686,14 @@
         document.querySelectorAll('.mkt-btn').forEach(function(el) { el.classList.remove('active'); });
         document.getElementById('mkt-btn-' + m).classList.add('active');
         market = m;
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market] + getMarketLockNote();
         playSound('click');
     }
 
     function getMarketLockNote() {
-        if (!isGameStarted) return currentLang === 'ja' ? '<br>※ 市場はゲーム開始時に固定され、プレイ中は変更できません' : '<br>* The market is locked once the game starts.';
-        return currentLang === 'ja' ? '<br>🔒 市場はゲーム開始時に固定されています（プレイ中は変更できません）' : '<br>🔒 Market is locked for this game.';
+        if (!isGameStarted) return '<br>※ 市場はゲーム開始時に固定され、プレイ中は変更できません';
+        return '<br>🔒 市場はゲーム開始時に固定されています（プレイ中は変更できません）';
     }
     // ゲーム開始時に、選択中以外の市場ボタンを無効化する
     function lockMarketSelection() {
@@ -1779,12 +1701,12 @@
             el.classList.toggle('active', el.id === 'mkt-btn-' + market);
             el.disabled = el.id !== 'mkt-btn-' + market;
         });
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market] + getMarketLockNote();
     }
 
     function openMarketGuideModal() {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         document.getElementById('info-modal-title').innerText = d.mktGuideTitle;
         document.getElementById('info-modal-body').innerText = d.mktGuideBody;
         document.getElementById('info-modal').classList.remove('hidden');
@@ -1893,9 +1815,7 @@
             + (sg.stocks || []).reduce(function(sum, x) { return sum + x.shares * x.price; }, 0)
             + (sg.cryptos || []).reduce(function(sum, x) { return sum + x.holdings * x.price; }, 0);
         const nw = assets - (sg.debt || 0);
-        btn.innerText = currentLang === 'ja'
-            ? '▶ 続きから（' + sg.age + '歳・純資産 ' + fmtShort(nw) + '）'
-            : '▶ Continue (Age ' + sg.age + ' / Net worth ' + fmtShort(nw) + ')';
+        btn.innerText = '▶ 続きから（' + sg.age + '歳・純資産 ' + fmtShort(nw) + '）';
         btn.classList.remove('hidden');
     }
 
@@ -1921,7 +1841,7 @@
         document.getElementById('tab-btn-crypto').classList.toggle('hidden', isEasy);
         document.getElementById('legend-crypto').classList.toggle('hidden', isEasy);
         if (g.isCorp) {
-            const d0 = i18n[currentLang] || i18n.ja;
+            const d0 = i18n.ja;
             document.getElementById('corp-status-pill').classList.remove('hidden');
             document.getElementById('corp-setup-btn').innerText = d0.corpBtnDone;
             document.getElementById('corp-setup-btn').setAttribute('disabled', 'true');
@@ -1930,7 +1850,7 @@
 
         isGameStarted = true;
         lockMarketSelection();
-        document.getElementById('news-strip').innerText = data.news || (i18n[currentLang] || i18n.ja).initNews;
+        document.getElementById('news-strip').innerText = data.news || i18n.ja.initNews;
         document.getElementById('opening-view').classList.add('hidden');
         document.getElementById('setup-view').classList.add('hidden');
         document.getElementById('market-bar-wrap').classList.remove('hidden');
@@ -2003,7 +1923,7 @@
 
         isGameStarted = true;
         lockMarketSelection();
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         document.getElementById('news-strip').innerText = d.initNews;
 
         document.getElementById('opening-view').classList.add('hidden');
@@ -2062,7 +1982,7 @@
     }
 
     function openTutorialCornerModal() {
-        const navDict = navI18n[currentLang] || navI18n.ja;
+        const navDict = navI18n.ja;
         const scenario = gameMode === 'easy' ? navDict.easy : navDict.adv;
         const listEl = document.getElementById('tutorial-steps-list');
         listEl.innerHTML = '';
@@ -2090,62 +2010,9 @@
         triggerNavStepPopup();
     }
 
-    function changeLanguage(val) {
-        currentLang = val;
-        const d = i18n[currentLang] || i18n.ja;
-        document.getElementById('lbl-app-title').innerText = d.appTitle;
-        document.getElementById('btn-tutorial').innerText = d.tutorialBtn;
-        document.getElementById('btn-ranking').innerText = d.ranking;
-        document.getElementById('btn-sound').innerText = d.sound;
-        document.getElementById('lbl-yr-unit').innerText = d.yrUnit;
-        document.getElementById('lbl-age-unit').innerText = d.ageUnit;
-        document.getElementById('fire-badge').innerText = d.fireBadge;
-        document.getElementById('corp-status-pill').innerText = d.corpPill;
-        document.getElementById('lbl-op-catch').innerText = d.opCatch;
-        document.getElementById('lbl-op-story').innerText = d.opStory;
-        document.getElementById('lbl-op-f1').innerText = d.opF1;
-        document.getElementById('lbl-op-f2').innerText = d.opF2;
-        document.getElementById('lbl-op-f3').innerText = d.opF3;
-        document.getElementById('lbl-op-start-btn').innerText = d.opStartBtn;
-        if (!isGameStarted) refreshContinueButton();
-        document.getElementById('lbl-op-sound-btn').innerText = d.opSoundBtn;
-        document.getElementById('lbl-op-reset-btn').innerText = d.opResetBtn;
-        document.getElementById('lbl-op-donate-btn').innerText = d.opDonateBtn;
-        updateTitlesHeaderBadge();
-        document.getElementById('mkt-btn-jp').innerText = d.mktJp;
-        document.getElementById('mkt-btn-us').innerText = d.mktUs;
-        document.getElementById('mkt-btn-gl').innerText = d.mktGl;
-        document.getElementById('btn-mkt-guide').innerText = d.mktGuideBtn;
-        document.getElementById('market-desc-inline').innerHTML = d.mktDesc[market] + getMarketLockNote();
-        document.getElementById('lbl-set-name').innerText = d.setName;
-        document.getElementById('lbl-set-mode').innerText = d.setMode;
-        document.getElementById('lbl-start-btn').innerText = d.startBtn;
-        document.getElementById('lbl-rank-prefix').innerText = d.rankPrefix;
-        document.getElementById('btn-help-comp').innerText = d.helpComp;
-        document.getElementById('lbl-networth').innerText = d.netWorth;
-        document.getElementById('lbl-free-cash').innerText = d.freeCash;
-        document.getElementById('lbl-total-assets').innerText = d.totalAssets;
-        document.getElementById('lbl-cf-sal').innerText = d.cfSal;
-        document.getElementById('lbl-cf-pas').innerText = d.cfPas;
-        document.getElementById('lbl-cf-fire').innerText = d.cfFire;
-        document.getElementById('lbl-cf-debt').innerText = d.cfDebt;
-        document.getElementById('lbl-chart-title').innerText = d.chartTitle;
-        document.getElementById('tab-btn-portfolio').innerText = d.tabPort;
-        document.getElementById('tab-btn-stocks').innerText = d.tabStocks;
-        document.getElementById('tab-btn-crypto').innerText = d.tabCrypto;
-        document.getElementById('tab-btn-realestate').innerText = d.tabRe;
-        document.getElementById('tab-btn-career').innerText = d.tabCar;
-        document.getElementById('tab-btn-academy').innerText = d.tabAcad;
-        document.getElementById('next-turn-btn').innerText = d.nextTurn;
-        if (isGameStarted) {
-            updateNavBannerText();
-            renderStocks(); renderCrypto(); renderRealEstate(); renderCareer(); renderAcademy(); updateUI();
-        }
-    }
-
     // --- 6. ナビ制御＆メインゲーム進行 ---
     function getNavScenario() {
-        const navDict = navI18n[currentLang] || navI18n.ja;
+        const navDict = navI18n.ja;
         return gameMode === 'easy' ? navDict.easy : navDict.adv;
     }
 
@@ -2155,7 +2022,7 @@
     }
 
     function updateNavBannerText() {
-        const navDict = navI18n[currentLang] || navI18n.ja;
+        const navDict = navI18n.ja;
         const scenario = getNavScenario();
         if (isFinalNavStep() || !scenario[navStep]) {
             document.getElementById('nav-guide-desc').innerText = navDict.freeBanner;
@@ -2183,7 +2050,7 @@
             document.getElementById('btn-nav-skip-modal').classList.remove('hidden');
         }
         const navDescText = (skippedByChallenge
-            ? (currentLang === 'ja' ? '🔒 縛りプレイ中のため、購入できない資産の手順はスキップしました。\n\n' : '🔒 Steps for assets locked by your challenge were skipped.\n\n')
+            ? ('🔒 縛りプレイ中のため、購入できない資産の手順はスキップしました。\n\n')
             : '') + info.desc;
         updateNavBannerText();
         openModalQueued('nav-popup-modal', function() {
@@ -2219,7 +2086,7 @@
     }
 
     function tradeCore(type, amount) {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         if (amount > 0) {
             if (!isAssetAllowed(type === 'ind' ? 'index' : 'gold')) { alertChallengeBlocked(); return; }
             let cost = amount === 999999 ? Math.floor(g.cash * 0.5) : amount;
@@ -2289,7 +2156,7 @@
     }
 
     function getRankTitle(lv) {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         return d.ranks[lv] || d.ranks[0];
     }
 
@@ -2723,7 +2590,7 @@
                     }
                     g.cash -= down;
                     // 自宅を不動産として資産に計上し、住宅ローン（頭金の4倍）を物件の残債として管理する（毎年、元本返済と利息が発生）
-                    g.ownedProps.push({ nameJa: 'マイホーム（自宅）', nameEn: 'My Home', price: down * 5, yield: 0, debt: down * 4, isHome: true });
+                    g.ownedProps.push({ nameJa: 'マイホーム（自宅）', price: down * 5, yield: 0, debt: down * 4, isHome: true });
                     g.realEstateAsset = g.ownedProps.reduce(function(sum, x) { return sum + x.price; }, 0);
                     g.everTookDebt = true;
                     syncDebt();
@@ -2784,7 +2651,7 @@
         openModalQueued('event-modal', function() { renderEventModalNow(ev); });
     }
     function renderEventModalNow(ev) {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         document.getElementById('ev-title').innerText = ev.title;
         document.getElementById('ev-desc').innerText = ev.desc;
         document.getElementById('ev-beginner-tip').innerText = ev.beginnerTip;
@@ -2873,10 +2740,10 @@
         const btn = document.getElementById('lbl-ipo-btn');
         if (!btn) return;
         if (ipoAppliedThisTurn) {
-            btn.innerText = currentLang === 'ja' ? '今年のIPO抽選は申込済み（また来年挑戦できます）' : 'IPO Already Applied This Year';
+            btn.innerText = '今年のIPO抽選は申込済み（また来年挑戦できます）';
             btn.setAttribute('disabled', 'true');
         } else {
-            btn.innerText = currentLang === 'ja' ? 'IPOブックビルディングに申し込む（要買付余力: 現金300）' : 'Apply for IPO Book-Building (Req 300 Cash)';
+            btn.innerText = 'IPOブックビルディングに申し込む（要買付余力: 現金300）';
             btn.removeAttribute('disabled');
         }
     }
@@ -2900,9 +2767,7 @@
         }
 
         if (g.cash < 300) {
-            alert(currentLang === 'ja'
-                ? '【IPOの仕組み解説】\n現実のIPO抽選（ブックビルディング）は参加自体は無料ですが、当選した時に株を買うための『買付余力（手元現金 300以上）』を口座に入れておく必要があります！'
-                : 'You need at least 300 in free cash (buying power) to apply for an IPO!');
+            alert('【IPOの仕組み解説】\n現実のIPO抽選（ブックビルディング）は参加自体は無料ですが、当選した時に株を買うための『買付余力（手元現金 300以上）』を口座に入れておく必要があります！');
             return;
         }
 
@@ -2936,7 +2801,7 @@
             g.hedgeActive = false;
         } else {
             if (g.cash < HEDGE_PREMIUM) {
-                alert(currentLang === 'ja' ? '保険料（現金50）が足りません！' : 'Not enough cash for the insurance premium!');
+                alert('保険料（現金50）が足りません！');
                 return;
             }
             g.cash -= HEDGE_PREMIUM;
@@ -2948,7 +2813,7 @@
     }
 
     function updateUI() {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         const spec = marketSpecs[market];
         const stockTotal = g.stocks.reduce(function(sum, s) { return sum + s.shares * s.price; }, 0);
         const cryptoTotal = g.cryptos.reduce(function(sum, c) { return sum + c.holdings * c.price; }, 0);
@@ -3112,7 +2977,7 @@
                 if (poppedStock) {
                     let popPct = 0.25 + Math.random() * 0.15;
                     poppedStock.price = Math.max(20, Math.round(poppedStock.price * (1 - popPct)));
-                    hotPopInfo = { name: currentLang === 'ja' ? poppedStock.nameJa : poppedStock.nameEn, pct: Math.round(popPct * 100) };
+                    hotPopInfo = { name: poppedStock.nameJa, pct: Math.round(popPct * 100) };
                 }
                 g.hotStockPopPending = false;
                 g.hotStockId = null;
@@ -3188,19 +3053,19 @@
         g.age++;
         g.history.net.push(getTotalAssets());
 
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         const snippet = d.mktSnippets[Math.floor(Math.random() * d.mktSnippets.length)];
         let newsText = d.turnNews(g.age, fmtShort(netInflow), snippet);
         if (principalPaid > 0) {
-            newsText += (currentLang === 'ja' ? ' 🏦ローン元本返済 -' + fmtShort(principalPaid) + '。' : ' 🏦 Loan principal repaid -' + fmtShort(principalPaid) + '.');
+            newsText += (' 🏦ローン元本返済 -' + fmtShort(principalPaid) + '。');
         }
         if (hedgePayout > 0) {
-            newsText += (currentLang === 'ja' ? ' 🛡️暴落保険が発動し +' + fmtShort(hedgePayout) + '！' : ' 🛡️ Crash insurance paid out +' + fmtShort(hedgePayout) + '!');
+            newsText += (' 🛡️暴落保険が発動し +' + fmtShort(hedgePayout) + '！');
         } else if (hedgeWasActive) {
-            newsText += (currentLang === 'ja' ? ' （今年は保険の発動なし）' : ' (No crash this year — insurance unused)');
+            newsText += (' （今年は保険の発動なし）');
         }
         if (hotPopInfo) {
-            newsText += (currentLang === 'ja' ? ' 🔥' + hotPopInfo.name + 'がブームの反動で -' + hotPopInfo.pct + '%下落…！' : ' 🔥' + hotPopInfo.name + ' corrected -' + hotPopInfo.pct + '% after its hot streak!');
+            newsText += (' 🔥' + hotPopInfo.name + 'がブームの反動で -' + hotPopInfo.pct + '%下落…！');
         }
         document.getElementById('news-strip').innerText = newsText;
 
@@ -3243,12 +3108,12 @@
     }
 
     function renderStocks() {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         const c = document.getElementById('stocks-container');
         c.innerHTML = '';
         g.stocks.forEach(function(s) {
             let val = s.shares * s.price;
-            let dispName = currentLang === 'ja' ? s.nameJa : s.nameEn;
+            let dispName = s.nameJa;
             let hotTag = (g.hotStockId === s.id) ? '<span class="hot-flame-tag">' + d.hotStockTag + '</span>' : '';
             c.innerHTML +=
                 '<div class="asset-card">' +
@@ -3266,7 +3131,7 @@
     }
 
     function tradeStock(id, cnt) {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         let s = g.stocks[id];
         if (cnt > 0) {
             if (!isAssetAllowed('stock')) { alertChallengeBlocked(); return; }
@@ -3284,12 +3149,12 @@
     }
 
     function renderCrypto() {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         const c = document.getElementById('crypto-container');
         c.innerHTML = '';
         g.cryptos.forEach(function(cr) {
             let val = cr.holdings * cr.price;
-            let dispName = currentLang === 'ja' ? cr.nameJa : cr.nameEn;
+            let dispName = cr.nameJa;
             c.innerHTML +=
                 '<div class="asset-card">' +
                     '<div class="asset-card-top"><span class="asset-name">🚀 ' + dispName + '</span><span class="asset-holding-val">' + d.evalPrefix + fmtShort(val) + '</span></div>' +
@@ -3305,7 +3170,7 @@
     }
 
     function tradeCrypto(id, cnt) {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         let cr = g.cryptos[id];
         if (cnt > 0) {
             if (!isAssetAllowed('crypto')) { alertChallengeBlocked(); return; }
@@ -3323,20 +3188,19 @@
     }
 
     function renderRealEstate() {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         const spec = marketSpecs[market];
         const owned = document.getElementById('owned-prop-container');
         owned.innerHTML = g.ownedProps.length === 0 ? '<div style="font-size:0.7rem; color:var(--text-sub);">' + d.noProp + '</div>' : '';
         g.ownedProps.forEach(function(p, idx) {
             let cf = Math.round(calcPropCF(p, spec));
-            let dispName = currentLang === 'ja' ? p.nameJa : p.nameEn;
+            let dispName = p.nameJa;
             if (p.isHome) {
-                const isJa = currentLang === 'ja';
                 owned.innerHTML +=
                     '<div class="asset-card" style="display:flex; justify-content:space-between; align-items:center;">' +
                         '<div><strong>🏡 ' + dispName + '</strong><br><span style="font-size:0.66rem; color:var(--text-sub);">' +
-                        (isJa ? '評価額 ' + fmtShort(p.price) + ' / 残債 ' + fmtShort(p.debt) + ' / 年間ローン利息: ' : 'Value ' + fmtShort(p.price) + ' / Loan ' + fmtShort(p.debt) + ' / Annual interest: ') + '-' + fmtShort(Math.abs(cf)) + '</span></div>' +
-                        '<span style="font-size:0.62rem; color:var(--text-sub); white-space:nowrap;">' + (isJa ? '自宅（売却不可）' : 'Home (not for sale)') + '</span>' +
+                        ('評価額 ' + fmtShort(p.price) + ' / 残債 ' + fmtShort(p.debt) + ' / 年間ローン利息: ') + '-' + fmtShort(Math.abs(cf)) + '</span></div>' +
+                        '<span style="font-size:0.62rem; color:var(--text-sub); white-space:nowrap;">' + ('自宅（売却不可）') + '</span>' +
                     '</div>';
                 return;
             }
@@ -3351,7 +3215,7 @@
         g.marketProps.forEach(function(p) {
             let down = Math.round(p.price * 0.2);
             let totalYield = ((p.yield + spec.propYieldBoost) * 100).toFixed(1);
-            let dispName = currentLang === 'ja' ? p.nameJa : p.nameEn;
+            let dispName = p.nameJa;
             mkt.innerHTML +=
                 '<div class="asset-card">' +
                     '<div class="asset-card-top"><span class="asset-name">🏠 ' + dispName + '</span><span style="color:var(--accent-green); font-size:0.72rem; font-weight:900;">' + d.yieldLbl + totalYield + '%</span></div>' +
@@ -3363,7 +3227,7 @@
     }
 
     function buyProp(id) {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         if (!isAssetAllowed('realestate')) { alertChallengeBlocked(); return; }
         let p = g.marketProps.find(function(x) { return x.id === id; });
         let down = Math.round(p.price * 0.2);
@@ -3371,7 +3235,7 @@
         g.cash -= down; g.everBoughtAsset = true;
         let loan = p.price - down;
         if (loan > 0) g.everTookDebt = true;
-        g.ownedProps.push({ nameJa: p.nameJa, nameEn: p.nameEn, price: p.price, yield: p.yield, debt: loan });
+        g.ownedProps.push({ nameJa: p.nameJa, price: p.price, yield: p.yield, debt: loan });
         syncDebt();
         g.realEstateAsset = g.ownedProps.reduce(function(sum, x) { return sum + x.price; }, 0);
 
@@ -3391,9 +3255,7 @@
         const proceeds = p.price - p.debt;
         // 売却額が残債を下回る（オーバーローン）場合は、差額を手元現金で返済しないと売却できない
         if (proceeds < 0 && g.cash < -proceeds) {
-            alert(currentLang === 'ja'
-                ? '🏦 売却額（' + fmtShort(p.price) + '）がローン残債（' + fmtShort(p.debt) + '）を下回っています。\n売却するには差額 ' + fmtShort(-proceeds) + ' を手元現金で返済する必要があります。'
-                : 'The sale price (' + fmtShort(p.price) + ') is below the remaining loan (' + fmtShort(p.debt) + ').\nYou need ' + fmtShort(-proceeds) + ' in cash to cover the shortfall.');
+            alert('🏦 売却額（' + fmtShort(p.price) + '）がローン残債（' + fmtShort(p.debt) + '）を下回っています。\n売却するには差額 ' + fmtShort(-proceeds) + ' を手元現金で返済する必要があります。');
             return;
         }
         g.cash += proceeds;
@@ -3407,7 +3269,7 @@
     }
 
     function renderCareer() {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         document.getElementById('career-title').innerText = d.careerTitles[Math.min(5, g.careerLevel - 1)];
         document.getElementById('career-salary').innerText = '+' + fmtShort(Math.round(g.salary * 0.35)) + '/' + d.yrUnit;
 
@@ -3424,7 +3286,7 @@
     }
 
     function upgradeCareer() {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         if (g.careerLevel >= MAX_CAREER_LEVEL) return;
 
         let cost = careerUpgradeCosts[g.careerLevel] || 1000;
@@ -3447,7 +3309,7 @@
     }
 
     function setupCorporation() {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         if (getNetWorth() < 5000) return;
         g.isCorp = true;
         unlockTitle('t_corp_boss');
@@ -3467,7 +3329,7 @@
     }
 
     function renderAcademy() {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         const c = document.getElementById('academy-container');
         c.innerHTML = '';
         const list = currentAcadFilter === 'all' ? g.academy : g.academy.filter(function(a) { return a.level === currentAcadFilter; });
@@ -3575,8 +3437,7 @@
     }
 
     function openRankingModal() {
-        const d = i18n[currentLang] || i18n.ja;
-        const isJa = currentLang === 'ja';
+        const d = i18n.ja;
         document.getElementById('info-modal-title').innerText = d.rankTitleModal;
         const bodyEl = document.getElementById('info-modal-body');
         document.getElementById('info-modal').classList.remove('hidden');
@@ -3584,22 +3445,20 @@
 
         if (!RANKING_CONFIGURED) {
             bodyEl.innerHTML = '';
-            bodyEl.innerText = (isJa
-                ? '🚧 オンラインランキング機能は準備中です。\n\n現在のあなたの資産: ' + fmtShort(getNetWorth())
-                : '🚧 Online ranking is not set up yet.\n\nYour current net worth: ' + fmtShort(getNetWorth()));
+            bodyEl.innerText = ('🚧 オンラインランキング機能は準備中です。\n\n現在のあなたの資産: ' + fmtShort(getNetWorth()));
             return;
         }
         if (!initFirebaseIfNeeded()) {
             bodyEl.innerHTML = '';
-            bodyEl.innerText = isJa ? '⚠️ ランキングを読み込めませんでした。通信環境をご確認ください。' : '⚠️ Could not load the ranking. Please check your connection.';
+            bodyEl.innerText = '⚠️ ランキングを読み込めませんでした。通信環境をご確認ください。';
             return;
         }
-        bodyEl.innerHTML = '<div style="padding:16px 0; text-align:center; color:var(--text-sub);">' + (isJa ? '読み込み中…' : 'Loading…') + '</div>';
+        bodyEl.innerHTML = '<div style="padding:16px 0; text-align:center; color:var(--text-sub);">' + ('読み込み中…') + '</div>';
 
         fbDb.collection('leaderboard').orderBy('netWorth', 'desc').limit(30).get().then(function(snapshot) {
             if (document.getElementById('info-modal').classList.contains('hidden')) return;
             if (snapshot.empty) {
-                bodyEl.innerHTML = '<div style="padding:16px 0; text-align:center; color:var(--text-sub);">' + (isJa ? 'まだ記録がありません。最初の記録者になりましょう！' : 'No records yet — be the first!') + '</div>';
+                bodyEl.innerHTML = '<div style="padding:16px 0; text-align:center; color:var(--text-sub);">' + ('まだ記録がありません。最初の記録者になりましょう！') + '</div>';
                 return;
             }
             const medals = ['🥇', '🥈', '🥉'];
@@ -3616,38 +3475,37 @@
                     + '<span style="color:var(--accent-green); font-weight:800; white-space:nowrap;">' + fmtShort(Number(rec.netWorth) || 0) + '</span>'
                     + '</div>';
             });
-            html += '</div><div style="margin-top:10px; font-size:0.74rem; color:var(--text-sub);">' + (isJa ? '現在のあなたの資産: ' : 'Your current net worth: ') + fmtShort(getNetWorth()) + '</div>';
+            html += '</div><div style="margin-top:10px; font-size:0.74rem; color:var(--text-sub);">' + ('現在のあなたの資産: ') + fmtShort(getNetWorth()) + '</div>';
             bodyEl.innerHTML = html;
         }).catch(function(err) {
             bodyEl.innerHTML = '';
-            bodyEl.innerText = (isJa ? '⚠️ ランキングの取得に失敗しました：' : '⚠️ Failed to load ranking: ') + (err && err.message ? err.message : err);
+            bodyEl.innerText = ('⚠️ ランキングの取得に失敗しました：') + (err && err.message ? err.message : err);
         });
     }
 
     // --- 🌐 共有ランキングへのスコア送信（Firestoreに1件追加する）---
     function submitScoreToLeaderboard() {
-        const isJa = currentLang === 'ja';
         const statusEl = document.getElementById('ranking-submit-status');
         const btn = document.getElementById('btn-ranking-submit');
         if (g.scoreSubmitted) return;
         if (!RANKING_CONFIGURED) {
-            if (statusEl) statusEl.innerText = isJa ? '🚧 オンラインランキング機能は準備中です。' : '🚧 Online ranking is not set up yet.';
+            if (statusEl) statusEl.innerText = '🚧 オンラインランキング機能は準備中です。';
             return;
         }
         if (!initFirebaseIfNeeded()) {
-            if (statusEl) statusEl.innerText = isJa ? '⚠️ ランキングに接続できませんでした。通信環境をご確認ください。' : '⚠️ Could not connect. Please check your connection.';
+            if (statusEl) statusEl.innerText = '⚠️ ランキングに接続できませんでした。通信環境をご確認ください。';
             return;
         }
         const nameInputEl = document.getElementById('ranking-name-input');
         let nm = (nameInputEl ? nameInputEl.value : '').trim();
-        if (!nm) nm = (g.name || (isJa ? '名無しさん' : 'Anonymous'));
+        if (!nm) nm = (g.name || ('名無しさん'));
         nm = nm.slice(0, 20);
         const nw = getNetWorth();
         if (!isFinite(nw) || nw < 0 || nw > 100000000) {
-            if (statusEl) statusEl.innerText = isJa ? '⚠️ この記録は登録できませんでした。' : '⚠️ This record could not be submitted.';
+            if (statusEl) statusEl.innerText = '⚠️ この記録は登録できませんでした。';
             return;
         }
-        if (btn) { btn.disabled = true; btn.innerText = isJa ? '送信中…' : 'Submitting…'; }
+        if (btn) { btn.disabled = true; btn.innerText = '送信中…'; }
         const fireAchieved = !document.getElementById('fire-badge').classList.contains('hidden');
         const modeLabel = gameMode === 'scenario'
             ? ('scenario_' + selectedScenarioId)
@@ -3664,12 +3522,12 @@
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(function() {
             g.scoreSubmitted = true;
-            if (btn) btn.innerText = isJa ? '✅ 登録しました！' : '✅ Submitted!';
-            if (statusEl) statusEl.innerText = isJa ? 'ランキングに反映されました。「🏆 ランキング」ボタンから確認できます。' : 'Added! Check the 🏆 Ranking button to see it.';
+            if (btn) btn.innerText = '✅ 登録しました！';
+            if (statusEl) statusEl.innerText = 'ランキングに反映されました。「🏆 ランキング」ボタンから確認できます。';
             playSound('rankup');
         }).catch(function(err) {
-            if (btn) { btn.disabled = false; btn.innerText = isJa ? '🏆 ランキングに登録する' : '🏆 Submit to ranking'; }
-            if (statusEl) statusEl.innerText = (isJa ? '⚠️ 登録に失敗しました：' : '⚠️ Failed: ') + (err && err.message ? err.message : err);
+            if (btn) { btn.disabled = false; btn.innerText = '🏆 ランキングに登録する'; }
+            if (statusEl) statusEl.innerText = ('⚠️ 登録に失敗しました：') + (err && err.message ? err.message : err);
         });
     }
 
@@ -3724,14 +3582,14 @@
         const rankStatusEl = document.getElementById('ranking-submit-status');
         if (rankStatusEl) rankStatusEl.innerText = '';
         const rankBtnEl = document.getElementById('btn-ranking-submit');
-        if (rankBtnEl) { rankBtnEl.disabled = false; rankBtnEl.innerText = currentLang === 'ja' ? '🏆 ランキングに登録する' : '🏆 Submit to ranking'; }
+        if (rankBtnEl) { rankBtnEl.disabled = false; rankBtnEl.innerText = '🏆 ランキングに登録する'; }
         const titleEl = document.getElementById('lbl-res-title');
         if (titleEl) {
             if (gameMode === 'scenario') {
                 const scen = historicalScenarios[selectedScenarioId];
                 titleEl.innerText = '🎉 ' + scen.nameJa + ' を乗り越えた！';
             } else {
-                titleEl.innerText = (i18n[currentLang] || i18n.ja).resTitle;
+                titleEl.innerText = i18n.ja.resTitle;
             }
         }
         const nw = getNetWorth();
@@ -3749,10 +3607,10 @@
         const rivalResultEl = document.getElementById('res-rival-result');
         if (rivalResultEl) {
             if (nw >= g.rivalNetWorth) {
-                rivalResultEl.innerText = currentLang === 'ja' ? '🏆 ライバルに勝利！' : '🏆 Beat the rival!';
+                rivalResultEl.innerText = '🏆 ライバルに勝利！';
                 rivalResultEl.style.color = 'var(--accent-green)';
             } else {
-                rivalResultEl.innerText = currentLang === 'ja' ? '😢 ライバルに敗北…' : '😢 Lost to the rival…';
+                rivalResultEl.innerText = '😢 ライバルに敗北…';
                 rivalResultEl.style.color = 'var(--accent-red)';
             }
         }
@@ -3786,23 +3644,14 @@
         const shareUrl = getShareGameUrl();
         const urlLine = shareUrl ? ('\n▼ プレイはこちら\n' + shareUrl) : '';
         const isScenario = gameMode === 'scenario';
-        const jaHeadline = isScenario
+        const headline = isScenario
             ? '👑 『Lets\' FIRE！』' + historicalScenarios[selectedScenarioId].nameJa + ' シナリオを完走！'
             : '👑 『Lets\' FIRE！』66年間の投資人生シミュレーション完走！';
-        const enHeadline = isScenario
-            ? '👑 Survived the "' + historicalScenarios[selectedScenarioId].nameJa + '" scenario in "Lets\' FIRE！"'
-            : '👑 Completed 66-Year Investment Simulation in "Lets\' FIRE！"';
-        if (currentLang === 'ja') {
-            return jaHeadline + '\n' +
-                   '💰 最終純資産: ' + fmtMoney(nw) + '\n' +
-                   '🏆 到達ランク: ' + getRankTitle(rObj.lv) + '\n' +
-                   '🎖️ 獲得称号: ' + count + '/' + TITLE_TOTAL + '種' +
-                   urlLine + '\n#Lets_FIRE #資産形成ゲーム';
-        }
-        return enHeadline + '\n' +
-               '💰 Final Net Worth: ' + fmtMoney(nw) + '\n' +
-               '🏆 Rank: ' + getRankTitle(rObj.lv) + ' | 🎖️ Titles: ' + count + '/' + TITLE_TOTAL +
-               (shareUrl ? ('\nPlay: ' + shareUrl) : '') + '\n#Lets_FIRE';
+        return headline + '\n' +
+               '💰 最終純資産: ' + fmtMoney(nw) + '\n' +
+               '🏆 到達ランク: ' + getRankTitle(rObj.lv) + '\n' +
+               '🎖️ 獲得称号: ' + count + '/' + TITLE_TOTAL + '種' +
+               urlLine + '\n#Lets_FIRE #資産形成ゲーム';
     }
 
     // --- 🖼️ 結果シェアカード：canvasに成績カードを描画してPNG画像として保存できるようにする ---
@@ -3900,7 +3749,7 @@
     }
 
     function copyShareText() {
-        const d = i18n[currentLang] || i18n.ja;
+        const d = i18n.ja;
         const txt = buildViralShareText();
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(txt).then(function() { alert(d.copyDoneAlert); });
