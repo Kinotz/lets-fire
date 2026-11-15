@@ -333,7 +333,7 @@
             <button type="button" class="mkt-btn" id="mkt-btn-gl" onclick="switchMarket('gl')">🌐 グローバル</button>
         </div>
         <div class="market-info-bar">
-            <span id="market-desc-inline">🇯🇵 <strong>日本市場 (JPY)</strong>: 超低金利(1.5%)で不動産ローンが圧倒的に有利！安定成長と家賃で手堅くFIREできる市場。<br>※ 市場はゲーム開始時に固定され、プレイ中は変更できません</span>
+            <span id="market-desc-inline">🇯🇵 <strong>日本市場 (JPY)</strong>: 超低金利(1.5%)で不動産ローンが有利！安定成長と家賃で手堅くFIREを目指せる市場。<br>※ 市場はゲーム開始時に固定され、プレイ中は変更できません</span>
             <button type="button" class="term-btn" onclick="openMarketGuideModal()" id="btn-mkt-guide" style="white-space:nowrap;">？市場の違い</button>
         </div>
         <div class="cycle-badge cycle-boom" id="cycle-badge">📈 好景気</div>
@@ -896,10 +896,10 @@
 
     // --- 市場サイクル（好況・過熱バブル・調整・不景気の4フェーズが巡回する）---
     const marketCycleDefs = {
-        boom:       { indAdj: 0.015,  stockAdj: 0.02,  goldAdj: -0.005, cryptoAdj: 0.02,  cls: 'cycle-boom' },
-        bubble:     { indAdj: 0.035,  stockAdj: 0.05,  goldAdj: -0.010, cryptoAdj: 0.06,  cls: 'cycle-bubble' },
-        correction: { indAdj: -0.045, stockAdj: -0.07, goldAdj: 0.020,  cryptoAdj: -0.10, cls: 'cycle-correction' },
-        recession:  { indAdj: -0.015, stockAdj: -0.02, goldAdj: 0.015,  cryptoAdj: -0.03, cls: 'cycle-recession' }
+        boom:       { indAdj: 0.015,  stockAdj: 0.02,  goldAdj: -0.005, cryptoAdj: 0.02,  reAdj: 0.01,  cls: 'cycle-boom' },
+        bubble:     { indAdj: 0.035,  stockAdj: 0.05,  goldAdj: -0.010, cryptoAdj: 0.06,  reAdj: 0.03,  cls: 'cycle-bubble' },
+        correction: { indAdj: -0.045, stockAdj: -0.07, goldAdj: 0.020,  cryptoAdj: -0.10, reAdj: -0.05, cls: 'cycle-correction' },
+        recession:  { indAdj: -0.015, stockAdj: -0.02, goldAdj: 0.015,  cryptoAdj: -0.03, reAdj: -0.03, cls: 'cycle-recession' }
     };
     const cycleTransitions = {
         boom:       [{ to: 'boom', w: 55 }, { to: 'bubble', w: 30 }, { to: 'correction', w: 15 }],
@@ -1413,9 +1413,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         ],
         ownedProps: [],
         marketProps: [
-            { id: 0, nameJa: '都心駅チカ区分マンション', price: 1500, yield: 0.085 },
-            { id: 1, nameJa: '高利回り一棟アパート', price: 5000, yield: 0.10 },
-            { id: 2, nameJa: '都心タワー商業ビル', price: 18000, yield: 0.09 }
+            { id: 0, nameJa: '都心駅チカ区分マンション', price: 1500, yield: 0.050 },
+            { id: 1, nameJa: '高利回り一棟アパート', price: 5000, yield: 0.065 },
+            { id: 2, nameJa: '都心タワー商業ビル', price: 18000, yield: 0.055 }
         ],
         history: { net: [600], nw: [600], rival: [600] },
         academy: [
@@ -1492,7 +1492,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             opF3: "神話級を含む\n全" + TITLE_TOTAL + "種の称号",
             yrUnit: "年",
             mktDesc: {
-                jp: "🇯🇵 <strong>日本市場 (JPY)</strong>: 超低金利(1.5%)で不動産ローンが圧倒的に有利！安定成長と家賃で手堅くFIREできる市場。",
+                jp: "🇯🇵 <strong>日本市場 (JPY)</strong>: 超低金利(1.5%)で不動産ローンが有利！安定成長と家賃で手堅くFIREを目指せる市場。",
                 us: "🇺🇸 <strong>米国市場 (USD)</strong>: AI・ハイテク株の成長率が世界最高クラス(+3.5%)！株価成長とIPOで爆発的に億り人を狙える市場。",
                 gl: "🌐 <strong>グローバル市場 (USD)</strong>: 全世界分散で暴落に強く、株式成長(+2.0%)も配当・不動産も高水準な万能マルチ市場。"
             },
@@ -2106,6 +2106,13 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         Object.assign(g, data.g);
         g.academy = academy;
         // 旧セーブに無い項目は既定値で補う（収益不動産の購入歴は、保有中の物件から推定する）
+        // 旧セーブの保有物件の利回りを、新しい実質利回りに置き換える
+        (g.ownedProps || []).forEach(function(p) {
+            if (!p.isHome && PROP_YIELD_BY_NAME[p.nameJa] !== undefined) p.yield = PROP_YIELD_BY_NAME[p.nameJa];
+        });
+        (g.marketProps || []).forEach(function(mp) {
+            if (PROP_YIELD_BY_NAME[mp.nameJa] !== undefined) mp.yield = PROP_YIELD_BY_NAME[mp.nameJa];
+        });
         if (typeof data.g.everBoughtRealEstate !== 'boolean') {
             g.everBoughtRealEstate = (g.ownedProps || []).some(function(p) { return !p.isHome; });
         }
@@ -2557,6 +2564,37 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         let cf = 0;
         g.ownedProps.forEach(function(p) { cf += calcPropCF(p, spec); });
         return Math.round(cf);
+    }
+
+    // --- 不動産の現実味：実質利回り（空室・管理費控除後）、毎年の価格変動、空室、融資上限 ---
+    // 物件ごとの実質利回り（旧セーブの保有物件もこの値に置き換える）
+    const PROP_YIELD_BY_NAME = { '都心駅チカ区分マンション': 0.050, '高利回り一棟アパート': 0.065, '都心タワー商業ビル': 0.055 };
+    const PROP_BASE_PRICE = { 0: 1500, 1: 5000, 2: 18000 };
+    const VACANCY_CHANCE = 0.10;      // 1棟ごと・1年ごとに空室になる確率（その年の家賃が0）
+    const LOAN_SALARY_MULT = 8;       // 融資上限＝年収×8＋純資産
+    function getLoanLimit() {
+        return Math.round(g.salary * LOAN_SALARY_MULT + Math.max(0, getNetWorth()));
+    }
+    // 毎年の不動産価格の変動（市場全体の動き＋物件ごとのばらつき）。売り出し中の物件価格も市場全体の動きに合わせる
+    function updatePropertyPrices(commonChg) {
+        g.ownedProps.forEach(function(p) {
+            const chg = commonChg + (Math.random() * 0.04 - 0.02);
+            p.price = Math.max(100, Math.round(p.price * (1 + chg)));
+        });
+        g.marketProps.forEach(function(mp) {
+            const base = PROP_BASE_PRICE[mp.id] || mp.price;
+            mp.price = Math.max(Math.round(base * 0.3), Math.round(mp.price * (1 + commonChg)));
+        });
+        g.realEstateAsset = g.ownedProps.reduce(function(sum, x) { return sum + x.price; }, 0);
+    }
+    // 今年空室になった物件の家賃（CFから差し引く額）と棟数
+    function rollVacancies(spec) {
+        let lost = 0, count = 0;
+        g.ownedProps.forEach(function(p) {
+            if (p.isHome) return;
+            if (Math.random() < VACANCY_CHANCE) { lost += p.price * (p.yield + spec.propYieldBoost); count++; }
+        });
+        return { lost: Math.round(lost), count: count };
     }
 
     // 年間の手取り（給与貯蓄＋家賃CF＋配当）。家賃の赤字は他の所得と相殺する（損益通算）。
@@ -3523,6 +3561,10 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             c.price = Math.max(20, Math.round(c.price * (1 + chg)));
         });
 
+        // --- 不動産価格の変動（シナリオでは株価の動きの半分）---
+        const reCommon = isScenario ? scenRate.ind * 0.5 : ((Math.random() * 0.04 - 0.02) + (cycleDef.reAdj || 0));
+        updatePropertyPrices(reCommon);
+
         // --- ライバル投資家（何もせず放置インデックスを続けた場合の目安）---
         g.rivalNetWorth = Math.round(g.rivalNetWorth * (1 + indRate)) + RIVAL_ANNUAL_DEPOSIT;
 
@@ -3536,7 +3578,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         }
 
         const annualSavings = Math.round(g.salary * 0.35);
-        const reCF = calcRECashFlow();
+        const vacancy = rollVacancies(spec);
+        const reCF = calcRECashFlow() - vacancy.lost;
         const stockTotal = g.stocks.reduce(function(sum, s) { return sum + s.shares * s.price; }, 0);
         const stockDiv = Math.round((g.indexAsset + stockTotal) * spec.divRate);
         const netInflow = calcAfterTax(annualSavings, reCF, stockDiv);
@@ -3571,6 +3614,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         let newsText = d.turnNews(g.age, fmtShort(netInflow), snippet);
         if (principalPaid > 0) {
             newsText += (' 🏦ローン元本返済 -' + fmtShort(principalPaid) + '。');
+        }
+        if (vacancy.count > 0) {
+            newsText += (' 🏚️空室 ' + vacancy.count + '棟（家賃 -' + fmtShort(vacancy.lost) + '）。');
         }
         if (corpFee > 0) {
             newsText += (' 🏢法人維持費 -' + fmtShort(corpFee) + '。');
@@ -3751,6 +3797,12 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         let p = g.marketProps.find(function(x) { return x.id === id; });
         let down = Math.round(p.price * 0.2);
         if (g.cash < down) { showToast(d.noCashAlert, 'warn'); return; }
+        const newLoan = p.price - down;
+        const loanLimit = getLoanLimit();
+        if (g.debt + newLoan > loanLimit) {
+            showToast('🏦 銀行の融資審査に通りませんでした（融資上限 ' + fmtShort(loanLimit) + '＝年収×8＋純資産、今の借入 ' + fmtShort(g.debt) + '）', 'warn');
+            return;
+        }
         g.cash -= down; g.everBoughtAsset = true; g.everBoughtRealEstate = true;
         let loan = p.price - down;
         if (loan > 0) g.everTookDebt = true;
