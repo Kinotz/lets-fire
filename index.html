@@ -1097,7 +1097,7 @@
         { id: 't_landlord', mythic: false, icon: '🏠', nameJa: '8. 新米大家さん', descJa: '銀行融資を使って初めて収益不動産を購入した' },
         { id: 't_re_king', mythic: false, icon: '🏘️', nameJa: '9. 街の不動産オーナー', descJa: '収益不動産を同時に3棟以上保有した' },
         { id: 't_corp_boss', mythic: false, icon: '🏢', nameJa: '10. ひとり社長デビュー', descJa: '純資産5,000を達成し、資産管理法人を設立した' },
-        { id: 't_ipo_hunter', mythic: false, icon: '🎯', nameJa: '11. IPOビギナーズラック', descJa: 'IPO（新規公開株）抽選に1回当選した' },
+        { id: 't_ipo_hunter', mythic: false, icon: '🎯', nameJa: '11. IPOビギナーズラック', descJa: 'IPO（新規公開株）抽選に1回当選した（チュートリアルの体験当選は除く）' },
         { id: 't_crypto_whale', mythic: false, icon: '🪙', nameJa: '12. 仮想通貨ホルダー', descJa: '仮想通貨の保有評価額が1,000を突破した' },
         { id: 't_scam_buster', mythic: false, icon: '🛡️', nameJa: '13. 詐欺勧誘スルー', descJa: '怪しい投資詐欺の誘いを断って資産を守った' },
         { id: 't_tax_guardian', mythic: false, icon: '🧾', nameJa: '14. まじめな納税者', descJa: '突然の税務調査イベントで適正申告を行い通過した' },
@@ -1123,9 +1123,9 @@
         { id: 't_imp_100oku', mythic: true, icon: '🐉', nameJa: '34. 百億の覇者（デカ・ビリオネア）', descJa: '【超難関】純資産総額が1,000,000（100億円 / $100M）の大台を突破した' },
         { id: 't_imp_1cho', mythic: true, icon: '🪐', nameJa: '35. 一兆円の神話（トリリオネア・ゴッド）', descJa: '【達成不可能級】純資産総額が100,000,000（1兆円 / $10B）という神話領域に到達した' },
         { id: 't_imp_omni_god', mythic: true, icon: '🌟', nameJa: '36. 全知全能のFIRE神（完全制覇）', descJa: '【究極神話】他の42種類すべての称号をコンプリートした伝説のプレイヤー' },
-        { id: 't_no_crypto_fire', mythic: false, icon: '🧊', nameJa: '37. 堅実王道のFIRE達成者', descJa: '【縛りプレイ】仮想通貨に一度も手を出さずにFIRE目標を達成した' },
-        { id: 't_no_stock_fire', mythic: false, icon: '🧭', nameJa: '38. インデックス一筋の求道者', descJa: '【縛りプレイ】個別株に一度も手を出さず、インデックスと金だけでFIRE目標を達成した' },
-        { id: 't_no_debt_fire', mythic: false, icon: '🪨', nameJa: '39. 無借金経営のFIRE達成者', descJa: '【縛りプレイ】一度も借金（不動産ローン）をせずにFIRE目標を達成した' },
+        { id: 't_no_crypto_fire', mythic: false, icon: '🧊', nameJa: '37. 堅実王道のFIRE達成者', descJa: '【縛りプレイ】仮想通貨に一度も手を出さずにFIRE目標を達成した（ビギナーズ以外・縛りチャレンジなし）' },
+        { id: 't_no_stock_fire', mythic: false, icon: '🧭', nameJa: '38. インデックス一筋の求道者', descJa: '【縛りプレイ】個別株・仮想通貨・収益不動産に一度も手を出さず、インデックスと金だけでFIRE目標を達成した（ビギナーズ以外・縛りチャレンジなし）' },
+        { id: 't_no_debt_fire', mythic: false, icon: '🪨', nameJa: '39. 無借金経営のFIRE達成者', descJa: '【縛りプレイ】一度も借金（不動産ローン）をせずにFIRE目標を達成した（縛りチャレンジなし）' },
         { id: 't_fire_cash_only', mythic: true, icon: '🐢', nameJa: '40. 亀の歩みの貯金王（無投資FIRE）', descJa: '【超難関】株・金・仮想通貨・不動産を一切買わず、給与の貯金だけでFIRE目標（純資産7,500）を達成した' },
         { id: 't_chal_crypto_fire', mythic: true, icon: '🐺', nameJa: '41. 暗号資産一本の一匹狼', descJa: '【縛りプレイ達成】「暗号資産オンリー」チャレンジで、暗号資産（と給与）だけを使ってFIRE目標を達成した' },
         { id: 't_chal_realestate_fire', mythic: true, icon: '🏯', nameJa: '42. 大家一本の不動産王', descJa: '【縛りプレイ達成】「不動産王一本勝負」チャレンジで、不動産投資だけを使ってFIRE目標を達成した' },
@@ -1402,7 +1402,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         hedgeInForce: false, hedgeInForceCover: 0, hedgeYearLoss: 0, hedgeYearPaid: 0,
         rateHikeYears: 0,
         academyRead: {}, lessonsSeen: {}, firstBuy: { index: false, gold: false, stock: false, crypto: false, realestate: false },
-        everBoughtCrypto: false, everBoughtIndivStock: false, everTookDebt: false,
+        everBoughtCrypto: false, everBoughtIndivStock: false, everTookDebt: false, everBoughtRealEstate: false,
         bestNetWorthBeaten: false, challengeMode: 'none', tutorialIpoRewarded: false,
         stocks: [
             { id: 0, nameJa: 'AI半導体メガ', price: 100, shares: 0 },
@@ -2105,6 +2105,10 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const academy = g.academy;
         Object.assign(g, data.g);
         g.academy = academy;
+        // 旧セーブに無い項目は既定値で補う（収益不動産の購入歴は、保有中の物件から推定する）
+        if (typeof data.g.everBoughtRealEstate !== 'boolean') {
+            g.everBoughtRealEstate = (g.ownedProps || []).some(function(p) { return !p.isHome; });
+        }
         gameMode = data.gameMode || 'easy';
         market = data.market || 'jp';
         if (data.scenarioId && historicalScenarios[data.scenarioId]) selectedScenarioId = data.scenarioId;
@@ -2172,7 +2176,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         g.hedgeActive = false; g.rateHikeYears = 0;
         g.academyRead = {}; g.lessonsSeen = {};
         g.firstBuy = { index: false, gold: false, stock: false, crypto: false, realestate: false };
-        g.everBoughtCrypto = false; g.everBoughtIndivStock = false; g.everTookDebt = false;
+        g.everBoughtCrypto = false; g.everBoughtIndivStock = false; g.everTookDebt = false; g.everBoughtRealEstate = false;
         g.bestNetWorthBeaten = false; g.tutorialIpoRewarded = false;
         g.challengeMode = (gameMode === 'scenario') ? 'none' : selectedChallenge;
         if (gameMode === 'easy' && g.challengeMode === 'crypto_only') g.challengeMode = 'none';
@@ -3241,8 +3245,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 g.tutorialIpoRewarded = true;
                 g.cash += 180;
                 g.everBoughtAsset = true;
-                g.ipoWinCount++;
-                unlockTitle('t_ipo_hunter');
+                // 体験当選は練習なので、称号『IPOビギナーズラック』と通算当選回数には数えない
             }
             updateUI();
             triggerNavStepPopup();
@@ -3371,9 +3374,13 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             document.getElementById('fire-badge').classList.remove('hidden');
             unlockTitle('t_fire_clear');
             if (g.age <= 29) unlockTitle('t_imp_speed_fire');
-            if (!g.everBoughtCrypto) unlockTitle('t_no_crypto_fire');
-            if (!g.everBoughtIndivStock) unlockTitle('t_no_stock_fire');
-            if (!g.everTookDebt) unlockTitle('t_no_debt_fire');
+            // 縛り系の称号は「その資産を買える状況で、自分の判断で買わなかった」場合だけ獲得できる
+            // （ビギナーズでは仮想通貨・個別株が無く、縛りプレイではそもそも買えないため対象外）
+            const freeChoice = g.challengeMode === 'none' || !g.challengeMode;
+            const advAssets = gameMode !== 'easy';
+            if (freeChoice && advAssets && !g.everBoughtCrypto) unlockTitle('t_no_crypto_fire');
+            if (freeChoice && advAssets && !g.everBoughtIndivStock && !g.everBoughtCrypto && !g.everBoughtRealEstate) unlockTitle('t_no_stock_fire');
+            if (freeChoice && !g.everTookDebt) unlockTitle('t_no_debt_fire');
             if (!g.everBoughtAsset) unlockTitle('t_fire_cash_only');
             if (g.challengeMode === 'crypto_only') unlockTitle('t_chal_crypto_fire');
             if (g.challengeMode === 'real_estate_only') unlockTitle('t_chal_realestate_fire');
@@ -3744,7 +3751,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         let p = g.marketProps.find(function(x) { return x.id === id; });
         let down = Math.round(p.price * 0.2);
         if (g.cash < down) { showToast(d.noCashAlert, 'warn'); return; }
-        g.cash -= down; g.everBoughtAsset = true;
+        g.cash -= down; g.everBoughtAsset = true; g.everBoughtRealEstate = true;
         let loan = p.price - down;
         if (loan > 0) g.everTookDebt = true;
         g.ownedProps.push({ nameJa: p.nameJa, price: p.price, yield: p.yield, debt: loan });
