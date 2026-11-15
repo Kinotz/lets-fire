@@ -2511,6 +2511,15 @@
         return Math.round(cf);
     }
 
+    // 年間の手取り（給与貯蓄＋家賃CF＋配当）。家賃の赤字は他の所得と相殺する（損益通算）。
+    // 所得の合計がマイナスのときは税を0にする（税がマイナスになって赤字が縮むことはない）
+    function calcAfterTax(salarySavings, reCF, dividends) {
+        const taxRate = g.isCorp ? 0.10 : 0.18;
+        const gross = salarySavings + reCF + dividends;
+        const tax = Math.max(0, gross) * taxRate;
+        return Math.round(gross - tax);
+    }
+
     function recordCrisisSurvived() {
         g.crisisSurvivedCount++;
         if (g.crisisSurvivedCount >= 3) unlockTitle('t_crisis_survivor');
@@ -3376,8 +3385,7 @@
         const reCF = calcRECashFlow();
         const stockTotal = g.stocks.reduce(function(sum, s) { return sum + s.shares * s.price; }, 0);
         const stockDiv = Math.round((g.indexAsset + stockTotal) * spec.divRate);
-        const taxRate = g.isCorp ? 0.10 : 0.18;
-        const netInflow = Math.round((annualSavings + reCF + stockDiv) * (1 - taxRate));
+        const netInflow = calcAfterTax(annualSavings, reCF, stockDiv);
         g.cash += netInflow;
 
         // ローン元本の返済（物件価格の4%/年）：現金から支払い、その分だけ借入が減る（現金が足りない分は翌年へ持ち越し）
