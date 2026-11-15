@@ -3425,7 +3425,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         afterRetireFlow();
     }
     // リタイア直後に続けて決めること（B6で追加）
-    function afterRetireFlow() {}
+    function afterRetireFlow() {
+        if (needsPensionChoice()) triggerLateEvent('pension');
+    }
 
     // --- 人生後半のイベント（リタイア関連）：選択待ちは pendingFlow {type:'late', id} として保存する ---
     const lateLifeEvents = {
@@ -3464,6 +3466,41 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             };
         }
     };
+    // 65歳開始と比べて、受け取った合計が追いつく（追い越される）年齢
+    function getPensionBreakEvenAge(startAge) {
+        const f = getPensionFactor(startAge), base = ECON.pension.baseAge;
+        if (startAge === base || Math.abs(f - 1) < 1e-9) return null;
+        return Math.round((f * startAge - base) / (f - 1) * 10) / 10;
+    }
+    const PENSION_AGE_OPTIONS = [60, 62, 65, 68, 70, 75];
+    lateLifeEvents.pension = function() {
+        const P = ECON.pension;
+        let ages = PENSION_AGE_OPTIONS.filter(function(a) { return a >= g.age && a >= P.minAge && a <= P.maxAge; });
+        if (g.age >= P.minAge && g.age <= P.maxAge && ages.indexOf(g.age) < 0) ages.unshift(g.age);
+        if (!ages.length) ages = [P.maxAge];
+        const base = getPensionAnnual(P.baseAge);
+        const choices = ages.map(function(a) {
+            const f = getPensionFactor(a);
+            const pct = Math.round((f - 1) * 1000) / 10;
+            const be = getPensionBreakEvenAge(a);
+            const note = a === P.baseAge ? '標準' : (pct > 0 ? '繰下げ +' + pct + '%' : '繰上げ ' + pct + '%');
+            return { key: 'p' + a, label: '🧓 ' + a + '歳から受け取る（年' + fmtShort(getPensionAnnual(a)) + '・' + note + '）',
+                whatIf: '65歳開始なら年' + fmtShort(base) + '。早めるほど毎年の額は減り、遅らせるほど増えます（受け取った合計が65歳開始と並ぶのは、60歳開始で約' + getPensionBreakEvenAge(60) + '歳、70歳開始で約' + getPensionBreakEvenAge(70) + '歳、75歳開始で約' + getPensionBreakEvenAge(75) + '歳）。',
+                action: function() {
+                    g.pensionStartAge = a;
+                    const beText = !be ? '' : (a > P.baseAge
+                        ? '\n65歳開始より毎年多く受け取れますが、受け取った合計で65歳開始に追いつくのは約' + be + '歳です。それまでの生活費は資産から取り崩します。'
+                        : '\n早く受け取れる代わりに毎年の額は減り、約' + be + '歳で受け取った合計を65歳開始に追い越されます。');
+                    showEventResult('🧓 年金は' + a + '歳から受け取ります', '年' + fmtShort(getPensionAnnual(a)) + '（今の価値）を、' + a + '歳から毎年受け取ります。一度決めた開始年齢と増減率は、一生変わりません。' + beText, false);
+                } };
+        });
+        return {
+            title: '🧓 公的年金をいつから受け取りますか？',
+            desc: '公的年金は' + P.minAge + '〜' + P.maxAge + '歳の間で、受け取りを始める年齢を選べます。65歳より早めると1か月あたり0.4%減り（最大24%減）、遅らせると1か月あたり0.7%増えます（最大84%増）。\n\nあなたの年金の見込み：65歳開始で 年' + fmtShort(base) + '（今の価値）',
+            beginnerTip: '【年金の受け取り方ガイド】\nこのゲームでは90歳まで必ず生きるので、遅らせるほど受け取る合計は増えやすくなります。ただし受け取りを始めるまでの生活費は資産から取り崩すため、その間に暴落が来ると資産が大きく減ります。手元の資産と相談して選びましょう。\n※ 日本の公的年金（令和8年度の額）をもとにした簡略計算です。日本以外の市場でも同じ計算になるのはゲーム上の簡略化です。',
+            choices: choices
+        };
+    };
     function triggerLateEvent(id) {
         const make = lateLifeEvents[id];
         if (!make) return;
@@ -3471,6 +3508,10 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         renderEventModal(make());
     }
     // 年が進んだあとに、リタイア関連で決めることがあれば表示する（表示したら true）
+    function needsPensionChoice() {
+        const P = ECON.pension;
+        return !g.pensionStartAge && g.age >= P.minAge && (g.retired || g.age > P.baseAge);
+    }
     function checkLateLifeFlow() {
         if (g.pendingLate) {
             const id = g.pendingLate;
@@ -3479,6 +3520,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             triggerLateEvent(id);
             return true;
         }
+        if (needsPensionChoice()) { updateUI(); triggerLateEvent('pension'); return true; }
         return false;
     }
 
@@ -4077,7 +4119,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             g.workYears = (g.workYears || 0) + 1;
             g.yearsSinceHire = (g.yearsSinceHire || 0) + 1;
         }
-        if (!isScenario && !g.pensionStartAge && g.age >= ECON.pension.baseAge) g.pensionStartAge = ECON.pension.baseAge;
+        // 受け取り開始を選ばないまま上限の年齢になったら、上限の年齢から受け取る
+        if (!isScenario && !g.pensionStartAge && g.age >= ECON.pension.maxAge) g.pensionStartAge = ECON.pension.maxAge;
         const pensionIncome = (!isScenario && isPensionPaying()) ? getPensionAnnual(g.pensionStartAge) : 0;
         g.cash += pensionIncome;
         // --- リタイア後：生活費を払い、足りない分は資産を売ってまかなう ---
