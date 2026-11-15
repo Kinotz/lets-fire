@@ -127,6 +127,10 @@
         .summary-card { background: linear-gradient(145deg, #172338, #0b1120); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 10px; }
         .rank-strip { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, rgba(251, 191, 36, 0.18), rgba(192, 132, 252, 0.12)); border: 1px solid rgba(251, 191, 36, 0.45); padding: 4px 8px; border-radius: 8px; margin-bottom: 6px; font-size: 0.75rem; font-weight: 800; }
         .net-worth-label { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 0.875rem; color: var(--text-sub); font-weight: 800; }
+        .fire-progress { margin: 6px 0 2px; }
+        .fire-progress-text { font-size: 0.75rem; color: var(--text-sub); margin-bottom: 3px; line-height: 1.4; }
+        .fire-progress-bar { height: 6px; background: #050811; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+        .fire-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-green), var(--accent-gold)); }
         .nominal-line { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 0.75rem; color: var(--text-sub); margin: 2px 0 6px; }
         .net-worth-row { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px; }
         .net-worth-val { font-size: 1.6rem; font-weight: 900; font-variant-numeric: tabular-nums; margin: 2px 0 4px 0; color: #f8fafc; }
@@ -441,8 +445,12 @@
             <div class="cf-grid">
                 <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('salary')" aria-label="給与貯蓄の説明を見る"><span><span id="lbl-cf-sal">給与貯蓄</span> ⓘ</span><strong id="disp-salary" style="color:var(--accent-blue);">+¥160万</strong></button>
                 <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('passive')" aria-label="不労所得CFの説明を見る"><span><span id="lbl-cf-pas">不労所得CF</span> ⓘ</span><strong id="disp-passive" style="color:var(--accent-green);">+¥0</strong></button>
-                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('firegoal')" aria-label="FIRE目標の説明を見る"><span><span id="lbl-cf-fire">FIRE目標(65歳まで)</span> ⓘ</span><strong id="disp-firegoal" style="color:var(--accent-gold);">¥300万</strong></button>
+                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('firegoal')" aria-label="FIRE目標の説明を見る"><span><span id="lbl-cf-fire">生活費/年(FIRE目標)</span> ⓘ</span><strong id="disp-firegoal" style="color:var(--accent-gold);">¥300万</strong></button>
                 <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('debt')" aria-label="銀行借入の説明を見る"><span><span id="lbl-cf-debt">銀行借入</span> ⓘ</span><strong id="disp-debt" style="color:var(--accent-red);">¥0</strong></button>
+            </div>
+            <div class="fire-progress" id="fire-progress">
+                <div class="fire-progress-text" id="fire-progress-text">🎯 FIRE目標まで 0%</div>
+                <div class="fire-progress-bar"><div class="fire-progress-fill" id="fire-progress-fill" style="width:0%;"></div></div>
             </div>
             <div class="rival-row" id="rival-row">
                 <span><span id="lbl-rival">🤖 ライバル投資家(放置インデックス)</span>: <strong id="disp-rival">¥600</strong></span>
@@ -628,7 +636,8 @@
             <div id="res-networth" style="color:var(--accent-green); font-size:1.9rem; font-weight:900; margin:6px 0 2px;">¥0</div>
             <div id="res-nominal" style="font-size:0.75rem; color:var(--text-sub); margin-bottom:6px;"></div>
             <div style="font-size:0.875rem; margin-top:6px;"><span id="lbl-res-rank-label">最終資産家ランク</span>: <strong id="res-title" style="color:var(--accent-gold);">👑</strong></div>
-            <div style="font-size:0.875rem; margin-top:4px;"><span id="lbl-res-fire-label">FIRE達成</span>: <strong id="res-fire" style="color:var(--accent-blue);">-</strong></div>
+            <div style="font-size:0.875rem; margin-top:4px;"><span id="lbl-res-fire-label">FIRE</span>: <strong id="res-fire" style="color:var(--accent-blue);">-</strong></div>
+            <div style="font-size:0.875rem; margin-top:4px;" id="res-retire"></div>
             <div style="font-size:0.875rem; margin-top:4px;">🎖️ 獲得済み称号数: <strong id="res-titles-count" style="color:var(--accent-purple);">0 / 43</strong></div>
             <div style="font-size:0.875rem; margin-top:4px;"><span id="lbl-res-rival-label">🤖 ライバル投資家(放置インデックス)</span>: <strong id="res-rival">¥0</strong> <strong id="res-rival-result"></strong></div>
         </div>
@@ -1276,13 +1285,13 @@
         { id: 't_angel_patron', mythic: false, icon: '🤝', nameJa: '16. 友人の起業サポーター', descJa: '友人のスタートアップ起業に出資して成功を見届けた' },
         { id: 't_philanthropist', mythic: false, icon: '🕊️', nameJa: '17. 地域チャリティ協力者', descJa: '教育チャリティ基金へ寄付を行った' },
         { id: 't_crisis_survivor', mythic: false, icon: '☔', nameJa: '18. 景気の波乗り経験者', descJa: '資産減少・経済危機イベントを3回通過した' },
-        { id: 't_fire_clear', mythic: false, icon: '🏖️', nameJa: '19. セミリタイア達成', descJa: '基本となるFIRE目標（不労所得CFがモードの生活費以上、または純資産がその25倍）に65歳までに到達した' },
+        { id: 't_fire_clear', mythic: false, icon: '🏖️', nameJa: '19. セミリタイア達成', descJa: '基本となるFIRE（不労所得CFがモードの生活費以上、または投資に使える純資産がその25倍に届いた状態で、65歳までにリタイア）を達成した' },
         { id: 't_okuribito', mythic: false, icon: '💰', nameJa: '20. 小金持ちの仲間入り', descJa: '純資産総額が10,000（1億円 / $1M）に到達した' },
         { id: 't_debt_free_rich', mythic: false, icon: '✨', nameJa: '21. ローン完済の堅実派', descJa: '借入0の状態で純資産30,000を達成した' },
         { id: 't_super_rich', mythic: false, icon: '🏛️', nameJa: '22. 富裕層の仲間入り', descJa: '純資産総額が100,000（10億円 / $10M）に到達した' },
         { id: 't_world_ruler', mythic: false, icon: '💎', nameJa: '23. 大資産家ステージ', descJa: '純資産総額が300,000（30億円 / $30M）に到達した' },
         { id: 't_life_master', mythic: false, icon: '🎂', nameJa: '24. 90歳までのライフプラン完走', descJa: '25歳から90歳までの66年間を最後までプレイした' },
-        { id: 't_imp_speed_fire', mythic: true, icon: '⚡', nameJa: '25. 光速の20代FIRE（神速の自由人）', descJa: '【超難関】30歳になる前（29歳以下・開始5年以内）にFIRE目標を達成した' },
+        { id: 't_imp_speed_fire', mythic: true, icon: '⚡', nameJa: '25. 光速の20代FIRE（神速の自由人）', descJa: '【超難関】30歳になる前（29歳以下）に、FIRE目標に届いた状態でリタイアした' },
         { id: 't_imp_salary_only', mythic: true, icon: '🔨', nameJa: '26. 労働と預金の求道者（投資ゼロ億り人）', descJa: '【超難関】株・金・仮想通貨・不動産・IPOを1度も買わず、給与と現金のみで純資産10,000（1億円）を達成した' },
         { id: 't_imp_hard_no_corp', mythic: true, icon: '👹', nameJa: '27. 修羅の個人納税王（ハードコア無法人10億）', descJa: '【超難関】最高難易度「ハードコア」かつ「法人化を一切せず」に純資産100,000（10億円）を突破した' },
         { id: 't_imp_re_leviathan', mythic: true, icon: '🏰', nameJa: '28. 摩天楼の絶対君主（無借金15棟オーナー）', descJa: '【超難関】収益不動産を同時に15棟以上保有し、かつ銀行借入を「0（完全完済）」にした' },
@@ -1294,13 +1303,13 @@
         { id: 't_imp_100oku', mythic: true, icon: '🐉', nameJa: '34. 百億の覇者（デカ・ビリオネア）', descJa: '【超難関】純資産総額が1,000,000（100億円 / $100M）の大台を突破した' },
         { id: 't_imp_1cho', mythic: true, icon: '🪐', nameJa: '35. 一兆円の神話（トリリオネア・ゴッド）', descJa: '【達成不可能級】純資産総額が100,000,000（1兆円 / $10B）という神話領域に到達した' },
         { id: 't_imp_omni_god', mythic: true, icon: '🌟', nameJa: '36. 全知全能のFIRE神（完全制覇）', descJa: '【究極神話】他の42種類すべての称号をコンプリートした伝説のプレイヤー' },
-        { id: 't_no_crypto_fire', mythic: false, icon: '🧊', nameJa: '37. 堅実王道のFIRE達成者', descJa: '【縛りプレイ】仮想通貨に一度も手を出さずにFIRE目標を達成した（ビギナーズ以外・縛りチャレンジなし）' },
-        { id: 't_no_stock_fire', mythic: false, icon: '🧭', nameJa: '38. インデックス一筋の求道者', descJa: '【縛りプレイ】個別株・仮想通貨・収益不動産に一度も手を出さず、インデックスと金だけでFIRE目標を達成した（ビギナーズ以外・縛りチャレンジなし）' },
-        { id: 't_no_debt_fire', mythic: false, icon: '🪨', nameJa: '39. 無借金経営のFIRE達成者', descJa: '【縛りプレイ】一度も借金（不動産ローン）をせずにFIRE目標を達成した（縛りチャレンジなし）' },
-        { id: 't_fire_cash_only', mythic: true, icon: '🐢', nameJa: '40. 亀の歩みの貯金王（無投資FIRE）', descJa: '【超難関】株・金・仮想通貨・不動産を一切買わず、給与の貯金だけでFIRE目標を達成した' },
-        { id: 't_chal_crypto_fire', mythic: true, icon: '🐺', nameJa: '41. 暗号資産一本の一匹狼', descJa: '【縛りプレイ達成】「暗号資産オンリー」チャレンジで、暗号資産（と給与）だけを使ってFIRE目標を達成した' },
-        { id: 't_chal_realestate_fire', mythic: true, icon: '🏯', nameJa: '42. 大家一本の不動産王', descJa: '【縛りプレイ達成】「不動産王一本勝負」チャレンジで、不動産投資だけを使ってFIRE目標を達成した' },
-        { id: 't_chal_conservative_fire', mythic: true, icon: '🧘', nameJa: '43. 超保守型の守りの達人', descJa: '【縛りプレイ達成】「超保守型」チャレンジで、インデックスと金だけを使ってFIRE目標を達成した' }
+        { id: 't_no_crypto_fire', mythic: false, icon: '🧊', nameJa: '37. 堅実王道のFIRE達成者', descJa: '【縛りプレイ】仮想通貨に一度も手を出さずにFIRE（目標に届いた状態で65歳までにリタイア）を達成した（ビギナーズ以外・縛りチャレンジなし）' },
+        { id: 't_no_stock_fire', mythic: false, icon: '🧭', nameJa: '38. インデックス一筋の求道者', descJa: '【縛りプレイ】個別株・仮想通貨・収益不動産に一度も手を出さず、インデックスと金だけでFIRE（目標に届いた状態で65歳までにリタイア）を達成した（ビギナーズ以外・縛りチャレンジなし）' },
+        { id: 't_no_debt_fire', mythic: false, icon: '🪨', nameJa: '39. 無借金経営のFIRE達成者', descJa: '【縛りプレイ】一度も借金（不動産ローン）をせずにFIRE（目標に届いた状態で65歳までにリタイア）を達成した（縛りチャレンジなし）' },
+        { id: 't_fire_cash_only', mythic: true, icon: '🐢', nameJa: '40. 亀の歩みの貯金王（無投資FIRE）', descJa: '【超難関】株・金・仮想通貨・不動産を一切買わず、給与の貯金だけでFIRE（目標に届いた状態で65歳までにリタイア）を達成した' },
+        { id: 't_chal_crypto_fire', mythic: true, icon: '🐺', nameJa: '41. 暗号資産一本の一匹狼', descJa: '【縛りプレイ達成】「暗号資産オンリー」チャレンジで、暗号資産（と給与）だけを使ってFIRE（目標に届いた状態で65歳までにリタイア）を達成した' },
+        { id: 't_chal_realestate_fire', mythic: true, icon: '🏯', nameJa: '42. 大家一本の不動産王', descJa: '【縛りプレイ達成】「不動産王一本勝負」チャレンジで、不動産投資だけを使ってFIRE（目標に届いた状態で65歳までにリタイア）を達成した' },
+        { id: 't_chal_conservative_fire', mythic: true, icon: '🧘', nameJa: '43. 超保守型の守りの達人', descJa: '【縛りプレイ達成】「超保守型」チャレンジで、インデックスと金だけを使ってFIRE（目標に届いた状態で65歳までにリタイア）を達成した' }
     ];
     // 称号の総数は常にマスターデータから自動で数える（表記の食い違いを防ぐ）
     const TITLE_TOTAL = titleMasterList.length;
@@ -1664,7 +1673,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         reals: { title: "💡 収益不動産とは？", desc: "マンションやアパートを買って、毎年の「家賃収入」を自動的に得る投資です！" },
         salary: { title: "💡 給与貯蓄とは？", desc: "1年間働いて生活費を払った後に残る貯金額（税引前）です。このゲームでは、配当・家賃と合わせて約18%の税金を引いたあとで現金に入ります。『キャリア』タブで最大Lv.6まで昇給します！" },
         passive: { title: "💡 不労所得CF（キャッシュフロー）とは？", desc: "株の配当金や不動産の家賃など、働かなくても毎年入ってくるお金です！\n\n不動産はローンの利息と元本の返済を差し引いた、実際に手元に残る額で数えます。" },
-        firegoal: { title: "💡 FIRE目標とは？", desc: "FIRE目標は1年間の生活費です（ビギナーズ300・スタンダード400・ハードコア500）。65歳までに、不労所得CFがこの目標を超えるか、純資産が目標の25倍に達すると【FIRE達成】となります！\n\nFIREは『早期』リタイアのこと。66歳以降に届いた場合は通常の引退として扱います。" },
+        firegoal: { title: "💡 FIRE目標とは？", desc: "リタイア後の1年間の生活費です（ビギナーズ300・スタンダード400・ハードコア500、今の価値）。国民年金保険料（60歳まで）・国民健康保険料・介護保険料（40歳以上）・住民税などの税や社会保険料も含みます。\n\n【FIRE目標に到達】不労所得CFが生活費以上、または「投資に使える純資産（自宅の持ち分を除く）」が生活費の25倍（4%ルールの目安）。\n【FIRE達成】目標に到達した状態で、65歳までにキャリアタブの「リタイアする」を選ぶこと。\n【FIRE成功】FIREしたあと、90歳まで再就職や生活の切り詰めをせずに暮らせたこと（ランキングの🔥）。\n\n65歳を過ぎてからのリタイアは、通常の引退として扱います。" },
         debt: { title: "💡 銀行借入（ローン）とは？", desc: "不動産を買う時に銀行から借りたお金です。利上げイベントに備えて現金とのバランスを保ちましょう。" },
         allocation: { title: "💡 ポートフォリオ（資産配分）とは？", desc: "現金、株、金、不動産などをどういう割合で持つかという「資産の組み合わせ」のことです！" },
         ipo: { title: "💡 IPO（新規公開株）ブックビルディングとは？", desc: "新しく上場する企業の株を抽選で買う仕組みです。現実と同じく「抽選参加自体は無料（外れてもお金は減らない）」ですが、申し込むための買付余力（手元現金300以上）が必要です。当選率は約8%と低く、当選しても稀に『公募割れ（損失）』するリスクがあります！" },
@@ -2265,11 +2274,12 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const prevBest = prev ? prev.nw : null;
         const isNewBest = !prev || nw > prev.nw;
         if (isNewBest) {
-            records[key] = { nw: nw, date: new Date().toISOString().slice(0, 10) };
+            records[key] = { nw: nw, date: new Date().toISOString().slice(0, 10), v: 2 };
             saveBestRecords(records);
             g.bestNetWorthBeaten = true;
         }
-        return { isNewBest: isNewBest, prevBest: prevBest };
+        // v が無い記録は、インフレ・取り崩しを入れる前のルールでの記録
+        return { isNewBest: isNewBest, prevBest: prevBest, prevIsLegacy: !!prev && !prev.v };
     }
 
     // --- 💾 ゲーム進行の自動保存と「続きから」（リロードやスマホのタブ破棄で進行が消えないようにする）---
@@ -2379,7 +2389,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             document.getElementById('corp-setup-btn').innerText = d0.corpBtnDone;
             document.getElementById('corp-setup-btn').setAttribute('disabled', 'true');
         }
-        if (data.fireShown) document.getElementById('fire-badge').classList.remove('hidden');
+        // 旧セーブのFIREバッジ（fireShown）は使わない：FIRE目標に届いていれば「到達✓」と表示され、リタイアを案内する
 
         isGameStarted = true;
         lockMarketSelection();
@@ -3346,6 +3356,51 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const cryptoTotal = g.cryptos.reduce(function(sum, c) { return sum + c.holdings * c.price; }, 0);
         return Math.max(0, g.cash) + g.indexAsset + g.goldAsset + stockTotal + cryptoTotal;
     }
+    // FIRE系の称号：FIRE目標に届いた状態で FIRE_DEADLINE_AGE 歳までにリタイアした時点で判定する
+    function unlockFireTitles() {
+        unlockTitle('t_fire_clear');
+        if (g.age <= 29) unlockTitle('t_imp_speed_fire');
+        // 縛り系の称号は「その資産を買える状況で、自分の判断で買わなかった」場合だけ獲得できる
+        // （ビギナーズでは仮想通貨・個別株が無く、縛りプレイではそもそも買えないため対象外）
+        const freeChoice = g.challengeMode === 'none' || !g.challengeMode;
+        const advAssets = gameMode !== 'easy';
+        if (freeChoice && advAssets && !g.everBoughtCrypto) unlockTitle('t_no_crypto_fire');
+        if (freeChoice && advAssets && !g.everBoughtIndivStock && !g.everBoughtCrypto && !g.everBoughtRealEstate) unlockTitle('t_no_stock_fire');
+        if (freeChoice && !g.everTookDebt) unlockTitle('t_no_debt_fire');
+        if (!g.everBoughtAsset) unlockTitle('t_fire_cash_only');
+        if (g.challengeMode === 'crypto_only') unlockTitle('t_chal_crypto_fire');
+        if (g.challengeMode === 'real_estate_only') unlockTitle('t_chal_realestate_fire');
+        if (g.challengeMode === 'conservative_only') unlockTitle('t_chal_conservative_fire');
+    }
+    // ランキングの fireAchieved・結果画面で使う「FIRE成功」＝FIRE達成し、90歳まで再就職・切り詰めをせずに暮らした
+    function getFinalFireAchieved() { return !!g.fireAchievedAge && !g.fireFailed; }
+    // 画面上部のバッジとFIRE目標の進み具合
+    function updateFireStatus(totalPassive, fireGoal) {
+        const badge = document.getElementById('fire-badge');
+        const reached = gameMode !== 'scenario' && isFireTargetReached();
+        let text = '';
+        if (g.fireAchievedAge) text = g.fireFailed ? 'FIRE後に再始動' : 'FIRE達成 🔥';
+        else if (g.retired) text = 'リタイア中 🏖️';
+        else if (reached && g.age <= FIRE_DEADLINE_AGE) text = 'FIRE目標 到達✓';
+        badge.innerText = text;
+        badge.classList.toggle('hidden', !text);
+        if (reached && !g.retired && g.age <= FIRE_DEADLINE_AGE && !g.fireReadyNotified && isFinalNavStep()) {
+            g.fireReadyNotified = true;
+            showToast('🎯 FIRE目標に到達！キャリアタブの「リタイアする」で、' + FIRE_DEADLINE_AGE + '歳までにリタイアすると【FIRE達成】です', 'ok');
+        }
+        const prog = document.getElementById('fire-progress');
+        if (!prog) return;
+        if (gameMode === 'scenario') { prog.classList.add('hidden'); return; }
+        prog.classList.remove('hidden');
+        const need = fireGoal * ECON.retire.fireMultiple;
+        const inv = Math.max(0, getInvestableNetWorth());
+        const pct = Math.max(Math.min(100, Math.round(inv / need * 100)), Math.min(100, Math.round(Math.max(0, totalPassive) / fireGoal * 100)));
+        document.getElementById('fire-progress-fill').style.width = pct + '%';
+        let label;
+        if (g.retired) label = '🏖️ ' + g.retireAge + '歳からリタイア中（生活費 ' + fmtShort(getLivingCost()) + '／年）';
+        else label = '🎯 FIRE目標まで ' + pct + '%（投資に使える資産 ' + fmtShort(inv) + '／' + fmtShort(need) + '、または不労所得CFが生活費以上）';
+        document.getElementById('fire-progress-text').innerText = label;
+    }
     function canRetireNow() {
         return isGameStarted && !isGameFinished && gameMode !== 'scenario' && !g.retired && isFinalNavStep() && !pendingFlow;
     }
@@ -3435,6 +3490,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     // リタイアを実行する（シミュレーションからも直接呼べる）
     function doRetire() {
         if (g.retired) return;
+        // FIRE判定は、退職金を受け取る前の資産で行う（確認ダイアログの表示と合わせる）
+        const isFire = !g.fireAchievedAge && g.age <= FIRE_DEADLINE_AGE && isFireTargetReached();
+        if (isFire) { g.fireAchievedAge = g.age; unlockFireTitles(); }
         const sev = getSeveranceEstimate();
         g.retired = true;
         g.reemployed = false;
@@ -3444,7 +3502,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         g.yearsSinceHire = 0;
         renderCareer();
         updateUI();
-        showEventResult('🏖️ ' + g.age + '歳でリタイアしました', '退職金 +' + fmtShort(sev) + ' を受け取りました。これからは毎年、生活費 ' + fmtShort(getLivingCost()) + ' を配当・家賃・年金と資産の取り崩しでまかないます。', false);
+        showEventResult(isFire ? '🔥 ' + g.age + '歳でFIRE達成！' : '🏖️ ' + g.age + '歳でリタイアしました', (isFire ? 'FIRE目標に届いた状態でリタイアしました。90歳まで資産を保てれば「FIRE成功」です。\n' : '') + '退職金 +' + fmtShort(sev) + ' を受け取りました。これからは毎年、生活費 ' + fmtShort(getLivingCost()) + ' を配当・家賃・年金と資産の取り崩しでまかないます。', false);
         afterRetireFlow();
     }
     // リタイア直後に続けて決めること（B6で追加）
@@ -3935,23 +3993,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         document.getElementById('disp-firegoal').innerText = fmtShort(fireGoal);
         document.getElementById('disp-debt').innerText = fmtShort(g.debt);
 
-        // FIRE（早期リタイア）として認めるのは FIRE_DEADLINE_AGE 歳までに目標へ届いた場合だけ（それ以降は通常の引退）
-        if ((totalPassive >= fireGoal || netWorth >= fireGoal * 25) && g.age <= FIRE_DEADLINE_AGE) {
-            document.getElementById('fire-badge').classList.remove('hidden');
-            unlockTitle('t_fire_clear');
-            if (g.age <= 29) unlockTitle('t_imp_speed_fire');
-            // 縛り系の称号は「その資産を買える状況で、自分の判断で買わなかった」場合だけ獲得できる
-            // （ビギナーズでは仮想通貨・個別株が無く、縛りプレイではそもそも買えないため対象外）
-            const freeChoice = g.challengeMode === 'none' || !g.challengeMode;
-            const advAssets = gameMode !== 'easy';
-            if (freeChoice && advAssets && !g.everBoughtCrypto) unlockTitle('t_no_crypto_fire');
-            if (freeChoice && advAssets && !g.everBoughtIndivStock && !g.everBoughtCrypto && !g.everBoughtRealEstate) unlockTitle('t_no_stock_fire');
-            if (freeChoice && !g.everTookDebt) unlockTitle('t_no_debt_fire');
-            if (!g.everBoughtAsset) unlockTitle('t_fire_cash_only');
-            if (g.challengeMode === 'crypto_only') unlockTitle('t_chal_crypto_fire');
-            if (g.challengeMode === 'real_estate_only') unlockTitle('t_chal_realestate_fire');
-            if (g.challengeMode === 'conservative_only') unlockTitle('t_chal_conservative_fire');
-        }
+        updateFireStatus(totalPassive, fireGoal);
         if (netWorth >= 5000 && !g.isCorp) {
             document.getElementById('corp-setup-btn').removeAttribute('disabled');
         }
@@ -4309,7 +4351,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             nextTurn();
             done++;
             if (g.rankLevel > rankBefore) { reason = 'ランクアップ！'; break; }
-            if (!fireBefore && isFireBadgeShown()) { reason = 'FIRE達成！'; break; }
+            if (!fireBefore && isFireBadgeShown()) { reason = document.getElementById('fire-badge').innerText; break; }
             if (pendingFlow) { reason = ({ quiz: 'クイズです', milestone: 'ライフイベントです', event: 'イベントが起きました' })[pendingFlow.type] || 'イベントが起きました'; break; }
             if (isAnyModalOpen() || modalQueue.length) { reason = 'お知らせがあります'; break; }
             if (countUnlockedTitles() > titlesBefore) { reason = '称号を獲得しました'; break; }
@@ -4886,7 +4928,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             return;
         }
         if (btn) { btn.disabled = true; btn.innerText = '送信中…'; }
-        const fireAchieved = !document.getElementById('fire-badge').classList.contains('hidden');
+        // FIREして90歳まで資産を保った場合だけ true（ルールの範囲内の true/false のまま）
+        const fireAchieved = getFinalFireAchieved();
         const modeLabel = gameMode === 'scenario'
             ? ('scenario_' + selectedScenarioId)
             : (gameMode + ((g.challengeMode && g.challengeMode !== 'none') ? ('_' + g.challengeMode) : ''));
@@ -4941,6 +4984,12 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         if (fireAchieved) {
             return '🏖️ 長い道のりでしたが、ついに経済的自立（FIRE）を達成しました！複利の力、分散投資、そして数々の決断の積み重ねが、この結果を生み出しました。本当にお疲れ様でした。';
         }
+        if (g.fireAchievedAge) {
+            return '🌧️ ' + g.fireAchievedAge + '歳でFIREしましたが、取り崩しの途中で資産が尽き、暮らし方を変えることになりました。リタイア直後の暴落や、生活費に対して資産が足りないと起こりやすいことです。備え方を変えて、もう一度挑戦してみましょう。';
+        }
+        if (g.retireAge && g.retireAge <= FIRE_DEADLINE_AGE && !g.depletedEver) {
+            return '🌅 ' + g.retireAge + '歳でリタイアし、自分の時間を' + (g.freeYears || 0) + '年過ごしました。FIRE目標には届かないままのリタイアでしたが、年金と資産で暮らしを守り抜きました。';
+        }
         if (nw >= 3000) {
             return '🌱 FIRE目標にはあと一歩届きませんでしたが、着実に資産を育てることができました。もう一度挑戦すれば、きっと景色が変わるはずです。';
         }
@@ -4977,8 +5026,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         }
         const nw = getNetWorth();
         const rObj = getRankObj(nw);
-        const fireBadgeEl0 = document.getElementById('fire-badge');
-        const fireAchieved = !!(fireBadgeEl0 && !fireBadgeEl0.classList.contains('hidden'));
+        const fireAchieved = getFinalFireAchieved();
         const flavorEl = document.getElementById('ending-flavor-text');
         if (flavorEl) {
             flavorEl.innerText = getEndingFlavor(nw, fireAchieved);
@@ -4987,11 +5035,23 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         document.getElementById('res-networth').innerText = fmtMoney(nw);
         const resNominal = document.getElementById('res-nominal');
         if (resNominal) resNominal.innerText = gameMode === 'scenario' ? '' : ('額面（' + g.age + '歳時点の金額）では ' + fmtShort(nw * (g.priceIndex || 1)) + '。物価は25歳のときの ' + (g.priceIndex || 1).toFixed(2) + '倍になりました。');
-        // FIRE達成の表示は、実際にFIREバッジが付いたかどうかで切り替える（以前は常に「完全達成！」と表示されていた）
+        // FIREの結果：成功／途中で資産が尽きた／FIREではないリタイア／リタイアせず
         const resFireEl = document.getElementById('res-fire');
         if (resFireEl) {
-            resFireEl.innerText = fireAchieved ? '🔥 達成！（' + FIRE_DEADLINE_AGE + '歳までにFIRE目標に到達）' : '未達成（' + FIRE_DEADLINE_AGE + '歳までにFIRE目標に届かず）';
+            let fireText;
+            if (gameMode === 'scenario') fireText = '対象外（シナリオ）';
+            else if (fireAchieved) fireText = '🔥 成功！（' + g.fireAchievedAge + '歳でFIREし、90歳まで資産を保った）';
+            else if (g.fireAchievedAge) fireText = g.fireAchievedAge + '歳でFIREしたが、途中で資産が尽きた';
+            else if (g.retireAge) fireText = '未達成（' + (g.retireAge > FIRE_DEADLINE_AGE ? FIRE_DEADLINE_AGE + '歳を過ぎてからの引退' : 'FIRE目標に届く前にリタイア') + '）';
+            else fireText = '未達成（リタイアせず働き続けた）';
+            resFireEl.innerText = fireText;
             resFireEl.style.color = fireAchieved ? 'var(--accent-green)' : 'var(--text-sub)';
+        }
+        const resRetireEl = document.getElementById('res-retire');
+        if (resRetireEl) {
+            resRetireEl.innerText = gameMode === 'scenario' ? '' : (g.retireAge || g.freeYears
+                ? 'リタイア：' + (g.retireAge ? g.retireAge + '歳' : '-') + '／自由に過ごせた年数：' + (g.freeYears || 0) + '年' + (g.depletedEver ? '（途中で資産が尽きたことあり）' : '')
+                : 'リタイア：せず（最後まで働いた）／自由に過ごせた年数：0年');
         }
         document.getElementById('res-title').innerText = getRankTitle(rObj.lv);
         document.getElementById('res-rival').innerText = fmtShort(g.rivalNetWorth);
@@ -5015,11 +5075,11 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             if (bestResult.isNewBest) {
                 bestBanner.className = 'best-record-banner is-new-best';
                 bestText.innerText = bestResult.prevBest
-                    ? ('🏆 自己ベスト更新！（前回: ' + fmtShort(bestResult.prevBest) + ' → 今回: ' + fmtShort(nw) + '）')
+                    ? ('🏆 自己ベスト更新！（前回: ' + fmtShort(bestResult.prevBest) + (bestResult.prevIsLegacy ? '・ルール変更前' : '') + ' → 今回: ' + fmtShort(nw) + '）')
                     : ('🏆 初プレイで記録を樹立！（' + fmtShort(nw) + '）');
             } else {
                 bestBanner.className = 'best-record-banner not-best';
-                bestText.innerText = '📊 自己ベスト: ' + fmtShort(bestResult.prevBest) + '（今回: ' + fmtShort(nw) + '）あと一歩！';
+                bestText.innerText = '📊 自己ベスト: ' + fmtShort(bestResult.prevBest) + (bestResult.prevIsLegacy ? '（ルール変更前の記録・インフレと取り崩しなし）' : '') + '（今回: ' + fmtShort(nw) + '）あと一歩！';
             }
         }
 
@@ -5108,13 +5168,12 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         ctx.font = '700 30px sans-serif';
         ctx.fillText('🎖️ 獲得称号: ' + titleCount + ' / ' + TITLE_TOTAL, W / 2, 670);
 
-        const fireBadgeEl = document.getElementById('fire-badge');
-        const fireAchieved = fireBadgeEl && !fireBadgeEl.classList.contains('hidden');
+        const fireAchieved = getFinalFireAchieved();
         let nextY = 730;
         if (fireAchieved) {
             ctx.fillStyle = '#f43f5e';
             ctx.font = '900 34px sans-serif';
-            ctx.fillText('🔥 FIRE（経済的自立）達成！', W / 2, nextY);
+            ctx.fillText('🔥 ' + g.fireAchievedAge + '歳でFIRE、90歳まで資産を保った！', W / 2, nextY);
             nextY += 60;
         }
         if (g.bestNetWorthBeaten) {
