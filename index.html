@@ -535,7 +535,7 @@
             <div id="res-networth" style="color:var(--accent-green); font-size:1.9rem; font-weight:900; margin:6px 0;">¥0</div>
             <div style="font-size:0.82rem; margin-top:6px;"><span id="lbl-res-rank-label">最終資産家ランク</span>: <strong id="res-title" style="color:var(--accent-gold);">👑</strong></div>
             <div style="font-size:0.82rem; margin-top:4px;"><span id="lbl-res-fire-label">FIRE達成</span>: <strong id="res-fire" style="color:var(--accent-blue);">完全達成！</strong></div>
-            <div style="font-size:0.82rem; margin-top:4px;">🎖️ 獲得済み称号数: <strong id="res-titles-count" style="color:var(--accent-purple);">0 / 36</strong></div>
+            <div style="font-size:0.82rem; margin-top:4px;">🎖️ 獲得済み称号数: <strong id="res-titles-count" style="color:var(--accent-purple);">0 / 43</strong></div>
             <div style="font-size:0.82rem; margin-top:4px;"><span id="lbl-res-rival-label">🤖 ライバル投資家(放置インデックス)</span>: <strong id="res-rival">¥0</strong> <strong id="res-rival-result"></strong></div>
         </div>
         <div class="best-record-banner" id="best-record-banner" style="display:none;">
@@ -941,6 +941,12 @@
         { id: 't_chal_realestate_fire', mythic: true, icon: '🏯', nameJa: '42. 大家一本の不動産王', nameEn: '42. Real-Estate-Only King', descJa: '【縛りプレイ達成】「不動産王一本勝負」チャレンジで、不動産投資だけを使ってFIRE目標を達成した', descEn: '[CHALLENGE CLEAR] Achieved FIRE in the Real-Estate-Only challenge mode' },
         { id: 't_chal_conservative_fire', mythic: true, icon: '🧘', nameJa: '43. 超保守型の守りの達人', nameEn: '43. Ultra-Conservative Master', descJa: '【縛りプレイ達成】「超保守型」チャレンジで、インデックスと金だけを使ってFIRE目標を達成した', descEn: '[CHALLENGE CLEAR] Achieved FIRE in the Ultra-Conservative challenge mode' }
     ];
+    // 称号の総数は常にマスターデータから自動で数える（表記の食い違いを防ぐ）
+    const TITLE_TOTAL = titleMasterList.length;
+    // 獲得済み称号数（マスターデータにある称号だけを数える。保存データ自体は変更しない）
+    function countUnlockedTitles() {
+        return titleMasterList.filter(function(t) { return !!unlockedTitlesMap[t.id]; }).length;
+    }
 
     // --- 📖 投資アカデミー：初回クエスト報酬（レベルごとに金額が変わる）---
     const ACADEMY_REWARD = { basic: 25, adv: 35, pro: 50 };
@@ -1098,7 +1104,7 @@
     }
 
     function updateTitlesHeaderBadge() {
-        const count = Object.keys(unlockedTitlesMap).length;
+        const count = countUnlockedTitles();
         const total = titleMasterList.length;
         const btn = document.getElementById('btn-titles');
         if (btn) btn.innerText = (currentLang === 'ja' ? '🎖️ 称号' : '🎖️ Titles') + '(' + count + '/' + total + ')';
@@ -1106,6 +1112,17 @@
         if (opBtn) opBtn.innerText = (currentLang === 'ja' ? '🎖️ 獲得称号' : '🎖️ Titles') + ' (' + count + '/' + total + ')';
         const resCount = document.getElementById('res-titles-count');
         if (resCount) resCount.innerText = count + ' / ' + total;
+        // 称号モーダルの見出し・説明とオープニングの紹介文も総数から自動生成する
+        const isJa = currentLang === 'ja';
+        const mythicTotal = titleMasterList.filter(function(t) { return t.mythic; }).length;
+        const head = document.getElementById('lbl-titles-modal-head');
+        if (head) head.innerText = isJa ? '🎖️ 獲得称号コレクション (全' + total + '種)' : '🎖️ Title Collection (' + total + ' total)';
+        const sub = document.getElementById('lbl-titles-modal-sub');
+        if (sub) sub.innerText = isJa
+            ? '全' + total + '種のうち ' + (total - mythicTotal) + '種は通過点となる一般称号、' + mythicTotal + '種は達成不可能に近い【MYTHIC（神話級）】称号（MYTHICマーク付き）です！'
+            : total + ' titles: ' + (total - mythicTotal) + ' regular titles and ' + mythicTotal + ' near-impossible MYTHIC titles (marked MYTHIC).';
+        const opF3 = document.getElementById('lbl-op-f3');
+        if (opF3) opF3.innerText = (i18n[currentLang] || i18n.ja).opF3;
     }
 
     function unlockTitle(id) {
@@ -1115,7 +1132,7 @@
         const now = new Date();
         const dateStr = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate();
         unlockedTitlesMap[id] = { date: dateStr, age: g.age };
-        if (id !== 't_imp_omni_god' && Object.keys(unlockedTitlesMap).length >= 42 && !unlockedTitlesMap['t_imp_omni_god']) {
+        if (id !== 't_imp_omni_god' && countUnlockedTitles() >= TITLE_TOTAL - 1 && !unlockedTitlesMap['t_imp_omni_god']) {
             unlockedTitlesMap['t_imp_omni_god'] = { date: dateStr, age: g.age };
         }
         saveTitles();
@@ -1277,7 +1294,7 @@
             appTitle: "Lets' FIRE！", tutorialBtn: "🎓 チュートリアル", ranking: "🏆 ランキング", sound: "🔊 音量",
             opCatch: "〜 25歳から90歳まで、66年間の資産帝国育成ゲーム 〜",
             opStory: "【PROLOGUE】\n25歳、社会人のスタートライン。あなたの手元には初期資金「600万円」がある。\nここから90歳までの66年間、どのように働き、どの市場に投資し、どう危機を乗り越えるかはすべてあなた次第。\n\n複利の魔法、不動産レバレッジ、キャリア昇進、そして数々の経済ショック——。\n生きた金融知識を武器に『FIRE（経済的自立）』と『達成不可能級の神話称号』へ挑め！",
-            opF1: "日・米・世界\n3大市場対応", opF2: "全24講座＆\n実践クイズ", opF3: "神話級を含む\n全43種の称号",
+            opF1: "日・米・世界\n3大市場対応", opF2: "全24講座＆\n実践クイズ", opF3: "神話級を含む\n全" + TITLE_TOTAL + "種の称号",
             opStartBtn: "✨ 資産形成の旅を始める (GAME START)", opSoundBtn: "🔊 音量設定", opResetBtn: "🗑️ データ初期化", opDonateBtn: "☕ 開発者を応援",
             yrUnit: "年", ageUnit: "歳", fireBadge: "FIRE達成 🔥", corpPill: "🏢 法人化済",
             mktJp: "🇯🇵 日本市場", mktUs: "🇺🇸 米国市場", mktGl: "🌐 グローバル", mktGuideBtn: "？市場の違い",
@@ -1369,7 +1386,7 @@
 
     const navI18n = {
         ja: {
-            freeBanner: "✨ 自由行動モード：株・金・不動産・キャリアで億り人＆全43種の称号コンプリートを目指そう！",
+            freeBanner: "✨ 自由行動モード：株・金・不動産・キャリアで億り人＆全" + TITLE_TOTAL + "種の称号コンプリートを目指そう！",
             easy: {
                 1: { title: "🌟 ステップ1：まずは「インデックス株」を買おう！", desc: "『Lets' FIRE！』へようこそ！\nまずは王道の『全世界インデックス株』を買ってみましょう！\n\n光っている【購入 (+100)】ボタンを押してください！", banner: "👉 光っている【購入 (+100)】ボタンを押してインデックス株を買いましょう！", targetId: "btn-buy-ind-100" },
                 2: { title: "🌟 ステップ2：次は守りの「金(ゴールド)」！", desc: "続けて、暴落や経済危機の盾になる『金（ゴールド）』も一緒に持っておくのがお金持ちの鉄則です！\n\n光っている【購入 (+50)】ボタンを押して金を買いましょう！", banner: "👉 光っている【購入 (+50)】ボタンを押して金（ゴールド）を買いましょう！", targetId: "btn-buy-gold-50" },
@@ -1378,7 +1395,7 @@
                 5: { title: "🌟 ステップ5：スキルアップ自己投資！", desc: "【スキルアップ自己投資で昇進する (+12%)】ボタンを押すと、毎年の給与貯蓄額が +12% 増えます！", banner: "👉 光っている【スキルアップ自己投資】ボタンを押して昇進しましょう！", targetId: "career-up-btn" },
                 6: { title: "🌟 ステップ6：次は「不動産オーナー」になろう！", desc: "毎年家賃収入が入ってくる『不動産投資』を体験しましょう！光っている【不動産】タブをタップしてください！", banner: "👉 光っている【不動産】タブをタップして物件を見に行きましょう！", targetId: "tab-btn-realestate" },
                 7: { title: "🌟 ステップ7：銀行融資でマンションを買おう！", desc: "一番上の「都心駅チカ区分マンション」の【購入ボタン】を押して、不動産オーナーになりましょう！", banner: "👉 光っているマンションの【購入ボタン】を押しましょう！", targetId: "btn-buy-prop-0" },
-                8: { title: "🎉 チュートリアル完了！自由行動スタート！", desc: "おめでとうございます！4大スキルをすべてマスターしました！全43種の称号コンプリートと大富豪を目指しましょう！", banner: "✨ 自由行動モード：株・金・不動産・キャリアで億り人を目指そう！", targetId: null }
+                8: { title: "🎉 チュートリアル完了！自由行動スタート！", desc: "おめでとうございます！4大スキルをすべてマスターしました！全" + TITLE_TOTAL + "種の称号コンプリートと大富豪を目指しましょう！", banner: "✨ 自由行動モード：株・金・不動産・キャリアで億り人を目指そう！", targetId: null }
             },
             adv: {
                 1: { title: "🔥 実践ナビ1：まずは主力「インデックス株」！", desc: "まずは【購入 (+100)】で全世界インデックス株を買います。", banner: "👉 光っている【購入 (+100)】ボタンでインデックス株を買いましょう！", targetId: "btn-buy-ind-100" },
@@ -1391,11 +1408,11 @@
                 8: { title: "🔥 実践ナビ8：1年進めて値動きを見よう！", desc: "一番下の【次の年へ進む】ボタンを押して1年進めてみましょう！", banner: "👉 一番下の光っている【次の年へ進む】ボタンを押しましょう！", targetId: "next-turn-btn" },
                 9: { title: "🔥 実践ナビ9：キャリア自己投資で給料UP！", desc: "【キャリア】タブを開いてみましょう！", banner: "👉 光っている【キャリア】タブをタップしてください！", targetId: "tab-btn-career" },
                 10: { title: "🔥 実践ナビ10：スキルアップを実行！", desc: "光っている【スキルアップ自己投資】ボタンを押して昇進しましょう！", banner: "👉 光っている【スキルアップ自己投資】ボタンを押しましょう！", targetId: "career-up-btn" },
-                11: { title: "🎉 全チュートリアル完了！自由行動へ！", desc: "全アセットの操作をマスターしました！全43種の称号コンプリートを目指しましょう！", banner: "✨ 自由行動モード：全アセットを駆使して伝説の財閥王を目指そう！", targetId: null }
+                11: { title: "🎉 全チュートリアル完了！自由行動へ！", desc: "全アセットの操作をマスターしました！全" + TITLE_TOTAL + "種の称号コンプリートを目指しましょう！", banner: "✨ 自由行動モード：全アセットを駆使して伝説の財閥王を目指そう！", targetId: null }
             }
         }
     };
-    navI18n.en = { freeBanner: "✨ Free Play Mode: Build your empire and unlock all 36 Titles!", easy: navI18n.ja.easy, adv: navI18n.ja.adv };
+    navI18n.en = { freeBanner: "✨ Free Play Mode: Build your empire and unlock all " + TITLE_TOTAL + " Titles!", easy: navI18n.ja.easy, adv: navI18n.ja.adv };
     navI18n.zh = navI18n.ja; navI18n.ko = navI18n.ja; navI18n.es = navI18n.en;
 
     // --- 4. Web Audio API (BGM & SE) ---
@@ -3458,7 +3475,7 @@
             age: g.age,
             mode: modeLabel,
             fireAchieved: !!fireAchieved,
-            titleCount: Object.keys(unlockedTitlesMap).length,
+            titleCount: countUnlockedTitles(),
             mythicCount: mythicCount,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(function() {
@@ -3578,7 +3595,7 @@
     function buildViralShareText() {
         const nw = getNetWorth();
         const rObj = getRankObj(nw);
-        const count = Object.keys(unlockedTitlesMap).length;
+        const count = countUnlockedTitles();
         const shareUrl = getShareGameUrl();
         const urlLine = shareUrl ? ('\n▼ プレイはこちら\n' + shareUrl) : '';
         const isScenario = gameMode === 'scenario';
@@ -3592,12 +3609,12 @@
             return jaHeadline + '\n' +
                    '💰 最終純資産: ' + fmtMoney(nw) + '\n' +
                    '🏆 到達ランク: ' + getRankTitle(rObj.lv) + '\n' +
-                   '🎖️ 獲得称号: ' + count + '/43種' +
+                   '🎖️ 獲得称号: ' + count + '/' + TITLE_TOTAL + '種' +
                    urlLine + '\n#Lets_FIRE #資産形成ゲーム';
         }
         return enHeadline + '\n' +
                '💰 Final Net Worth: ' + fmtMoney(nw) + '\n' +
-               '🏆 Rank: ' + getRankTitle(rObj.lv) + ' | 🎖️ Titles: ' + count + '/43' +
+               '🏆 Rank: ' + getRankTitle(rObj.lv) + ' | 🎖️ Titles: ' + count + '/' + TITLE_TOTAL +
                (shareUrl ? ('\nPlay: ' + shareUrl) : '') + '\n#Lets_FIRE';
     }
 
@@ -3608,7 +3625,7 @@
         const W = canvas.width, H = canvas.height;
         const nw = getNetWorth();
         const rObj = getRankObj(nw);
-        const titleCount = Object.keys(unlockedTitlesMap).length;
+        const titleCount = countUnlockedTitles();
         const isScenario = gameMode === 'scenario';
         const modeLabel = isScenario
             ? historicalScenarios[selectedScenarioId].nameJa
@@ -3662,7 +3679,7 @@
 
         ctx.fillStyle = '#c084fc';
         ctx.font = '700 30px sans-serif';
-        ctx.fillText('🎖️ 獲得称号: ' + titleCount + ' / 40', W / 2, 670);
+        ctx.fillText('🎖️ 獲得称号: ' + titleCount + ' / ' + TITLE_TOTAL, W / 2, 670);
 
         const fireBadgeEl = document.getElementById('fire-badge');
         const fireAchieved = fireBadgeEl && !fireBadgeEl.classList.contains('hidden');
