@@ -918,6 +918,13 @@
         return opts[0].to;
     }
 
+    // --- 個別株・暗号資産の値動きモデル ---
+    // 個別株：インデックスより値動きが大きく、まれに業績悪化で急落する。平均ではインデックスに勝ちにくい
+    const STOCK_MODEL = { lo: -0.22, hi: 0.30, shockChance: 0.04, shockLo: 0.35, shockHi: 0.55, floor: 5 };
+    // 暗号資産：普段は上下に大きく揺れるだけ。まれに大暴落（-65〜-80%）と爆騰（+150〜+300%）が起き、
+    // 長く持ち続けると多くの人は報われないが、大当たりの夢もある
+    const CRYPTO_MODEL = { lo: -0.35, hi: 0.35, crashChance: 0.08, crashLo: 0.65, crashHi: 0.80, moonChance: 0.06, moonLo: 1.5, moonHi: 3.0, cycleMult: 1.5, floor: 1 };
+
     // --- ライバル投資家（何もせず「放置インデックス」を続けた場合の目安）---
     const RIVAL_ANNUAL_DEPOSIT = 160;
 
@@ -3523,7 +3530,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 const poppedStock = g.stocks[g.hotStockId];
                 if (poppedStock) {
                     let popPct = 0.25 + Math.random() * 0.15;
-                    poppedStock.price = Math.max(20, Math.round(poppedStock.price * (1 - popPct)));
+                    poppedStock.price = Math.max(STOCK_MODEL.floor, Math.round(poppedStock.price * (1 - popPct)));
                     hotPopInfo = { name: poppedStock.nameJa, pct: Math.round(popPct * 100) };
                 }
                 g.hotStockPopPending = false;
@@ -3536,15 +3543,22 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             }
         }
 
+        const stockShockNames = [];
+        let cryptoBigMove = null;
         g.stocks.forEach(function(s) {
             let chg;
             if (isScenario) {
                 chg = scenRate.stock + (Math.random() * 0.06 - 0.03);
             } else {
-                chg = (Math.random() * 0.35 - 0.10) + easyBoost + spec.stockBoost + cycleDef.stockAdj;
+                const sm = STOCK_MODEL;
+                chg = (sm.lo + Math.random() * (sm.hi - sm.lo)) + easyBoost + spec.stockBoost + cycleDef.stockAdj;
                 if (s.id === g.hotStockId) chg += 0.12 + Math.random() * 0.10;
+                if (Math.random() < sm.shockChance) {
+                    chg = -(sm.shockLo + Math.random() * (sm.shockHi - sm.shockLo));
+                    stockShockNames.push(s.nameJa);
+                }
             }
-            s.price = Math.max(20, Math.round(s.price * (1 + chg)));
+            s.price = Math.max(STOCK_MODEL.floor, Math.round(s.price * (1 + chg)));
         });
         if (!isScenario && g.hotStockId !== null) {
             g.hotStockTurnsLeft--;
@@ -3556,9 +3570,19 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             if (isScenario) {
                 chg = scenRate.crypto + (Math.random() * 0.08 - 0.04);
             } else {
-                chg = (Math.random() * 0.75 - 0.25) + easyBoost + cycleDef.cryptoAdj;
+                const cm = CRYPTO_MODEL;
+                const roll = Math.random();
+                if (roll < cm.crashChance) {
+                    chg = -(cm.crashLo + Math.random() * (cm.crashHi - cm.crashLo));
+                    cryptoBigMove = 'crash';
+                } else if (roll < cm.crashChance + cm.moonChance) {
+                    chg = cm.moonLo + Math.random() * (cm.moonHi - cm.moonLo);
+                    cryptoBigMove = 'moon';
+                } else {
+                    chg = (cm.lo + Math.random() * (cm.hi - cm.lo)) + cycleDef.cryptoAdj * cm.cycleMult;
+                }
             }
-            c.price = Math.max(20, Math.round(c.price * (1 + chg)));
+            c.price = Math.max(CRYPTO_MODEL.floor, Math.round(c.price * (1 + chg)));
         });
 
         // --- 不動産価格の変動（シナリオでは株価の動きの半分）---
@@ -3628,6 +3652,14 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             newsText += (' 🛡️暴落保険が発動し +' + fmtShort(hedgePayout) + '！');
         } else if (hedgeWasActive) {
             newsText += (' 🛡️今年の株の下落は5%以内（この年の暴落イベントも補償対象です）');
+        }
+        if (stockShockNames.length) {
+            newsText += (' 📉' + stockShockNames.join('・') + 'が業績悪化で急落…！');
+        }
+        if (cryptoBigMove === 'crash') {
+            newsText += ' 🧊暗号資産が大暴落（-65%以上）…！';
+        } else if (cryptoBigMove === 'moon') {
+            newsText += ' 🚀暗号資産が爆騰（+150%以上）！';
         }
         if (hotPopInfo) {
             newsText += (' 🔥' + hotPopInfo.name + 'がブームの反動で -' + hotPopInfo.pct + '%下落…！');
