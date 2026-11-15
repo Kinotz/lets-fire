@@ -9,17 +9,17 @@
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lets' FIRE！ - 実践金融教育＆66年資産形成シミュレーション</title>
+    <title>Let's FIRE！ - 実践金融教育＆66年資産形成シミュレーション</title>
     <meta name="description" content="25歳から90歳まで、66年間の資産形成シミュレーションゲーム。株・不動産・暗号資産に挑み、経済的自立（FIRE）と43種の実績称号を目指そう。みんなの資産ランキングにも参加できます。">
     <!-- 🔗 SNS・noteでリンクをシェアしたときのプレビュー表示用（OGP） -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kinotz.github.io/lets-fire/">
-    <meta property="og:title" content="Lets' FIRE！ - 66年間の資産形成シミュレーションゲーム">
+    <meta property="og:title" content="Let's FIRE！ - 66年間の資産形成シミュレーションゲーム">
     <meta property="og:description" content="25歳から90歳まで、株・不動産・暗号資産に挑みFIRE（経済的自立）を目指す無料シミュレーションゲーム。43種の実績称号＆みんなの資産ランキングあり。">
     <meta property="og:image" content="https://kinotz.github.io/lets-fire/ogp.png">
     <meta property="og:locale" content="ja_JP">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Lets' FIRE！ - 66年間の資産形成シミュレーションゲーム">
+    <meta name="twitter:title" content="Let's FIRE！ - 66年間の資産形成シミュレーションゲーム">
     <meta name="twitter:description" content="25歳から90歳まで、株・不動産・暗号資産に挑みFIRE（経済的自立）を目指す無料シミュレーションゲーム。">
     <meta name="twitter:image" content="https://kinotz.github.io/lets-fire/ogp.png">
     <style>
@@ -288,7 +288,7 @@
 
 <div class="container" id="main-container">
     <div class="header">
-        <button type="button" class="app-title" id="lbl-app-title" onclick="backToOpening()">Lets' FIRE！</button>
+        <button type="button" class="app-title" id="lbl-app-title" onclick="backToOpening()">Let's FIRE！</button>
         <div class="header-right">
             <div class="age-badge hidden" id="header-age-badge"><span id="turn-disp">1</span>/<span id="maxturn-disp">66</span><span id="lbl-yr-unit">年</span> (<span id="age-disp">25</span><span id="lbl-age-unit">歳</span>)</div>
             <button type="button" class="icon-btn header-icon" onclick="toggleMute()" id="btn-mute" aria-pressed="false" aria-label="音を消す（ミュート）">🔊</button>
@@ -310,7 +310,7 @@
     <div id="opening-view" class="opening-box">
         <div class="op-emblem">👑📈🔥</div><br>
         <div class="op-sub-pill" id="lbl-op-pill">100-YEAR LIFE FINANCIAL RPG</div>
-        <h1 class="op-main-title" id="lbl-op-title">Lets' FIRE！</h1>
+        <h1 class="op-main-title" id="lbl-op-title">Let's FIRE！</h1>
         <div class="op-catch" id="lbl-op-catch">〜 25歳から90歳まで、66年間の資産帝国育成ゲーム 〜</div>
         <button type="button" class="op-start-btn hidden" onclick="resumeSavedGame()" id="btn-op-continue" style="margin-bottom:8px; background:linear-gradient(135deg, #38bdf8, #0ea5e9);">▶ 続きから</button>
         <button type="button" class="op-start-btn" onclick="enterSetupFromOpening()" id="lbl-op-start-btn">✨ 資産形成の旅を始める (GAME START)</button>
@@ -1655,7 +1655,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         ja: {
             freeBanner: "✨ 自由行動モード：株・金・不動産・キャリアで億り人＆全" + TITLE_TOTAL + "種の称号コンプリートを目指そう！",
             easy: {
-                1: { title: "🌟 ステップ1：まずは「インデックス株」を買おう！", desc: "『Lets' FIRE！』へようこそ！\nまずは王道の『全世界インデックス株』を買ってみましょう！\n\n光っている【購入 (+100)】ボタンを押してください！", banner: "👉 光っている【購入 (+100)】ボタンを押してインデックス株を買いましょう！", targetId: "btn-buy-ind-100" },
+                1: { title: "🌟 ステップ1：まずは「インデックス株」を買おう！", desc: "『Let's FIRE！』へようこそ！\nまずは王道の『全世界インデックス株』を買ってみましょう！\n\n光っている【購入 (+100)】ボタンを押してください！", banner: "👉 光っている【購入 (+100)】ボタンを押してインデックス株を買いましょう！", targetId: "btn-buy-ind-100" },
                 2: { title: "🌟 ステップ2：次は守りの「金(ゴールド)」！", desc: "続けて、暴落や経済危機の盾になる『金（ゴールド）』も一緒に持っておくのがお金持ちの鉄則です！\n\n光っている【購入 (+50)】ボタンを押して金を買いましょう！", banner: "👉 光っている【購入 (+50)】ボタンを押して金（ゴールド）を買いましょう！", targetId: "btn-buy-gold-50" },
                 3: { title: "🌟 ステップ3：1年進めて複利を体験しよう！", desc: "一番下の【次の年へ進む】ボタンを押して、1年後に総資産と給料がどう増えるか見てみましょう！", banner: "👉 一番下の光っている【次の年へ進む】ボタンを押しましょう！", targetId: "next-turn-btn" },
                 4: { title: "🌟 ステップ4：自分の給料を上げよう！", desc: "光っている【キャリア】タブをタップして開いてみましょう！", banner: "👉 光っている【キャリア】タブをタップしてください！", targetId: "tab-btn-career" },
@@ -4589,8 +4589,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const urlLine = shareUrl ? ('\n▼ プレイはこちら\n' + shareUrl) : '';
         const isScenario = gameMode === 'scenario';
         const headline = isScenario
-            ? '👑 『Lets\' FIRE！』' + historicalScenarios[selectedScenarioId].nameJa + ' シナリオを完走！'
-            : '👑 『Lets\' FIRE！』66年間の投資人生シミュレーション完走！';
+            ? '👑 『Let\'s FIRE！』' + historicalScenarios[selectedScenarioId].nameJa + ' シナリオを完走！'
+            : '👑 『Let\'s FIRE！』66年間の投資人生シミュレーション完走！';
         return headline + '\n' +
                '💰 最終純資産: ' + fmtMoney(nw) + '\n' +
                '🏆 到達ランク: ' + getRankTitle(rObj.lv) + '\n' +
@@ -4628,7 +4628,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
 
         ctx.fillStyle = '#f8fafc';
         ctx.font = '900 42px sans-serif';
-        ctx.fillText("Lets' FIRE！", W / 2, 250);
+        ctx.fillText("Let's FIRE！", W / 2, 250);
 
         ctx.fillStyle = '#94a3b8';
         ctx.font = '700 26px sans-serif';
