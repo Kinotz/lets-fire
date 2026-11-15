@@ -536,6 +536,11 @@
                 <div style="font-size:0.875rem; font-weight:900; color:var(--accent-gold); margin-bottom:4px;" id="lbl-corp-head">🏢 資産管理法人（配当・家賃の税率 18%→10%／設立費150・維持費30/年）</div>
                 <button type="button" class="next-btn" id="corp-setup-btn" style="background:var(--accent-gold); color:#030712; padding:9px; font-size:0.875rem;" onclick="setupCorporation()" disabled>法人を設立する（純資産 5,000 以上で解放）</button>
             </div>
+            <div style="border-top:1px solid var(--border); padding-top:8px; margin-top:8px;">
+                <div style="font-size:0.875rem; font-weight:900; color:var(--accent-green); margin-bottom:4px;">🏖️ リタイア（仕事を辞めて資産で暮らす） <button type="button" class="term-btn" onclick="openTermHelp('retire')">?</button></div>
+                <div style="font-size:0.75rem; color:var(--text-sub); margin-bottom:6px; line-height:1.5;" id="retire-status">リタイアすると給与は止まり、生活費を配当・家賃・年金と資産の取り崩しでまかないます。</div>
+                <button type="button" class="next-btn" id="retire-btn" style="background:linear-gradient(135deg, #10b981, #059669); color:#ffffff; padding:10px; font-size:0.875rem;" onclick="requestRetire()">🏖️ リタイアする（仕事を辞める）</button>
+            </div>
         </div>
 
         <!-- タブ6: 無料投資アカデミー -->
@@ -1034,12 +1039,35 @@
         inflation: { byCycle: { boom: 0.020, bubble: 0.030, correction: 0.015, recession: 0.005 }, noise: 0.005, hardExtra: 0.005, rateHikeExtra: 0.020 },
         // 現金（普通預金・タンス預金）の金利。ゲームでは0%（額面は増えないので、実質の価値はインフレ率ぶん減る）
         cashRate: 0,
+        // 退職金（ゲーム上の設定）：辞めたときの年収 × severancePerYear × その職場での勤続年数（40年で年収の約3.2倍）
+        //   参考：厚生労働省「令和5年就労条件総合調査」大学・大学院卒の定年退職者の平均退職給付額 1,896万円（勤続20年以上・45歳以上）
+        severancePerYear: 0.08,
+        // 公的年金（日本の制度をもとにした簡略計算。日本以外の市場を選んでも同じ計算になるのはゲーム上の簡略化）
+        //   basicAnnual：老齢基礎年金の満額。令和8年度 月70,608円×12か月＝約84.7万円（日本年金機構「令和8年4月分からの年金額等について」）
+        //   kouseiRate：老齢厚生年金（報酬比例部分）の乗率 5.481/1000（平成15年4月以降の加入期間。日本年金機構）を、働いた各年の年収に掛けて積み上げる
+        //   accrualMaxAge：厚生年金に加入して積み上がるのは70歳になるまで
+        //   受け取り開始は60〜75歳。繰上げは1か月あたり0.4%減、繰下げは1か月あたり0.7%増（厚生労働省・日本年金機構）
+        //   省略していること：マクロ経済スライド、年金にかかる税・社会保険料、在職老齢年金、加給年金、20〜24歳の加入期間など
+        pension: { basicAnnual: 84.7, kouseiRate: 0.005481, accrualMaxAge: 70, baseAge: 65, minAge: 60, maxAge: 75, earlyPerMonth: 0.004, latePerMonth: 0.007 },
+        // リタイア関連（ゲーム上の設定）
+        //   fireMultiple：FIRE目標の資産＝生活費×25（4%ルールの目安）、rejobSalaryRate：資産が尽きて再就職したときの給与（以前の何割）、
+        //   cutLivingRate：生活を切り詰めたときの生活費（もとの何割。年金額の方が大きければ年金額）
+        retire: { fireMultiple: 25, rejobSalaryRate: 0.5, cutLivingRate: 0.6 },
         // 不動産価格の実質の長期傾向を年-0.5%前後（建物の老朽化）にするための補正（景気サイクルの平均-0.75%に足す）
         realEstateDrift: 0.0025
     };
     // 新しく追加した状態の既定値（新しいゲーム開始時と、旧セーブの読み込み時に使う）
     function getNewStateDefaults(savedG) {
-        return { priceIndex: 1, inflationRate: ECON.inflation.byCycle.boom };
+        // 旧セーブ：これまで働いた年数と今の年収から、厚生年金の積み上げと勤続年数を推定する
+        const yrs = savedG ? Math.max(0, Math.min((savedG.age || 25), ECON.pension.accrualMaxAge) - 25) : 0;
+        const sal = savedG ? (savedG.salary || 460) : 460;
+        return {
+            priceIndex: 1, inflationRate: ECON.inflation.byCycle.boom,
+            retired: false, retireAge: null, lastSalary: null, yearsSinceHire: yrs, workYears: yrs,
+            pensionAccrual: Math.round(sal * ECON.pension.kouseiRate * yrs * 10) / 10, pensionStartAge: null,
+            livingCut: false, depletedEver: false, lastShortfall: 0, pendingLate: null, freeYears: 0,
+            fireAchievedAge: null, fireFailed: false, fireReadyNotified: false
+        };
     }
     // その年のインフレ率（景気局面＋ゆらぎ＋モード＋利上げイベントの影響）
     function rollInflationRate() {
@@ -1615,6 +1643,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     };
 
     const termDict = {
+        retire: { title: "💡 リタイア（取り崩し生活）とは？", desc: "リタイアすると給与は入らなくなり、毎年の生活費を「配当・家賃（不労所得）」「公的年金」「資産の取り崩し」でまかないます。\n\n・生活費には、国民年金保険料（60歳まで）・国民健康保険料・介護保険料（40歳以上）・住民税などの税や社会保険料も含まれます。会社員のときは給与から天引きされていたものを、自分で払うことになります。\n・公的年金は、日本の制度（令和8年度の老齢基礎年金の満額 月70,608円、老齢厚生年金は働いた年の年収×5.481/1000の積み上げ）をもとにした簡略計算です。日本以外の市場を選んでも同じ計算になるのは、ゲーム上の簡略化です。\n・現金が足りない年は、金→インデックス→個別株→暗号資産の順に売って生活費にあてます。\n・すぐに売れる資産が尽きると、再就職・生活の切り詰め・物件の売却から選ぶことになります。" },
         inflation: { title: "💡 インフレと「今の価値」（実質・名目）", desc: "このゲームでは毎年、物価が上がります（日本銀行が目標にしている年2%を基準に、景気によって0.5〜3%程度。ゲーム上の設定）。\n\n・【額面（名目）】：通帳やお財布に書いてある金額。\n・【今の価値（実質）】：25歳のときの物価に直した金額。同じ1万円で買えるモノの量を比べるための値です。\n\n現金は額面が増えないので、物価が上がるぶん「今の価値」が毎年減っていきます。借入も同じように実質の負担が軽くなります。株・金・不動産の値動きや給与・生活費は「今の価値」で表示しています。\n\n画面の大きな金額は「今の価値」、小さな「額面」は実際にその年に見える金額です。" },
         nw: { title: "💡 純資産総額と総資産の違いは？", desc: "・【総資産】：現金・株式・金・仮想通貨・不動産のすべての合計金額（グラフで表示）です。\n・【純資産総額】：総資産から銀行の「借入金」を引いた、あなたの本当の正味財産です！" },
         compound: { title: "💡 複利（ふくり）とは？", desc: "投資で増えた利益が、次の年にはさらに新しい利益を生む「雪だるま式」の仕組みです！" },
@@ -1678,7 +1707,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             noCashAlert: "手元の現金が足りません！",
             rankTitleModal: "🏆 世界投資家ランキング",
             initNews: "📰 ニュース: 25歳、投資家ライフがスタート！まずは資産を買ってみましょう。",
-            turnNews: function(age, inflow, s) { return "📰 【" + age + "歳】 給与貯蓄と配当・家賃（税引後）で現金が " + inflow + "！ " + s; },
+            turnNews: function(age, inflow, s, retired) { return "📰 【" + age + "歳】 " + (retired ? "配当・家賃（税引後）" : "給与貯蓄と配当・家賃（税引後）") + "で現金が " + inflow + "！ " + s; },
             // その年の景気局面に合った一言だけを出す（不景気の年に「堅調」と出さない）
             mktSnippets: {
                 boom: ["世界経済は堅調で、企業の業績も伸びています。", "長期保有を続ける投資家の資産が着実に増えています。", "企業の配当や不動産の家賃が、家計を下支えしています。"],
@@ -2368,6 +2397,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         } else if (pf && pf.type === 'milestone') {
             const ms = lifeMilestones.find(function(m) { return m.id === pf.id; });
             if (ms) triggerLifeMilestone(ms);
+        } else if (pf && pf.type === 'late') {
+            triggerLateEvent(pf.id);
         } else if (pf && pf.type === 'quiz') {
             triggerEduQuiz(!!pf.manual, pf.idx, pf.order);
         }
@@ -2778,7 +2809,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     const VACANCY_CHANCE = 0.10;      // 1棟ごと・1年ごとに空室になる確率（その年の家賃が0）
     const LOAN_SALARY_MULT = 8;       // 融資上限＝年収×8＋純資産
     function getLoanLimit() {
-        return Math.round(g.salary * LOAN_SALARY_MULT + Math.max(0, getNetWorth()));
+        // リタイア中は給与が無いので、年収分の融資枠も無い
+        return Math.round((g.retired ? 0 : g.salary) * LOAN_SALARY_MULT + Math.max(0, getNetWorth()));
     }
     // 毎年の不動産価格の変動（市場全体の動き＋物件ごとのばらつき）。売り出し中の物件価格も市場全体の動きに合わせる
     function updatePropertyPrices(commonChg) {
@@ -3258,6 +3290,198 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         }
     ];
 
+    // ============================================================================
+    // 🏖️ リタイア（FIRE後の取り崩し）・公的年金・退職金
+    // ============================================================================
+    // 年間の生活費（今の価値）。リタイア後はこの額を配当・家賃・年金と資産の取り崩しでまかなう。
+    // 国民年金保険料（60歳まで）・国民健康保険料・介護保険料（40歳以上）・住民税などの税や社会保険料も含む想定
+    function getLivingCost() {
+        const goal = getModeEcon().fireGoal;
+        if (!g.livingCut) return goal;
+        return Math.max(isPensionPaying() ? getPensionAnnual(g.pensionStartAge) : 0, Math.round(goal * ECON.retire.cutLivingRate));
+    }
+    // 受け取り開始年齢による年金額の倍率（繰上げは1か月0.4%減、繰下げは1か月0.7%増）
+    function getPensionFactor(startAge) {
+        const P = ECON.pension;
+        const months = (startAge - P.baseAge) * 12;
+        return months < 0 ? 1 + months * P.earlyPerMonth : 1 + months * P.latePerMonth;
+    }
+    // 年金の年額（今の価値）＝（老齢基礎年金の満額＋働いた年に積み上げた老齢厚生年金）×開始年齢の倍率
+    function getPensionAnnual(startAge) {
+        const P = ECON.pension;
+        return Math.round((P.basicAnnual + (g.pensionAccrual || 0)) * getPensionFactor(startAge || P.baseAge));
+    }
+    function isPensionPaying() { return !!g.pensionStartAge && g.age >= g.pensionStartAge; }
+    // 不労所得CF＝家賃−ローン利息−ローン元本の返済＋配当（実際に毎年手元に残るお金）
+    function calcPassiveCF() {
+        const spec = marketSpecs[market];
+        const stockTotal = g.stocks.reduce(function(sum, s) { return sum + s.shares * s.price; }, 0);
+        return calcRECashFlow() - calcPrincipalDue() + Math.round((g.indexAsset + stockTotal) * spec.divRate);
+    }
+    function getHomeEquity() {
+        return g.ownedProps.reduce(function(sum, p) { return sum + (p.isHome ? (p.price - Math.max(0, p.debt || 0)) : 0); }, 0);
+    }
+    // 投資に使える純資産（自宅の持ち分は、売って生活費にあてる前提にしないので除く）
+    function getInvestableNetWorth() { return getNetWorth() - Math.max(0, getHomeEquity()); }
+    // FIRE目標に到達：不労所得CF ≧ 生活費、または投資に使える純資産 ≧ 生活費 × 25（4%ルールの目安）
+    function isFireTargetReached() {
+        const goal = getModeEcon().fireGoal;
+        return calcPassiveCF() >= goal || getInvestableNetWorth() >= goal * ECON.retire.fireMultiple;
+    }
+    function getSeveranceEstimate() {
+        return Math.max(0, Math.round(g.salary * ECON.severancePerYear * (g.yearsSinceHire || 0)));
+    }
+    function getLiquidAssets() {
+        const stockTotal = g.stocks.reduce(function(sum, s) { return sum + s.shares * s.price; }, 0);
+        const cryptoTotal = g.cryptos.reduce(function(sum, c) { return sum + c.holdings * c.price; }, 0);
+        return Math.max(0, g.cash) + g.indexAsset + g.goldAsset + stockTotal + cryptoTotal;
+    }
+    function canRetireNow() {
+        return isGameStarted && !isGameFinished && gameMode !== 'scenario' && !g.retired && isFinalNavStep() && !pendingFlow;
+    }
+
+    // 生活費の不足分を、決めた順番で資産を売ってまかなう。売った額と、それでも足りなかった額を返す
+    function getWithdrawOrder(indRate) {
+        return ['gold', 'index', 'stocks', 'crypto'];
+    }
+    function sellForCash(kind, need) {
+        let got = 0;
+        if (need <= 0) return 0;
+        if (kind === 'gold' || kind === 'index') {
+            const key = kind === 'gold' ? 'goldAsset' : 'indexAsset';
+            got = Math.min(g[key], need);
+            g[key] -= got;
+        } else if (kind === 'stocks') {
+            g.stocks.forEach(function(s) {
+                if (got >= need || s.shares <= 0) return;
+                const n = Math.min(s.shares, Math.ceil((need - got) / s.price));
+                s.shares -= n; got += n * s.price;
+            });
+        } else if (kind === 'crypto') {
+            g.cryptos.forEach(function(c) {
+                if (got >= need || c.holdings <= 0) return;
+                const n = Math.min(c.holdings, Math.ceil((need - got) / c.price));
+                c.holdings -= n; got += n * c.price;
+            });
+        }
+        g.cash += got;
+        return got;
+    }
+    function withdrawForLiving(indRate) {
+        const sold = {};
+        const order = getWithdrawOrder(indRate);
+        for (let i = 0; i < order.length && g.cash < 0; i++) {
+            const got = sellForCash(order[i], -g.cash);
+            if (got > 0) sold[order[i]] = got;
+        }
+        let shortfall = 0;
+        if (g.cash < 0) { shortfall = -g.cash; g.cash = 0; }
+        return { sold: sold, shortfall: shortfall };
+    }
+    const WITHDRAW_NAMES = { gold: '金', index: 'インデックス', stocks: '個別株', crypto: '暗号資産' };
+
+    // 「リタイアする」ボタン：確認ダイアログで生活費・退職金・年金・資産の見込みを見せてから決めてもらう
+    function requestRetire() {
+        if (!canRetireNow()) return;
+        playSound('click');
+        const goal = getModeEcon().fireGoal;
+        const reached = isFireTargetReached();
+        const inv = Math.round(getInvestableNetWorth());
+        const passive = calcPassiveCF();
+        const sev = getSeveranceEstimate();
+        const pen65 = getPensionAnnual(ECON.pension.baseAge);
+        const gap = Math.max(1, goal - Math.max(0, passive));
+        const years = Math.floor((getLiquidAssets() + sev) / gap);
+        let judge;
+        if (g.age > FIRE_DEADLINE_AGE) judge = '📝 ' + FIRE_DEADLINE_AGE + '歳を過ぎてからのリタイアは、通常の引退として扱います（【FIRE達成】にはなりません）。';
+        else if (reached) judge = '✅ FIRE目標に届いています。今リタイアすると【FIRE達成】です。90歳まで資産を保てれば、ランキングにも🔥が付きます。';
+        else judge = '⚠️ FIRE目標（不労所得CFが生活費以上、または投資に使える純資産が生活費の' + ECON.retire.fireMultiple + '倍＝' + fmtShort(goal * ECON.retire.fireMultiple) + '）に届いていません。リタイアはできますが【FIRE達成】にはなりません。';
+        const msg = 'リタイアすると給与は入らなくなり、毎年の生活費を配当・家賃・年金と、資産の取り崩しでまかないます。\n\n' +
+            '・年間の生活費：' + fmtShort(goal) + '（今の価値）\n' +
+            '　※ 国民年金保険料（60歳まで）・国民健康保険料・介護保険料（40歳以上）・住民税などの税や社会保険料も、この生活費に含まれます。会社員のときは給与から天引きされていたものを、自分で払うことになります。\n' +
+            '・退職金：約' + fmtShort(sev) + '（ゲーム上の設定：年収×' + Math.round(ECON.severancePerYear * 100) + '%×勤続' + (g.yearsSinceHire || 0) + '年）\n' +
+            '・公的年金の見込み：' + ECON.pension.baseAge + '歳から受け取ると年' + fmtShort(pen65) + '（開始は' + ECON.pension.minAge + '〜' + ECON.pension.maxAge + '歳から選べます）\n' +
+            '　※ 日本の公的年金（令和8年度の額）をもとにした簡略計算です。日本以外の市場を選んでいても同じ計算になるのは、ゲーム上の簡略化です。年金にかかる税や保険料も省いています。\n' +
+            '・投資に使える資産：' + fmtShort(inv) + '（生活費の約' + (Math.round(inv / goal * 10) / 10) + '年分）、不労所得CF：' + (passive >= 0 ? '+' : '') + fmtShort(passive) + '／年\n' +
+            '・退職金を含めた取り崩しだけで計算すると、約' + years + '年分（運用益や年金を含まない単純計算）\n\n' + judge +
+            '\n\nリタイアしたあとでも、資産が尽きそうになったら再就職などを選べます。';
+        showDialog({ title: '🏖️ リタイアしますか？（' + g.age + '歳）', message: msg, okLabel: 'リタイアする', cancelLabel: 'まだ働く' }).then(function(ok) {
+            if (ok && canRetireNow()) doRetire();
+        });
+    }
+    // リタイアを実行する（シミュレーションからも直接呼べる）
+    function doRetire() {
+        if (g.retired) return;
+        const sev = getSeveranceEstimate();
+        g.retired = true;
+        g.reemployed = false;
+        g.retireAge = g.age;
+        g.lastSalary = g.salary;
+        g.cash += sev;
+        g.yearsSinceHire = 0;
+        renderCareer();
+        updateUI();
+        showEventResult('🏖️ ' + g.age + '歳でリタイアしました', '退職金 +' + fmtShort(sev) + ' を受け取りました。これからは毎年、生活費 ' + fmtShort(getLivingCost()) + ' を配当・家賃・年金と資産の取り崩しでまかないます。', false);
+        afterRetireFlow();
+    }
+    // リタイア直後に続けて決めること（B6で追加）
+    function afterRetireFlow() {}
+
+    // --- 人生後半のイベント（リタイア関連）：選択待ちは pendingFlow {type:'late', id} として保存する ---
+    const lateLifeEvents = {
+        depleted: function() {
+            const hasRental = countRentalProps() > 0;
+            const choices = [];
+            if (hasRental) choices.push({ key: 'sell', label: '🏢 賃貸物件を1棟売って生活費にあてる', whatIf: '物件を売らずに再就職や切り詰めを選ぶこともできました。', action: function() {
+                let best = -1, bestEq = -Infinity;
+                g.ownedProps.forEach(function(p, i) { if (!p.isHome && p.price - p.debt > bestEq) { bestEq = p.price - p.debt; best = i; } });
+                if (best >= 0 && bestEq >= 0) {
+                    const name = g.ownedProps[best].nameJa;
+                    sellProp(best);
+                    showEventResult('🏢 物件を売却', name + 'を売却し、手取り ' + fmtShort(bestEq) + ' を生活費にあてました。', true);
+                } else {
+                    showEventResult('🏦 売却できる物件がありません', 'ローン残債が売却額を上回っていて、売っても手元にお金が残りません。', true);
+                }
+            }});
+            choices.push({ key: 'rejob', label: '💼 再就職して働く（給与は以前の' + Math.round(ECON.retire.rejobSalaryRate * 100) + '%）', whatIf: '再就職しなければ、生活を切り詰めるか、資産が尽きたままの暮らしになっていました。', action: function() {
+                g.retired = false;
+                g.salary = Math.max(1, Math.round((g.lastSalary || g.salary) * ECON.retire.rejobSalaryRate));
+                g.yearsSinceHire = 0;
+                if (g.fireAchievedAge) g.fireFailed = true;
+                renderCareer();
+                showEventResult('💼 再就職しました', '年収 ' + fmtShort(g.salary) + ' の仕事に就きました。資産を立て直したら、もう一度リタイアすることもできます。' + (g.fireAchievedAge ? '\n（FIREは途中で終わった記録になります）' : ''), true);
+            }});
+            if (!g.livingCut) choices.push({ key: 'cut', label: '🍙 生活を切り詰める（生活費を下げる）', whatIf: '切り詰めずに再就職すれば、生活水準を保てていました。', action: function() {
+                g.livingCut = true;
+                if (g.fireAchievedAge) g.fireFailed = true;
+                showEventResult('🍙 生活を切り詰めました', '以後の生活費を ' + fmtShort(getLivingCost()) + '／年に下げます（年金額か、もとの生活費の' + Math.round(ECON.retire.cutLivingRate * 100) + '%の大きい方）。' + (g.fireAchievedAge ? '\n（FIREは途中で終わった記録になります）' : ''), true);
+            }});
+            return {
+                title: '💸 資産が尽きかけています',
+                desc: '今年の生活費を払うと、すぐに売れる資産（現金・金・株・暗号資産）が底をつきました。足りなかった ' + fmtShort(g.lastShortfall || 0) + ' は、なんとか切り詰めてしのぎました。これからどうしますか？',
+                beginnerTip: '【取り崩しのガイド】\nリタイア直後に暴落が来たり、生活費が資産に対して大きすぎたりすると、資産が早く尽きます（シーケンスリスク）。生活費の25倍（4%ルール）はあくまで目安で、余裕を持たせることも大切です。',
+                choices: choices
+            };
+        }
+    };
+    function triggerLateEvent(id) {
+        const make = lateLifeEvents[id];
+        if (!make) return;
+        setPendingFlow({ type: 'late', id: id });
+        renderEventModal(make());
+    }
+    // 年が進んだあとに、リタイア関連で決めることがあれば表示する（表示したら true）
+    function checkLateLifeFlow() {
+        if (g.pendingLate) {
+            const id = g.pendingLate;
+            g.pendingLate = null;
+            updateUI();
+            triggerLateEvent(id);
+            return true;
+        }
+        return false;
+    }
+
     function renderEventModal(ev) {
         openModalQueued('event-modal', function() { renderEventModalNow(ev); });
     }
@@ -3275,6 +3499,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             const labelText = (typeof c.label === 'function') ? c.label() : c.label;
             const whatIfText = (typeof c.whatIf === 'function') ? c.whatIf() : c.whatIf;
             btn.innerHTML = '<strong>' + d.evSelectPrefix + '</strong>' + labelText;
+            if (c.key) btn.dataset.key = c.key;
             btn.onclick = function() {
                 document.getElementById('event-modal').classList.add('hidden');
                 pendingFlow = null;
@@ -3317,7 +3542,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     function pickDynamicEventIndex() {
         const cfg = EVENT_MODE_CFG[gameMode] || EVENT_MODE_CFG.normal;
         if (Math.random() < cfg.goodShare) {
-            return GOOD_EVENT_IDX[Math.floor(Math.random() * GOOD_EVENT_IDX.length)];
+            // リタイア中は本業のイベント（添字13：ビッグプロジェクト）は起きない
+            const goods = g.retired ? GOOD_EVENT_IDX.filter(function(i) { return i !== 13; }) : GOOD_EVENT_IDX;
+            return goods[Math.floor(Math.random() * goods.length)];
         }
         const weights = BAD_EVENT_IDX.map(function(i) { return i === 0 ? (CRASH_EVENT_WEIGHT[g.cycleId] || 1) : 1; });
         const total = weights.reduce(function(s, w) { return s + w; }, 0);
@@ -3613,7 +3840,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const reCF = calcRECashFlow();
         const stockDiv = Math.round((g.indexAsset + stockTotal) * spec.divRate);
         // 不労所得CF＝家賃−ローン利息−ローン元本の返済＋配当（実際に毎年手元に残るお金）
-        const totalPassive = reCF - calcPrincipalDue() + stockDiv;
+        const totalPassive = calcPassiveCF();
         const fireGoal = getModeEcon().fireGoal;
 
         document.getElementById('disp-salary').innerText = '+' + fmtShort(annualSavings);
@@ -3677,6 +3904,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         updateSkipButton();
         updateAssetExpectationText();
         updateCoachAdvice();
+        if (!document.getElementById('tab-career').classList.contains('hidden')) renderCareer();
         drawChart();
         checkAllTitlesAndRank();
         applyStrictLock();
@@ -3831,7 +4059,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             g.hedgeActive = false; g.hedgeCover = 0; g.hedgePremium = 0;
         }
 
-        const annualSavings = getAnnualSavings();
+        const working = !g.retired;
+        const annualSavings = working ? getAnnualSavings() : 0;
         const vacancy = rollVacancies(spec);
         const reCF = calcRECashFlow() - vacancy.lost;
         const stockTotal = g.stocks.reduce(function(sum, s) { return sum + s.shares * s.price; }, 0);
@@ -3841,6 +4070,25 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         // 資産管理法人の維持費（毎年）
         const corpFee = g.isCorp ? CORP_ANNUAL_FEE : 0;
         g.cash -= corpFee;
+
+        // --- 働いている年は厚生年金が積み上がる。年金は受け取り開始年齢から毎年入る ---
+        if (!isScenario && working) {
+            if (g.age < ECON.pension.accrualMaxAge) g.pensionAccrual = Math.round(((g.pensionAccrual || 0) + g.salary * ECON.pension.kouseiRate) * 10) / 10;
+            g.workYears = (g.workYears || 0) + 1;
+            g.yearsSinceHire = (g.yearsSinceHire || 0) + 1;
+        }
+        if (!isScenario && !g.pensionStartAge && g.age >= ECON.pension.baseAge) g.pensionStartAge = ECON.pension.baseAge;
+        const pensionIncome = (!isScenario && isPensionPaying()) ? getPensionAnnual(g.pensionStartAge) : 0;
+        g.cash += pensionIncome;
+        // --- リタイア後：生活費を払い、足りない分は資産を売ってまかなう ---
+        let livingPaid = 0, withdraw = null;
+        if (!isScenario && g.retired) {
+            livingPaid = getLivingCost();
+            g.cash -= livingPaid;
+            withdraw = withdrawForLiving(indRate);
+            if (withdraw.shortfall > 0) { g.lastShortfall = withdraw.shortfall; g.depletedEver = true; g.pendingLate = 'depleted'; }
+            g.freeYears = (g.freeYears || 0) + 1;
+        }
 
         // ローン元本の返済（物件価格の4%/年）：現金から支払い、その分だけ借入が減る（現金が足りない分は翌年へ持ち越し）
         let principalPaid = 0;
@@ -3866,7 +4114,16 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const d = i18n.ja;
         const snipList = d.mktSnippets[g.cycleId] || d.mktSnippets.boom;
         const snippet = snipList[Math.floor(Math.random() * snipList.length)];
-        let newsText = d.turnNews(g.age, (netInflow >= 0 ? '+' + fmtShort(netInflow) + ' 増加' : '-' + fmtShort(-netInflow) + ' 減少'), snippet);
+        let newsText = d.turnNews(g.age, (netInflow >= 0 ? '+' + fmtShort(netInflow) + ' 増加' : '-' + fmtShort(-netInflow) + ' 減少'), snippet, !working);
+        if (livingPaid > 0 || pensionIncome > 0) {
+            let lifeText = ' 🏖️';
+            if (livingPaid > 0) lifeText += '生活費 -' + fmtShort(livingPaid);
+            if (pensionIncome > 0) lifeText += (livingPaid > 0 ? '、' : '') + '年金 +' + fmtShort(pensionIncome);
+            const soldParts = withdraw ? Object.keys(withdraw.sold).map(function(k) { return WITHDRAW_NAMES[k] + fmtShort(withdraw.sold[k]); }) : [];
+            if (soldParts.length) lifeText += '。生活費のため ' + soldParts.join('・') + ' を売却';
+            if (withdraw && withdraw.shortfall > 0) lifeText += '。⚠️資産が尽きました';
+            newsText += lifeText + '。';
+        }
         if (inflationCashLoss > 0 || inflationDebtRelief > 0) {
             newsText += (' 💸物価 +' + (g.inflationRate * 100).toFixed(1) + '%：現金の価値 -' + fmtShort(inflationCashLoss) + '（今の価値）' + (inflationDebtRelief > 0 ? '、借入の実質負担も -' + fmtShort(inflationDebtRelief) : '') + '。');
         }
@@ -3907,6 +4164,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 navStep = 9; updateUI(); triggerNavStepPopup(); return;
             }
         }
+
+        if (isFinalNavStep() && !isScenario && checkLateLifeFlow()) return;
 
         if (isFinalNavStep() && !isScenario) {
             const ms = lifeMilestones.find(function(m) { return m.age === g.age && !g.milestonesSeen[m.id]; });
@@ -4142,7 +4401,21 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         document.getElementById('career-salary').innerText = '+' + fmtShort(getAnnualSavings()) + '/' + d.yrUnit;
 
         const upBtn = document.getElementById('career-up-btn');
-        if (g.careerLevel >= MAX_CAREER_LEVEL) {
+        const retireBtn = document.getElementById('retire-btn');
+        const retireStatus = document.getElementById('retire-status');
+        if (retireBtn && retireStatus) {
+            const isScen = gameMode === 'scenario';
+            retireBtn.classList.toggle('hidden', isScen || g.retired);
+            retireBtn.disabled = !canRetireNow();
+            if (isScen) retireStatus.innerText = 'ヒストリカル・シナリオではリタイアはありません。';
+            else if (g.retired) retireStatus.innerText = '🏖️ ' + g.retireAge + '歳からリタイア中。生活費 ' + fmtShort(getLivingCost()) + '／年。' + (g.pensionStartAge ? '年金は' + g.pensionStartAge + '歳から 年' + fmtShort(getPensionAnnual(g.pensionStartAge)) + '。' : '年金の見込み：' + ECON.pension.baseAge + '歳から 年' + fmtShort(getPensionAnnual(ECON.pension.baseAge)) + '。');
+            else retireStatus.innerText = (isFireTargetReached() ? '✅ FIRE目標に到達しています。' : 'FIRE目標（生活費の' + ECON.retire.fireMultiple + '倍の資産など）にはまだ届いていません。') + ' 退職金の見込み：' + fmtShort(getSeveranceEstimate()) + '。リタイアすると給与は止まり、生活費を配当・家賃・年金と資産の取り崩しでまかないます。';
+        }
+        if (g.retired) {
+            document.getElementById('career-salary').innerText = 'リタイア中（給与なし）';
+            upBtn.innerText = '🏖️ リタイア中のため昇進はありません';
+            upBtn.setAttribute('disabled', 'true');
+        } else if (g.careerLevel >= MAX_CAREER_LEVEL) {
             upBtn.innerText = d.carMaxBtn;
             upBtn.setAttribute('disabled', 'true');
         } else {
@@ -4155,7 +4428,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
 
     function upgradeCareer() {
         const d = i18n.ja;
-        if (g.careerLevel >= MAX_CAREER_LEVEL) return;
+        if (g.careerLevel >= MAX_CAREER_LEVEL || g.retired) return;
 
         let cost = careerUpgradeCosts[g.careerLevel] || 1000;
         if (g.cash < cost) { showToast(d.noCashAlert, 'warn'); return; }
