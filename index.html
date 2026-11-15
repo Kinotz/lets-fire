@@ -216,7 +216,9 @@
         .ac-level.pro { background: rgba(251, 191, 36, 0.25); color: var(--accent-gold); }
         .next-btn { background: linear-gradient(135deg, #38bdf8, #0284c7); color: #030712; border: none; width: 100%; padding: 13px; font-size: 0.95rem; font-weight: 900; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4); }
         .turn-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: linear-gradient(to top, rgba(3,7,18,0.98) 70%, rgba(3,7,18,0)); }
-        .turn-bar-inner { max-width: 580px; margin: 0 auto; }
+        .turn-bar-inner { max-width: 580px; margin: 0 auto; display: flex; gap: 8px; }
+        .turn-bar-inner .next-btn { flex: 2 1 0; min-width: 0; }
+        .turn-bar-inner .skip-btn { flex: 1 1 0; min-width: 0; background: var(--panel-bg); color: var(--accent-blue); border: 1px solid var(--accent-blue); box-shadow: none; font-size: 0.875rem; padding: 8px; }
         .turn-bar .next-btn { min-height: 56px; font-size: 1.05rem; }
         .hedge-btn { background: var(--panel-bg); border: 1px solid var(--accent-purple); color: var(--accent-purple); width: 100%; padding: 8px; font-size: 0.875rem; font-weight: 800; border-radius: 10px; cursor: pointer; margin-bottom: 8px; }
         .hedge-btn.active { background: rgba(192, 132, 252, 0.22); box-shadow: 0 0 0 1px var(--accent-purple) inset; }
@@ -593,7 +595,8 @@
         <!-- 毎ターン押すボタンは画面下に固定（スクロール不要）-->
         <div class="turn-bar" id="turn-bar">
             <div class="turn-bar-inner">
-                <button type="button" class="next-btn" id="next-turn-btn" onclick="nextTurn()">次の年へ進む (年齢 +1) →</button>
+                <button type="button" class="next-btn" id="next-turn-btn" onclick="nextTurn()">次の年へ進む →</button>
+                <button type="button" class="next-btn skip-btn hidden" id="skip5-btn" onclick="advanceYears(5)" aria-label="5年まとめて進む（イベントなどが起きたらそこで止まります）">⏩ 5年進む</button>
             </div>
         </div>
     </div>
@@ -2346,6 +2349,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         // ナビ欄はチュートリアル中だけ表示（自由行動中は画面を短くするため隠す）
         const free = isFinalNavStep() || !scenario[navStep];
         document.getElementById('nav-guide-banner').classList.toggle('hidden', free);
+        updateSkipButton();
         if (free) {
             document.getElementById('nav-guide-desc').innerText = navDict.freeBanner;
             document.getElementById('btn-skip-tut').classList.add('hidden');
@@ -3490,6 +3494,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         }
 
         updateIpoButtonUI();
+        updateSkipButton();
         updateCoachAdvice();
         drawChart();
         checkAllTitlesAndRank();
@@ -3725,6 +3730,37 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         if (!eventFiredThisTurn && pendingLesson) {
             showOnePointLesson(pendingLesson);
         }
+    }
+
+    // --- ⏩ 5年まとめて進む：イベント・クイズ・ライフイベント・ランクアップ・FIRE達成・称号獲得が起きたらその年で止まる ---
+    function isSkipAvailable() {
+        return isGameStarted && !isGameFinished && !isForcedTutorialActive && gameMode !== 'scenario' && g.turn < g.maxTurns;
+    }
+    function updateSkipButton() {
+        const btn = document.getElementById('skip5-btn');
+        if (btn) btn.classList.toggle('hidden', !isSkipAvailable());
+    }
+    function isFireBadgeShown() {
+        const el = document.getElementById('fire-badge');
+        return !!(el && !el.classList.contains('hidden'));
+    }
+    function advanceYears(n) {
+        if (!isSkipAvailable() || isAnyModalOpen() || modalQueue.length || pendingFlow) return;
+        let done = 0, reason = '';
+        for (let i = 0; i < n; i++) {
+            // 最終年はふつうのボタンで進めて結果画面へ（ここでは endGame を呼ばない）
+            if (g.turn >= g.maxTurns) { reason = '最終年です'; break; }
+            const rankBefore = g.rankLevel, fireBefore = isFireBadgeShown(), titlesBefore = countUnlockedTitles();
+            nextTurn();
+            done++;
+            if (g.rankLevel > rankBefore) { reason = 'ランクアップ！'; break; }
+            if (!fireBefore && isFireBadgeShown()) { reason = 'FIRE達成！'; break; }
+            if (pendingFlow) { reason = ({ quiz: 'クイズです', milestone: 'ライフイベントです', event: 'イベントが起きました' })[pendingFlow.type] || 'イベントが起きました'; break; }
+            if (isAnyModalOpen() || modalQueue.length) { reason = 'お知らせがあります'; break; }
+            if (countUnlockedTitles() > titlesBefore) { reason = '称号を獲得しました'; break; }
+        }
+        if (done > 0) showToast('⏩ ' + done + '年進みました' + (reason && done < n ? '（' + reason + '）' : ''));
+        updateSkipButton();
     }
 
     function renderStocks() {
