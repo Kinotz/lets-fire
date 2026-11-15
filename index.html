@@ -220,6 +220,16 @@
         .rankup-crown { font-size: 3.2rem; margin-bottom: 4px; display: inline-block; }
         .confetti-piece { position: fixed; width: 8px; height: 12px; top: -20px; z-index: 2000; pointer-events: none; animation: confettiFall 2.4s linear forwards; }
         @keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+        /* ゲーム内トースト（短いお知らせ）と確認ダイアログ：ブラウザ標準の alert / confirm / prompt の代わり */
+        .toast-host { position: fixed; left: 0; right: 0; bottom: calc(96px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0 16px; z-index: 1200; pointer-events: none; }
+        .toast { pointer-events: auto; max-width: 520px; width: 100%; background: #0f172a; color: var(--text-main); border: 1px solid var(--accent-blue); border-left-width: 5px; border-radius: 12px; padding: 12px 14px; font-size: 0.875rem; font-weight: 700; line-height: 1.5; white-space: pre-line; box-shadow: 0 10px 30px rgba(0,0,0,0.6); cursor: pointer; animation: toastIn 0.2s ease-out; }
+        .toast.warn { border-color: var(--accent-red); }
+        .toast.ok { border-color: var(--accent-green); }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .dialog-overlay { z-index: 1100; }
+        .dialog-actions { display: flex; gap: 8px; }
+        .dialog-actions button { flex: 1; min-height: 48px; font-size: 0.95rem; font-weight: 900; }
+        .dialog-copy-text { width: 100%; min-height: 120px; background: #050811; color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; padding: 8px; font-size: 0.875rem; margin-bottom: 12px; resize: vertical; font-family: inherit; }
         .hidden { display: none !important; }
         /* 「視差効果を減らす」設定の端末では、点滅・浮遊などのループアニメーションと画面遷移の動きを止める */
         @media (prefers-reduced-motion: reduce) {
@@ -700,6 +710,21 @@
     </div>
 </div>
 
+<!-- 💬 ゲーム内の確認・お知らせダイアログ（alert / confirm / prompt の代わり）-->
+<div class="modal-overlay dialog-overlay hidden" id="app-dialog" role="alertdialog" aria-modal="true" aria-labelledby="app-dialog-title" aria-describedby="app-dialog-msg">
+    <div class="modal-card">
+        <div class="modal-title" id="app-dialog-title">確認</div>
+        <div class="modal-desc" id="app-dialog-msg" style="white-space:pre-line;"></div>
+        <textarea class="dialog-copy-text hidden" id="app-dialog-text" readonly aria-label="コピー用テキスト"></textarea>
+        <div class="dialog-actions">
+            <button type="button" class="asset-btn" id="app-dialog-cancel">キャンセル</button>
+            <button type="button" class="next-btn" id="app-dialog-ok">OK</button>
+        </div>
+    </div>
+</div>
+<!-- トースト表示先 -->
+<div class="toast-host" id="toast-host" role="status" aria-live="polite"></div>
+
 <!-- ランキング・市場解説モーダル -->
 <div class="modal-overlay hidden" id="info-modal">
     <div class="modal-card">
@@ -898,10 +923,66 @@
         updateUI();
     }
 
+    // --- 💬 トースト（数秒で消える短いお知らせ）---
+    function showToast(msg, kind) {
+        const host = document.getElementById('toast-host');
+        if (!host) return;
+        const el = document.createElement('div');
+        el.className = 'toast' + (kind ? ' ' + kind : '');
+        el.textContent = msg;
+        const remove = function() { if (el.parentNode) el.parentNode.removeChild(el); };
+        el.addEventListener('click', remove);
+        host.appendChild(el);
+        while (host.children.length > 3) host.removeChild(host.firstChild);
+        setTimeout(remove, Math.min(7000, 2600 + msg.length * 40));
+    }
+
+    // --- 💬 ダイアログ（確認・お知らせ・コピー用）。OKで true、キャンセルで false の Promise を返す ---
+    let dialogResolver = null;
+    let dialogReturnFocus = null;
+    function showDialog(opts) {
+        const o = opts || {};
+        if (dialogResolver) closeDialog(false);
+        dialogReturnFocus = document.activeElement;
+        document.getElementById('app-dialog-title').innerText = o.title || 'お知らせ';
+        document.getElementById('app-dialog-msg').innerText = o.message || '';
+        const ta = document.getElementById('app-dialog-text');
+        ta.classList.toggle('hidden', !o.copyText);
+        ta.value = o.copyText || '';
+        const okBtn = document.getElementById('app-dialog-ok');
+        const cancelBtn = document.getElementById('app-dialog-cancel');
+        okBtn.innerText = o.okLabel || 'OK';
+        okBtn.style.background = o.danger ? 'linear-gradient(135deg, #f43f5e, #be123c)' : '';
+        okBtn.style.color = o.danger ? '#ffffff' : '';
+        cancelBtn.classList.toggle('hidden', !o.cancelLabel);
+        cancelBtn.innerText = o.cancelLabel || 'キャンセル';
+        document.getElementById('app-dialog').classList.remove('hidden');
+        if (o.copyText) { ta.focus(); ta.select(); } else { (o.cancelLabel ? cancelBtn : okBtn).focus(); }
+        return new Promise(function(resolve) { dialogResolver = resolve; });
+    }
+    function closeDialog(result) {
+        document.getElementById('app-dialog').classList.add('hidden');
+        const r = dialogResolver;
+        dialogResolver = null;
+        if (dialogReturnFocus && dialogReturnFocus.focus && document.body.contains(dialogReturnFocus)) dialogReturnFocus.focus();
+        if (r) r(!!result);
+    }
+    function initAppDialog() {
+        document.getElementById('app-dialog-ok').addEventListener('click', function() { closeDialog(true); });
+        document.getElementById('app-dialog-cancel').addEventListener('click', function() { closeDialog(false); });
+    }
+
     function resetAllSavedData() {
         playSound('click');
-        const msg = "獲得した「称号コレクション」と「チュートリアル完了記録」（途中のセーブデータを含む）をすべて消去して、一番最初の状態に戻しますか？";
-        if (!confirm(msg)) return;
+        showDialog({
+            title: '🗑️ データの初期化',
+            message: '獲得した「称号コレクション」と「チュートリアル完了記録」（途中のセーブデータを含む）をすべて消去して、一番最初の状態に戻しますか？\n\nこの操作は取り消せません。',
+            okLabel: '消去する',
+            cancelLabel: 'キャンセル',
+            danger: true
+        }).then(function(ok) { if (ok) doResetAllSavedData(); });
+    }
+    function doResetAllSavedData() {
         try {
             localStorage.removeItem('uws_unlocked_titles_v1');
             localStorage.removeItem('uws_tut_done_easy_v1');
@@ -909,8 +990,8 @@
             localStorage.removeItem(SAVE_GAME_KEY);
         } catch (e) {}
         unlockedTitlesMap = {};
-        alert("すべての記録を初期化しました！再スタートします。");
-        location.reload();
+        showToast('すべての記録を初期化しました！再スタートします。', 'ok');
+        setTimeout(function() { location.reload(); }, 1200);
     }
 
     // --- 🎖️ 全43種の称号コレクションマスターデータ ---
@@ -1677,7 +1758,7 @@
     }
 
     function alertChallengeBlocked() {
-        alert('🔒 現在の縛りプレイチャレンジでは、この資産クラスは購入できません！');
+        showToast('🔒 現在の縛りプレイチャレンジでは、この資産クラスは購入できません！', 'warn');
     }
 
     // --- 🕰️ ヒストリカル・シナリオモード：実際の経済危機を再現したスクリプト済み市場データ ---
@@ -2153,7 +2234,7 @@
         if (amount > 0) {
             if (!isAssetAllowed(type === 'ind' ? 'index' : 'gold')) { alertChallengeBlocked(); return; }
             let cost = amount === 999999 ? Math.floor(g.cash * 0.5) : amount;
-            if (cost <= 0 || g.cash < cost) { alert(d.noCashAlert); return; }
+            if (cost <= 0 || g.cash < cost) { showToast(d.noCashAlert, 'warn'); return; }
             g.cash -= cost;
             g.everBoughtAsset = true;
             if (type === 'ind') { g.indexAsset += cost; unlockTitle('t_first_step'); if (isFinalNavStep()) showOnePointLesson('firstIndex'); }
@@ -2831,7 +2912,7 @@
         }
 
         if (g.cash < 300) {
-            alert('【IPOの仕組み解説】\n現実のIPO抽選（ブックビルディング）は参加自体は無料ですが、当選した時に株を買うための『買付余力（手元現金 300以上）』を口座に入れておく必要があります！');
+            showDialog({ title: '💡 IPOの仕組み解説', message: '現実のIPO抽選（ブックビルディング）は参加自体は無料ですが、当選した時に株を買うための『買付余力（手元現金 300以上）』を口座に入れておく必要があります！' });
             return;
         }
 
@@ -2865,7 +2946,7 @@
             g.hedgeActive = false;
         } else {
             if (g.cash < HEDGE_PREMIUM) {
-                alert('保険料（現金50）が足りません！');
+                showToast('保険料（現金50）が足りません！', 'warn');
                 return;
             }
             g.cash -= HEDGE_PREMIUM;
@@ -3200,7 +3281,7 @@
         if (cnt > 0) {
             if (!isAssetAllowed('stock')) { alertChallengeBlocked(); return; }
             let cost = s.price * cnt;
-            if (g.cash < cost) { alert(d.noCashAlert); return; }
+            if (g.cash < cost) { showToast(d.noCashAlert, 'warn'); return; }
             g.cash -= cost; s.shares += cnt; g.everBoughtAsset = true; g.everBoughtIndivStock = true;
         } else {
             g.cash += s.shares * s.price; s.shares = 0;
@@ -3239,7 +3320,7 @@
         if (cnt > 0) {
             if (!isAssetAllowed('crypto')) { alertChallengeBlocked(); return; }
             let cost = cr.price * cnt;
-            if (g.cash < cost) { alert(d.noCashAlert); return; }
+            if (g.cash < cost) { showToast(d.noCashAlert, 'warn'); return; }
             g.cash -= cost; cr.holdings += cnt; g.everBoughtAsset = true; g.everBoughtCrypto = true;
         } else {
             g.cash += cr.holdings * cr.price; cr.holdings = 0;
@@ -3295,7 +3376,7 @@
         if (!isAssetAllowed('realestate')) { alertChallengeBlocked(); return; }
         let p = g.marketProps.find(function(x) { return x.id === id; });
         let down = Math.round(p.price * 0.2);
-        if (g.cash < down) { alert(d.noCashAlert); return; }
+        if (g.cash < down) { showToast(d.noCashAlert, 'warn'); return; }
         g.cash -= down; g.everBoughtAsset = true;
         let loan = p.price - down;
         if (loan > 0) g.everTookDebt = true;
@@ -3319,7 +3400,7 @@
         const proceeds = p.price - p.debt;
         // 売却額が残債を下回る（オーバーローン）場合は、差額を手元現金で返済しないと売却できない
         if (proceeds < 0 && g.cash < -proceeds) {
-            alert('🏦 売却額（' + fmtShort(p.price) + '）がローン残債（' + fmtShort(p.debt) + '）を下回っています。\n売却するには差額 ' + fmtShort(-proceeds) + ' を手元現金で返済する必要があります。');
+            showDialog({ title: '🏦 この物件は今は売却できません', message: '売却額（' + fmtShort(p.price) + '）がローン残債（' + fmtShort(p.debt) + '）を下回っています。\n売却するには差額 ' + fmtShort(-proceeds) + ' を手元現金で返済する必要があります。' });
             return;
         }
         g.cash += proceeds;
@@ -3354,7 +3435,7 @@
         if (g.careerLevel >= MAX_CAREER_LEVEL) return;
 
         let cost = careerUpgradeCosts[g.careerLevel] || 1000;
-        if (g.cash < cost) { alert(d.noCashAlert); return; }
+        if (g.cash < cost) { showToast(d.noCashAlert, 'warn'); return; }
         g.cash -= cost;
         g.careerLevel++;
         g.salary = Math.round(g.salary * 1.12);
@@ -3813,15 +3894,19 @@
     function copyShareText() {
         const d = i18n.ja;
         const txt = buildViralShareText();
+        const showManualCopy = function() {
+            showDialog({ title: '📋 結果テキスト', message: '自動でコピーできませんでした。下のテキストを長押ししてコピーしてください。', copyText: txt, okLabel: '閉じる' });
+        };
         if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(txt).then(function() { alert(d.copyDoneAlert); });
+            navigator.clipboard.writeText(txt).then(function() { showToast(d.copyDoneAlert, 'ok'); }, showManualCopy);
         } else {
-            prompt("Copy & Share:", txt);
+            showManualCopy();
         }
         playSound('click');
     }
 
     loadSavedTitles();
+    initAppDialog();
     initModalQueueWatcher();
     refreshContinueButton();
     // タブを閉じる・裏に回すときにも念のため保存する
