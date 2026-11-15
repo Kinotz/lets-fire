@@ -88,6 +88,7 @@
     max-width: 100%;
 }
 
+        .asset-note { font-size: 0.75rem; color: var(--text-sub); line-height: 1.45; margin: 2px 2px 6px; }
         .market-switcher { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; background: #050811; padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
         .mkt-btn { background: transparent; border: 1px solid transparent; color: var(--text-sub); font-size: 0.875rem; font-weight: 800; padding: 6px 2px; border-radius: 6px; cursor: pointer; text-align: center; }
         .mkt-btn.active { background: var(--card-bg); color: var(--accent-blue); border-color: var(--accent-blue); }
@@ -464,7 +465,7 @@
             <div style="font-size:0.75rem; color:var(--text-sub); margin-bottom:8px;" id="lbl-core-desc">ボタンを押して「インデックス株」と「金(ゴールド)」を購入しましょう！暴落や急な出費に備えて「金」と「手元現金」も残すのがコツです。</div>
             <div class="asset-card">
                 <div class="asset-card-top"><span class="asset-name">📈 <span id="lbl-ind-name">全世界インデックス株</span> <button type="button" class="term-btn" onclick="openTermHelp('index')">?</button></span><span class="asset-holding-val" id="val-index-hold">保有: ¥0</span></div>
-                <div class="asset-sub-info"><span id="lbl-ind-sub">期待年利: +8%〜+18% (複利成長＋配当)</span><span id="lbl-ind-tag" class="hidden">王道の主力資産</span></div>
+                <div class="asset-sub-info"><span id="lbl-ind-sub">ゲーム内の想定: 値上がり＋配当（年ごとに上下します）</span><span id="lbl-ind-tag" class="hidden">王道の主力資産</span></div>
                 <div class="asset-actions">
                     <button type="button" class="asset-btn buy" id="btn-buy-ind-100" onclick="tradeCore('ind', 100)">購入 (+100)</button>
                     <button type="button" class="asset-btn buy" id="btn-buy-ind-max" onclick="tradeCore('ind', 999999)">半額分購入</button>
@@ -473,13 +474,14 @@
             </div>
             <div class="asset-card">
                 <div class="asset-card-top"><span class="asset-name">🪙 <span id="lbl-gold-name">安全資産・金 (ゴールド)</span> <button type="button" class="term-btn" onclick="openTermHelp('gold')">?</button></span><span class="asset-holding-val" id="val-gold-hold">保有: ¥0</span></div>
-                <div class="asset-sub-info"><span id="lbl-gold-sub">期待年利: +4%〜+10% (金融ショック時の盾)</span><span id="lbl-gold-tag" class="hidden">暴落時の守り神</span></div>
+                <div class="asset-sub-info"><span id="lbl-gold-sub">ゲーム内の想定: 値上がりのみ（配当なし）</span><span id="lbl-gold-tag" class="hidden">暴落時の守り神</span></div>
                 <div class="asset-actions">
                     <button type="button" class="asset-btn buy" id="btn-buy-gold-50" onclick="tradeCore('gold', 50)">購入 (+50)</button>
                     <button type="button" class="asset-btn buy" id="btn-buy-gold-200" onclick="tradeCore('gold', 200)">購入 (+200)</button>
                     <button type="button" class="asset-btn sell" id="btn-sell-gold" onclick="tradeCore('gold', -50)">売却 (-50)</button>
                 </div>
             </div>
+            <div class="asset-note" id="lbl-asset-note">※ 上の数字はこのゲーム用の設定です。現実の将来の成績を示したり保証したりするものではありません。</div>
             <div class="sponsor-reward-bar hidden" id="sponsor-reward-bar">
                 <div style="font-size:0.75rem; font-weight:800; color:#fde047;" id="lbl-sponsor-bar-txt">🎁 【1回限定】おすすめ投資コラム(PR)をチェックして臨時資金 +200 を受け取ろう！</div>
                 <button type="button" class="sponsor-reward-btn" onclick="claimSponsorBonus()" id="btn-sponsor-claim">PRを見て +200 獲得</button>
@@ -919,6 +921,60 @@
             r -= opts[i].w;
         }
         return opts[0].to;
+    }
+
+    // --- インデックス株・金の毎年の値動き（一様乱数の幅）。資産カードの「ゲーム内の想定」表示もここから計算する ---
+    const INDEX_DRAW = { lo: -0.02, hi: 0.12 };
+    const GOLD_DRAW = { lo: 0.005, hi: 0.075, floor: -0.30 };
+    // 景気サイクルの長い目で見た出現割合（遷移表から計算。各局面の長さの平均は同じなので、遷移の定常分布を使う）
+    function getCycleLongRunShare() {
+        const ids = Object.keys(marketCycleDefs);
+        let p = {};
+        ids.forEach(function(id) { p[id] = 1 / ids.length; });
+        for (let k = 0; k < 300; k++) {
+            const n = {};
+            ids.forEach(function(id) { n[id] = 0; });
+            ids.forEach(function(from) {
+                const opts = cycleTransitions[from] || [];
+                const total = opts.reduce(function(s, o) { return s + o.w; }, 0) || 1;
+                opts.forEach(function(o) { n[o.to] += p[from] * o.w / total; });
+            });
+            p = n;
+        }
+        return p;
+    }
+    // 資産の「ゲーム内の想定」：平均と、1年ごとの幅（イベントによる暴落などは含まない）
+    function getAssetExpectation(kind) {
+        const share = getCycleLongRunShare();
+        const key = kind === 'gold' ? 'goldAdj' : 'indAdj';
+        let avgAdj = 0, minAdj = Infinity, maxAdj = -Infinity;
+        Object.keys(share).forEach(function(id) {
+            const a = marketCycleDefs[id][key];
+            avgAdj += share[id] * a;
+            minAdj = Math.min(minAdj, a); maxAdj = Math.max(maxAdj, a);
+        });
+        if (kind === 'gold') {
+            return { mean: (GOLD_DRAW.lo + GOLD_DRAW.hi) / 2 + avgAdj, lo: Math.max(GOLD_DRAW.floor, GOLD_DRAW.lo + minAdj), hi: GOLD_DRAW.hi + maxAdj, div: 0, modeAdj: 0 };
+        }
+        const spec = marketSpecs[market] || marketSpecs.jp;
+        const boost = getModeEcon().growthBoost + spec.stockBoost;
+        return { mean: (INDEX_DRAW.lo + INDEX_DRAW.hi) / 2 + boost + avgAdj, lo: INDEX_DRAW.lo + boost + minAdj, hi: INDEX_DRAW.hi + boost + maxAdj, div: spec.divRate, modeAdj: getModeEcon().growthBoost };
+    }
+    function fmtPct(x) { const v = Math.round(x * 1000) / 10; return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; }
+    function updateAssetExpectationText() {
+        const indEl = document.getElementById('lbl-ind-sub');
+        const goldEl = document.getElementById('lbl-gold-sub');
+        if (!indEl || !goldEl) return;
+        if (gameMode === 'scenario') {
+            indEl.innerText = 'ゲーム内の想定: 実際の危機をもとにした、年ごとに決まった値動き＋配当';
+            goldEl.innerText = 'ゲーム内の想定: 実際の危機をもとにした、年ごとに決まった値動き（配当なし）';
+            return;
+        }
+        const ind = getAssetExpectation('index');
+        const modeNote = ind.modeAdj ? '・モード補正' + fmtPct(ind.modeAdj) + 'を含む' : '';
+        indEl.innerText = 'ゲーム内の想定: 値上がり 年平均' + fmtPct(ind.mean) + '（年ごとに' + fmtPct(ind.lo) + '〜' + fmtPct(ind.hi) + modeNote + '）＋配当' + (ind.div * 100).toFixed(1) + '%。暴落などのイベントは別';
+        const gold = getAssetExpectation('gold');
+        goldEl.innerText = 'ゲーム内の想定: 値上がり 年平均' + fmtPct(gold.mean) + '（年ごとに' + fmtPct(gold.lo) + '〜' + fmtPct(gold.hi) + '）・配当なし';
     }
 
     // --- 個別株・暗号資産の値動きモデル ---
@@ -3523,6 +3579,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
 
         updateIpoButtonUI();
         updateSkipButton();
+        updateAssetExpectationText();
         updateCoachAdvice();
         drawChart();
         checkAllTitlesAndRank();
@@ -3571,8 +3628,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             }
             cycleDef = marketCycleDefs[g.cycleId] || marketCycleDefs.boom;
             g.cycleTurnsLeft--;
-            indRate = (Math.random() * 0.14 - 0.02) + easyBoost + spec.stockBoost + cycleDef.indAdj;
-            goldRate = Math.max(-0.30, (Math.random() * 0.07) + 0.005 + cycleDef.goldAdj);
+            indRate = (INDEX_DRAW.lo + Math.random() * (INDEX_DRAW.hi - INDEX_DRAW.lo)) + easyBoost + spec.stockBoost + cycleDef.indAdj;
+            goldRate = Math.max(GOLD_DRAW.floor, (GOLD_DRAW.lo + Math.random() * (GOLD_DRAW.hi - GOLD_DRAW.lo)) + cycleDef.goldAdj);
         }
         updateBgmMood(g.cycleId);
 
