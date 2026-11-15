@@ -127,6 +127,7 @@
         .summary-card { background: linear-gradient(145deg, #172338, #0b1120); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 10px; }
         .rank-strip { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, rgba(251, 191, 36, 0.18), rgba(192, 132, 252, 0.12)); border: 1px solid rgba(251, 191, 36, 0.45); padding: 4px 8px; border-radius: 8px; margin-bottom: 6px; font-size: 0.75rem; font-weight: 800; }
         .net-worth-label { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 0.875rem; color: var(--text-sub); font-weight: 800; }
+        .nominal-line { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 0.75rem; color: var(--text-sub); margin: 2px 0 6px; }
         .net-worth-row { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px; }
         .net-worth-val { font-size: 1.6rem; font-weight: 900; font-variant-numeric: tabular-nums; margin: 2px 0 4px 0; color: #f8fafc; }
         .growth-pill { font-size: 0.75rem; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
@@ -413,7 +414,7 @@
             </div>
             <div class="net-worth-label">
                 <div>
-                    <span id="lbl-networth">純資産総額</span>
+                    <span id="lbl-networth">純資産（今の価値）</span>
                     <button type="button" class="term-btn" onclick="openTermHelp('nw')">？意味</button>
                     <span id="corp-status-pill" class="fire-badge hidden" style="margin-left:4px;">🏢 法人化済</span>
                     <span class="fire-badge hidden" id="fire-badge" style="margin-left:4px;">FIRE達成 🔥</span>
@@ -426,6 +427,7 @@
                 <div class="net-worth-val" id="disp-networth">¥600万</div>
                 <span class="growth-pill" id="disp-growth">前年比 +0.0%</span>
             </div>
+            <div class="nominal-line" id="nominal-line"><span id="disp-nominal">額面 ¥600万</span><button type="button" class="term-btn" data-nav-free onclick="openTermHelp('inflation')" id="btn-inflation">物価 ×1.00（今年 +2.0%）？</button></div>
             <div class="breakdown-bar" id="breakdown-bar">
                 <div class="bar-seg" style="width:100%; background:var(--accent-blue);"></div>
             </div>
@@ -489,7 +491,7 @@
                     <button type="button" class="asset-btn sell" id="btn-sell-gold" onclick="tradeCore('gold', -50)">売却 (-50)</button>
                 </div>
             </div>
-            <div class="asset-note" id="lbl-asset-note">※ 上の数字はこのゲーム用の設定です。現実の将来の成績を示したり保証したりするものではありません。</div>
+            <div class="asset-note" id="lbl-asset-note">※ 上の数字はこのゲーム用の設定で、物価上昇分を除いた「実質」です（額面ではこれに物価上昇が加わります）。現実の将来の成績を示したり保証したりするものではありません。</div>
             <div class="sponsor-reward-bar hidden" id="sponsor-reward-bar">
                 <div style="font-size:0.75rem; font-weight:800; color:#fde047;" id="lbl-sponsor-bar-txt">🎁 【1回限定】おすすめ投資コラム(PR)をチェックして臨時資金 +200 を受け取ろう！</div>
                 <button type="button" class="sponsor-reward-btn" onclick="claimSponsorBonus()" id="btn-sponsor-claim">PRを見て +200 獲得</button>
@@ -617,8 +619,9 @@
         <div style="font-size:1.25rem; font-weight:900; color:var(--accent-gold); margin-bottom:6px;" id="lbl-res-title">🎉 66年間の人生シミュレーション大完走！</div>
         <div class="ending-flavor-text" id="ending-flavor-text" style="display:none;"></div>
         <div class="event-result-banner" style="text-align:left;">
-            <div style="font-size:0.875rem; color:var(--text-sub); font-weight:800;" id="lbl-res-nw">最終純資産総額</div>
-            <div id="res-networth" style="color:var(--accent-green); font-size:1.9rem; font-weight:900; margin:6px 0;">¥0</div>
+            <div style="font-size:0.875rem; color:var(--text-sub); font-weight:800;" id="lbl-res-nw">最終純資産（今の価値＝25歳時点の物価）</div>
+            <div id="res-networth" style="color:var(--accent-green); font-size:1.9rem; font-weight:900; margin:6px 0 2px;">¥0</div>
+            <div id="res-nominal" style="font-size:0.75rem; color:var(--text-sub); margin-bottom:6px;"></div>
             <div style="font-size:0.875rem; margin-top:6px;"><span id="lbl-res-rank-label">最終資産家ランク</span>: <strong id="res-title" style="color:var(--accent-gold);">👑</strong></div>
             <div style="font-size:0.875rem; margin-top:4px;"><span id="lbl-res-fire-label">FIRE達成</span>: <strong id="res-fire" style="color:var(--accent-blue);">-</strong></div>
             <div style="font-size:0.875rem; margin-top:4px;">🎖️ 獲得済み称号数: <strong id="res-titles-count" style="color:var(--accent-purple);">0 / 43</strong></div>
@@ -998,9 +1001,9 @@
         }
         const ind = getAssetExpectation('index');
         const modeNote = ind.modeAdj ? '・モード補正' + fmtPct(ind.modeAdj) + 'を含む' : '';
-        indEl.innerText = 'ゲーム内の想定: 値上がり 年平均' + fmtPct(ind.mean) + '（年ごとに' + fmtPct(ind.lo) + '〜' + fmtPct(ind.hi) + modeNote + '）＋配当' + (ind.div * 100).toFixed(1) + '%。暴落などのイベントは別';
+        indEl.innerText = 'ゲーム内の想定（実質）: 値上がり 年平均' + fmtPct(ind.mean) + '（年ごとに' + fmtPct(ind.lo) + '〜' + fmtPct(ind.hi) + modeNote + '）＋配当' + (ind.div * 100).toFixed(1) + '%。暴落などのイベントは別';
         const gold = getAssetExpectation('gold');
-        goldEl.innerText = 'ゲーム内の想定: 値上がり 年平均' + fmtPct(gold.mean) + '（年ごとに' + fmtPct(gold.lo) + '〜' + fmtPct(gold.hi) + '）・配当なし';
+        goldEl.innerText = 'ゲーム内の想定（実質）: 値上がり 年平均' + fmtPct(gold.mean) + '（年ごとに' + fmtPct(gold.lo) + '〜' + fmtPct(gold.hi) + '）・配当なし';
     }
 
     // --- 個別株・暗号資産の値動きモデル ---
@@ -1025,9 +1028,27 @@
         scenario: { growthBoost: 0.000, fireGoal: 300, savingsRate: 0.35, cryptoMoonMult: 1 }
     };
     const ECON = {
+        // インフレ率（日本銀行「物価安定の目標」消費者物価の前年比上昇率2%を基準にしたゲーム上の設定）
+        //   byCycle：景気局面ごとの年インフレ率、noise：毎年のゆらぎ（±）、hardExtra：ハードコアの上乗せ、
+        //   rateHikeExtra：「インフレ加速と利上げ」イベント後3年間の上乗せ
+        inflation: { byCycle: { boom: 0.020, bubble: 0.030, correction: 0.015, recession: 0.005 }, noise: 0.005, hardExtra: 0.005, rateHikeExtra: 0.020 },
+        // 現金（普通預金・タンス預金）の金利。ゲームでは0%（額面は増えないので、実質の価値はインフレ率ぶん減る）
+        cashRate: 0,
         // 不動産価格の実質の長期傾向を年-0.5%前後（建物の老朽化）にするための補正（景気サイクルの平均-0.75%に足す）
         realEstateDrift: 0.0025
     };
+    // 新しく追加した状態の既定値（新しいゲーム開始時と、旧セーブの読み込み時に使う）
+    function getNewStateDefaults(savedG) {
+        return { priceIndex: 1, inflationRate: ECON.inflation.byCycle.boom };
+    }
+    // その年のインフレ率（景気局面＋ゆらぎ＋モード＋利上げイベントの影響）
+    function rollInflationRate() {
+        const inf = ECON.inflation;
+        let r = (inf.byCycle[g.cycleId] !== undefined ? inf.byCycle[g.cycleId] : inf.byCycle.boom) + (Math.random() * 2 - 1) * inf.noise;
+        if (gameMode === 'hard') r += inf.hardExtra;
+        if ((g.rateHikeYears || 0) > 0) r += inf.rateHikeExtra;
+        return Math.round(r * 1000) / 1000;
+    }
     function getModeEcon() { return MODE_ECON[gameMode] || MODE_ECON.normal; }
     function getAnnualSavings() { return Math.round(g.salary * getModeEcon().savingsRate); }
     // 今年支払うローン元本（物件価格の4%、残債が上限）。FIRE判定の不労所得CFからは差し引く
@@ -1547,6 +1568,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         hedgeActive: false, hedgeCover: 0, hedgePremium: 0,
         hedgeInForce: false, hedgeInForceCover: 0, hedgeYearLoss: 0, hedgeYearPaid: 0,
         rateHikeYears: 0,
+        priceIndex: 1, inflationRate: 0.02,
         academyRead: {}, lessonsSeen: {}, firstBuy: { index: false, gold: false, stock: false, crypto: false, realestate: false },
         everBoughtCrypto: false, everBoughtIndivStock: false, everTookDebt: false, everBoughtRealEstate: false,
         bestNetWorthBeaten: false, challengeMode: 'none', tutorialIpoRewarded: false,
@@ -1593,6 +1615,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     };
 
     const termDict = {
+        inflation: { title: "💡 インフレと「今の価値」（実質・名目）", desc: "このゲームでは毎年、物価が上がります（日本銀行が目標にしている年2%を基準に、景気によって0.5〜3%程度。ゲーム上の設定）。\n\n・【額面（名目）】：通帳やお財布に書いてある金額。\n・【今の価値（実質）】：25歳のときの物価に直した金額。同じ1万円で買えるモノの量を比べるための値です。\n\n現金は額面が増えないので、物価が上がるぶん「今の価値」が毎年減っていきます。借入も同じように実質の負担が軽くなります。株・金・不動産の値動きや給与・生活費は「今の価値」で表示しています。\n\n画面の大きな金額は「今の価値」、小さな「額面」は実際にその年に見える金額です。" },
         nw: { title: "💡 純資産総額と総資産の違いは？", desc: "・【総資産】：現金・株式・金・仮想通貨・不動産のすべての合計金額（グラフで表示）です。\n・【純資産総額】：総資産から銀行の「借入金」を引いた、あなたの本当の正味財産です！" },
         compound: { title: "💡 複利（ふくり）とは？", desc: "投資で増えた利益が、次の年にはさらに新しい利益を生む「雪だるま式」の仕組みです！" },
         cash: { title: "💡 現金の役割（生活防衛資金）", desc: "急な病気や不動産の修繕費、暴落時のバーゲン買い、そしてIPO抽選の買付余力（300以上）に使える大切な待機資金です！" },
@@ -2290,6 +2313,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         (g.marketProps || []).forEach(function(mp) {
             if (PROP_YIELD_BY_NAME[mp.nameJa] !== undefined) mp.yield = PROP_YIELD_BY_NAME[mp.nameJa];
         });
+        // パートB（インフレ・リタイア）以前のセーブに無い項目を補う（金額は「今の価値」とみなし、物価指数1.0から始める）
+        const newDefaults = getNewStateDefaults(data.g);
+        Object.keys(newDefaults).forEach(function(k) { if (data.g[k] === undefined) g[k] = newDefaults[k]; });
         if (typeof data.g.everBoughtRealEstate !== 'boolean') {
             g.everBoughtRealEstate = (g.ownedProps || []).some(function(p) { return !p.isHome; });
         }
@@ -2358,6 +2384,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         g.hotStockId = null; g.hotStockTurnsLeft = 0; g.hotStockPopPending = false;
         g.rivalNetWorth = 600;
         g.hedgeActive = false; g.rateHikeYears = 0;
+        Object.assign(g, getNewStateDefaults(null));
         g.academyRead = {}; g.lessonsSeen = {};
         g.firstBuy = { index: false, gold: false, stock: false, crypto: false, realestate: false };
         g.everBoughtCrypto = false; g.everBoughtIndivStock = false; g.everTookDebt = false; g.everBoughtRealEstate = false;
@@ -2881,7 +2908,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         },
         {
             title: "🏦 インフレ加速と中央銀行の緊急利上げ！",
-            desc: "インフレを抑えるため中央銀行が大幅な利上げを実施！株価は下がり、ローン金利は今後3年間 +2% 上がります。",
+            desc: "インフレを抑えるため中央銀行が大幅な利上げを実施！株価は下がり、ローン金利は今後3年間 +2% 上がります。物価もしばらく上がりやすい状態が続きます（今後3年間、インフレ率 +2%）。",
             beginnerTip: "【金利と借金のガイド】\n利上げで株は8%下がります（どちらを選んでも同じ）。\n借入がある人は、繰上返済で金利負担を減らすか、現金を手元に残して急な出費や押し目買いに備えるかを選びます。借入がなければ金利上昇の直撃は受けません。",
             choices: [
                 { label: function() { return g.debt > 0 ? "💳 手元現金で借入を繰上返済する（最大300）" : "📈 下がった株を現金150で買い増す"; },
@@ -3544,6 +3571,13 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         document.getElementById('age-disp').innerText = g.age;
         document.getElementById('disp-rank').innerText = getRankTitle(rObj.lv);
         document.getElementById('disp-networth').innerText = fmtMoney(netWorth);
+        // 額面（名目）と物価：シナリオモードはインフレを扱わない（実際の危機の値動きをそのまま再現）
+        const nominalLine = document.getElementById('nominal-line');
+        if (nominalLine) {
+            nominalLine.classList.toggle('hidden', gameMode === 'scenario');
+            document.getElementById('disp-nominal').innerText = '額面 ' + fmtShort(netWorth * (g.priceIndex || 1));
+            document.getElementById('btn-inflation').innerText = '物価 ×' + (g.priceIndex || 1).toFixed(2) + '（今年 ' + ((g.inflationRate || 0) >= 0 ? '+' : '') + ((g.inflationRate || 0) * 100).toFixed(1) + '%）？';
+        }
         document.getElementById('disp-cash-top').innerText = fmtShort(g.cash);
         document.getElementById('disp-total-assets-top').innerText = fmtMoney(totalAssets);
 
@@ -3695,6 +3729,20 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         }
         updateBgmMood(g.cycleId);
 
+        // --- インフレ：物価が上がると、額面が増えない現金と借入は「今の価値」で目減りする ---
+        let inflationCashLoss = 0, inflationDebtRelief = 0;
+        if (!isScenario) {
+            const infl = rollInflationRate();
+            g.inflationRate = infl;
+            g.priceIndex = (g.priceIndex || 1) * (1 + infl);
+            const realFactor = (1 + ECON.cashRate) / (1 + infl);
+            if (g.cash > 0) { const after = Math.round(g.cash * realFactor); inflationCashLoss = g.cash - after; g.cash = after; }
+            g.ownedProps.forEach(function(p) {
+                if (p.debt > 0) { const after = Math.round(p.debt / (1 + infl)); inflationDebtRelief += p.debt - after; p.debt = after; }
+            });
+            syncDebt();
+        }
+
         g.indexAsset = Math.round(g.indexAsset * (1 + indRate));
         g.goldAsset = Math.round(g.goldAsset * (1 + goldRate));
 
@@ -3819,6 +3867,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const snipList = d.mktSnippets[g.cycleId] || d.mktSnippets.boom;
         const snippet = snipList[Math.floor(Math.random() * snipList.length)];
         let newsText = d.turnNews(g.age, (netInflow >= 0 ? '+' + fmtShort(netInflow) + ' 増加' : '-' + fmtShort(-netInflow) + ' 減少'), snippet);
+        if (inflationCashLoss > 0 || inflationDebtRelief > 0) {
+            newsText += (' 💸物価 +' + (g.inflationRate * 100).toFixed(1) + '%：現金の価値 -' + fmtShort(inflationCashLoss) + '（今の価値）' + (inflationDebtRelief > 0 ? '、借入の実質負担も -' + fmtShort(inflationDebtRelief) : '') + '。');
+        }
         if (principalPaid > 0) {
             newsText += (' 🏦ローン元本返済 -' + fmtShort(principalPaid) + '。');
         }
@@ -4571,6 +4622,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             flavorEl.style.display = 'block';
         }
         document.getElementById('res-networth').innerText = fmtMoney(nw);
+        const resNominal = document.getElementById('res-nominal');
+        if (resNominal) resNominal.innerText = gameMode === 'scenario' ? '' : ('額面（' + g.age + '歳時点の金額）では ' + fmtShort(nw * (g.priceIndex || 1)) + '。物価は25歳のときの ' + (g.priceIndex || 1).toFixed(2) + '倍になりました。');
         // FIRE達成の表示は、実際にFIREバッジが付いたかどうかで切り替える（以前は常に「完全達成！」と表示されていた）
         const resFireEl = document.getElementById('res-fire');
         if (resFireEl) {
