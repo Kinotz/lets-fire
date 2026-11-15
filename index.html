@@ -620,7 +620,7 @@
             <div style="font-size:0.875rem; color:var(--text-sub); font-weight:800;" id="lbl-res-nw">最終純資産総額</div>
             <div id="res-networth" style="color:var(--accent-green); font-size:1.9rem; font-weight:900; margin:6px 0;">¥0</div>
             <div style="font-size:0.875rem; margin-top:6px;"><span id="lbl-res-rank-label">最終資産家ランク</span>: <strong id="res-title" style="color:var(--accent-gold);">👑</strong></div>
-            <div style="font-size:0.875rem; margin-top:4px;"><span id="lbl-res-fire-label">FIRE達成</span>: <strong id="res-fire" style="color:var(--accent-blue);">完全達成！</strong></div>
+            <div style="font-size:0.875rem; margin-top:4px;"><span id="lbl-res-fire-label">FIRE達成</span>: <strong id="res-fire" style="color:var(--accent-blue);">-</strong></div>
             <div style="font-size:0.875rem; margin-top:4px;">🎖️ 獲得済み称号数: <strong id="res-titles-count" style="color:var(--accent-purple);">0 / 43</strong></div>
             <div style="font-size:0.875rem; margin-top:4px;"><span id="lbl-res-rival-label">🤖 ライバル投資家(放置インデックス)</span>: <strong id="res-rival">¥0</strong> <strong id="res-rival-result"></strong></div>
         </div>
@@ -4546,6 +4546,12 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             flavorEl.style.display = 'block';
         }
         document.getElementById('res-networth').innerText = fmtMoney(nw);
+        // FIRE達成の表示は、実際にFIREバッジが付いたかどうかで切り替える（以前は常に「完全達成！」と表示されていた）
+        const resFireEl = document.getElementById('res-fire');
+        if (resFireEl) {
+            resFireEl.innerText = fireAchieved ? '🔥 達成！（' + FIRE_DEADLINE_AGE + '歳までにFIRE目標に到達）' : '未達成（' + FIRE_DEADLINE_AGE + '歳までにFIRE目標に届かず）';
+            resFireEl.style.color = fireAchieved ? 'var(--accent-green)' : 'var(--text-sub)';
+        }
         document.getElementById('res-title').innerText = getRankTitle(rObj.lv);
         document.getElementById('res-rival').innerText = fmtShort(g.rivalNetWorth);
         const rivalResultEl = document.getElementById('res-rival-result');
