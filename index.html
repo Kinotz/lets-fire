@@ -33,9 +33,15 @@
         button, select, input, .select-card, .legend-item { touch-action: manipulation; }
         body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; margin: 0; padding: 8px 8px 80px 8px; display: flex; justify-content: center; line-height: 1.5; }
         .container { width: 100%; max-width: 580px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 12px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); position: relative; overflow: hidden; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; gap: 4px; flex-wrap: wrap; }
-        .app-title { font-size: 0.85rem; font-weight: 900; background: linear-gradient(90deg, #fde047, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; cursor: pointer; }
-        .header-right { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; gap: 6px; }
+        .app-title { font-size: 1.05rem; font-weight: 900; background: linear-gradient(90deg, #fde047, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; cursor: pointer; }
+        .header-right { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+        .app-title { background-color: transparent; border: none; padding: 0; min-height: 44px; font-family: inherit; text-align: left; }
+        .header-icon { width: 44px; height: 44px; padding: 0; font-size: 1.2rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; }
+        .menu-wrap { position: relative; }
+        .header-menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 210px; background: #0f172a; border: 1px solid var(--border); border-radius: 12px; padding: 6px; box-shadow: 0 16px 40px rgba(0,0,0,0.7); z-index: 900; display: flex; flex-direction: column; gap: 4px; }
+        .menu-item { min-height: 48px; text-align: left; padding: 10px 14px; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 10px; font-size: 0.95rem; font-weight: 800; cursor: pointer; font-family: inherit; }
+        .menu-item:active { background: #1e2d4a; }
         .icon-btn { font-size: 0.58rem; font-weight: 700; padding: 4px 6px; border-radius: 8px; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); cursor: pointer; white-space: nowrap; }
         .term-btn { font-family: inherit; cursor: pointer;  display: inline-flex; align-items: center; gap: 2px; background: rgba(56, 189, 248, 0.14); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; padding: 1px 5px; font-size: 0.58rem; font-weight: 800; cursor: pointer; vertical-align: middle; }
         .fire-badge { font-size: 0.58rem; font-weight: 900; padding: 2px 6px; border-radius: 10px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(16, 185, 129, 0.1)); color: var(--accent-green); border: 1px solid var(--accent-green); animation: pulseGlow 1.5s infinite alternate; }
@@ -242,15 +248,19 @@
 
 <div class="container" id="main-container">
     <div class="header">
-        <div class="app-title" id="lbl-app-title" onclick="backToOpening()">Lets' FIRE！</div>
+        <button type="button" class="app-title" id="lbl-app-title" onclick="backToOpening()">Lets' FIRE！</button>
         <div class="header-right">
-            <button type="button" class="icon-btn" onclick="toggleMute()" id="btn-mute" aria-pressed="false" aria-label="音を消す（ミュート）">🔊</button>
-            <button type="button" class="icon-btn" onclick="openTutorialCornerModal()" id="btn-tutorial" style="border-color:var(--accent-gold); color:var(--accent-gold);">🎓 チュートリアル</button>
-            <button type="button" class="icon-btn" onclick="openTitlesModal()" id="btn-titles" style="border-color:var(--accent-purple); color:var(--accent-purple);">🎖️ 称号(0/43)</button>
-            <button type="button" class="icon-btn" onclick="openRankingModal()" id="btn-ranking">🏆 ランキング</button>
-            <button type="button" class="icon-btn" onclick="openSoundModal()" id="btn-sound">🔊 音量</button>
-            <span class="fire-badge hidden" id="fire-badge">FIRE達成 🔥</span>
             <div class="age-badge hidden" id="header-age-badge"><span id="turn-disp">1</span>/<span id="maxturn-disp">66</span><span id="lbl-yr-unit">年</span> (<span id="age-disp">25</span><span id="lbl-age-unit">歳</span>)</div>
+            <button type="button" class="icon-btn header-icon" onclick="toggleMute()" id="btn-mute" aria-pressed="false" aria-label="音を消す（ミュート）">🔊</button>
+            <div class="menu-wrap">
+                <button type="button" class="icon-btn header-icon" id="btn-menu" onclick="toggleHeaderMenu()" aria-haspopup="true" aria-expanded="false" aria-controls="header-menu" aria-label="メニュー">☰</button>
+                <div class="header-menu hidden" id="header-menu" role="menu" aria-label="メニュー">
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openTutorialCornerModal)" id="btn-tutorial">🎓 チュートリアル</button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openTitlesModal)" id="btn-titles">🎖️ 称号(0/43)</button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openRankingModal)" id="btn-ranking">🏆 ランキング</button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openSoundModal)" id="btn-sound">🔊 音量設定</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -361,6 +371,7 @@
                     <span id="lbl-networth">純資産総額</span>
                     <button type="button" class="term-btn" onclick="openTermHelp('nw')">？意味</button>
                     <span id="corp-status-pill" class="fire-badge hidden" style="margin-left:4px;">🏢 法人化済</span>
+                    <span class="fire-badge hidden" id="fire-badge" style="margin-left:4px;">FIRE達成 🔥</span>
                 </div>
                 <div style="font-size:0.68rem;">
                     💵 <span id="lbl-free-cash">手元現金</span>: <strong id="disp-cash-top" style="color:var(--accent-blue);">¥600万</strong>
@@ -1542,6 +1553,34 @@
             } catch (e) {}
         }, 600);
     }
+
+    // --- ☰ ヘッダーメニュー（チュートリアル・称号・ランキング・音量設定）---
+    function toggleHeaderMenu(forceOpen) {
+        const menu = document.getElementById('header-menu');
+        const btn = document.getElementById('btn-menu');
+        const open = typeof forceOpen === 'boolean' ? forceOpen : menu.classList.contains('hidden');
+        menu.classList.toggle('hidden', !open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) { const first = menu.querySelector('.menu-item'); if (first) first.focus(); playSound('click'); }
+    }
+    function closeHeaderMenu(focusButton) {
+        const menu = document.getElementById('header-menu');
+        if (menu.classList.contains('hidden')) return;
+        toggleHeaderMenu(false);
+        if (focusButton) document.getElementById('btn-menu').focus();
+    }
+    // メニュー項目：メニューを閉じてから実行（閉じたモーダルからはメニューボタンにフォーカスが戻る）
+    function runMenuAction(fn) {
+        closeHeaderMenu(true);
+        fn();
+    }
+    document.addEventListener('click', function(e) {
+        const wrap = document.querySelector('.menu-wrap');
+        if (wrap && !wrap.contains(e.target)) closeHeaderMenu(false);
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('header-menu').classList.contains('hidden')) closeHeaderMenu(true);
+    });
 
     // BGMを止める（bgmWanted は保つので、タブ復帰やミュート解除で再開できる）
     function stopBGM() {
