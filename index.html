@@ -3458,8 +3458,10 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const target = getLivingCost() * ECON.retire.bucketYears;
         const need = Math.round(target - Math.max(0, g.cash) - g.goldAsset);
         if (need <= 0) return 0;
+        // 値動きの大きい資産（インデックス→個別株→暗号資産）から売って補充する
         let got = sellForCash('index', need);
         if (got < need) got += sellForCash('stocks', need - got);
+        if (got < need) got += sellForCash('crypto', need - got);
         return got;
     }
     function sellForCash(kind, need) {
@@ -3609,7 +3611,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         return {
             title: '🧺 リタイア直後の暴落にどう備えますか？',
             desc: 'リタイアしてすぐに株が大きく下がると、安くなった株を売って生活費にあてることになり、資産が回復しにくくなります（シーケンスリスク）。取り崩し方を決めておきましょう。',
-            beginnerTip: '【取り崩しのガイド】\n・バケット戦略：生活費' + yrs + '年分（' + fmtShort(L * yrs) + '）を現金と金で持っておき、株が下がった年はそこから使います。株が上がった年に株を売って補充します。\n・株中心：毎年、株から売って生活費にあてます。株の比率が高いぶん長期では増えやすい一方、下がった年にも安値で売ることになります。\nどちらを選んでも暴落の起きやすさは変わりません。平均の成績を上げる方法ではなく、暴落の年に株を安値で売らずに済むための備えです。',
+            beginnerTip: '【取り崩しのガイド】\n・バケット戦略：生活費' + yrs + '年分（' + fmtShort(L * yrs) + '）を現金と金で持っておき、株が下がった年はそこから使います。株が上がった年に株（足りなければ暗号資産）を売って補充します。\n・株中心：毎年、株から売って生活費にあてます。株の比率が高いぶん長期では増えやすい一方、下がった年にも安値で売ることになります。\nどちらを選んでも暴落の起きやすさは変わりません。平均の成績を上げる方法ではなく、暴落の年に株を安値で売らずに済むための備えです。',
             choices: [
                 { key: 'bucket', label: '🧺 生活費' + yrs + '年分を現金と金で確保する（バケット戦略）', whatIf: '株中心にしていたら、株の比率が高いぶん増えやすい一方、暴落の年にも株を売って生活費にあてることになっていました。', action: function() {
                     g.bucketMode = 'bucket';
