@@ -933,16 +933,17 @@
     //     MODE_ECON（モード補正・生活費）、ECON（インフレ・年金・退職金・リタイア）
     // ============================================================================
     // stockBoost：株価の実質成長への市場ごとの上乗せ（ゲーム上の設定）
-    // propYieldBoost：家賃利回りへの上乗せ（ゲーム上の設定）
+    // propYieldBoost：家賃利回りへの上乗せ（ゲーム上の設定）。物件の実質利回り（5.0〜6.5%）だけで現実の水準に近いので、上乗せは0にしている
+    //   （インフレで借入の実質残高が減るぶん、上乗せがあるとレバレッジをかけた不動産が一強になっていた）
     // loanInterest：不動産ローンの「名目」金利（ゲーム上の設定。借入の実質残高はインフレで毎年目減りする）
     //   米国の30年固定住宅ローン金利は2026年11月12日時点で7.11%（Freddie Mac PMMS）。ゲームの6.5%は長期の想定値
     // divRate：インデックス株の配当利回り（2026年10月30日時点の指数の配当利回りに合わせる）
     //   日本：TOPIX 1.93%（JPX「TOPIX ファクトシート」）、米国：S&P 500 約1.07%（multpl.com・二次資料）、全世界：MSCI ACWI 1.61%（MSCI ファクトシート）
     //   配当を下げた分は stockBoost（値上がり）に回し、配当込みの総リターンは変えていない
     const marketSpecs = {
-        jp: { stockBoost: 0.003, propYieldBoost: 0.015, loanInterest: 0.030, divRate: 0.019 },
+        jp: { stockBoost: 0.003, propYieldBoost: 0.000, loanInterest: 0.030, divRate: 0.019 },
         us: { stockBoost: 0.028, propYieldBoost: 0.000, loanInterest: 0.065, divRate: 0.011 },
-        gl: { stockBoost: 0.014, propYieldBoost: 0.008, loanInterest: 0.042, divRate: 0.016 }
+        gl: { stockBoost: 0.014, propYieldBoost: 0.000, loanInterest: 0.042, divRate: 0.016 }
     };
 
     // --- 市場サイクル（好況・過熱バブル・調整・不景気の4フェーズが巡回する）---
@@ -1722,14 +1723,14 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 const sp = marketSpecs[m] || marketSpecs.jp;
                 const pct = function(x) { return (Math.round(x * 1000) / 10).toFixed(1) + '%'; };
                 const head = { jp: "🇯🇵 <strong>日本市場 (JPY)</strong>", us: "🇺🇸 <strong>米国市場 (USD)</strong>", gl: "🌐 <strong>グローバル市場 (USD)</strong>" }[m] || '';
-                const feature = { jp: "家賃利回りが高めで、不動産の家賃収入が残りやすい", us: "株価の成長が大きめの、株式中心の", gl: "株価の成長・配当・不動産のバランス型の" }[m] || '';
+                const feature = { jp: "ローン金利が低めで、不動産を買いやすい", us: "株価の成長が大きめの、株式中心の", gl: "株価の成長・配当・不動産のバランス型の" }[m] || '';
                 return head + ": " + feature + "市場。株価の成長への上乗せ " + (sp.stockBoost >= 0 ? '+' : '') + pct(sp.stockBoost) + "・配当利回り " + pct(sp.divRate) + "・ローン金利 " + pct(sp.loanInterest) + "（ゲーム内の設定）。";
             },
             mktGuideTitle: "🌍 選べる3つの投資フィールド（市場）の解説",
             mktGuideBody: function() {
                 const pct = function(x) { return (Math.round(x * 1000) / 10).toFixed(1) + '%'; };
-                const line = function(m, name, note) { const sp = marketSpecs[m]; return '【' + name + '】' + note + '\n株価の成長への上乗せ ' + (sp.stockBoost >= 0 ? '+' : '') + pct(sp.stockBoost) + '・配当利回り ' + pct(sp.divRate) + '・家賃利回りへの上乗せ +' + pct(sp.propYieldBoost) + '・ローン金利（名目）' + pct(sp.loanInterest); };
-                return line('jp', '🇯🇵 日本市場 (JPY)', '家賃利回りが高めで、収益不動産のキャッシュフローが残りやすい市場です。') + '\n\n' +
+                const line = function(m, name, note) { const sp = marketSpecs[m]; return '【' + name + '】' + note + '\n株価の成長への上乗せ ' + (sp.stockBoost >= 0 ? '+' : '') + pct(sp.stockBoost) + '・配当利回り ' + pct(sp.divRate) + (sp.propYieldBoost ? '・家賃利回りへの上乗せ +' + pct(sp.propYieldBoost) : '') + '・ローン金利（名目）' + pct(sp.loanInterest); };
+                return line('jp', '🇯🇵 日本市場 (JPY)', 'ローン金利が低めで、収益不動産を買いやすい市場です。') + '\n\n' +
                     line('us', '🇺🇸 米国市場 (USD)', 'インデックス株・個別株の成長が大きめの市場です。ローン金利は長期の想定値です（2026年11月12日時点の米国30年固定住宅ローン金利は7.11%：Freddie Mac）。') + '\n\n' +
                     line('gl', '🌐 グローバル市場 (USD)', '株価の成長・配当・不動産のバランス型の市場です。') + '\n\n' +
                     '配当利回りは2026年10月30日時点の指数（TOPIX 1.93%、S&P 500 約1.07%、MSCI ACWI 1.61%）に合わせています。\n※ 成長率・金利などはこのゲーム用の設定です。現実の各国の市場の将来を示すものではありません。';
