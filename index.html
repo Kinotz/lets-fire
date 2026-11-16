@@ -1028,11 +1028,11 @@
     // --- 個別株・暗号資産の値動きモデル ---
     // 個別株：インデックスより値動きが大きく、まれに業績悪化で急落する。平均ではインデックスに勝ちにくい
     const STOCK_MODEL = { lo: -0.25, hi: 0.27, shockChance: 0.04, shockLo: 0.35, shockHi: 0.55, floor: 5 };
-    // 暗号資産：普段は上下に大きく揺れるだけ。毎年12%の確率で大暴落（-65〜-80%）、6%の確率で爆騰（+300〜+700%）が起きる。
+    // 暗号資産：普段は上下に大きく揺れるだけ。毎年12%の確率で大暴落（-65〜-80%）、4%の確率で爆騰（+300〜+500%）が起きる。
     // 価格が moonSoftCap を超えると、爆騰の倍率は小さくなり（青天井にはならない）、大暴落は highCrashMult 倍起きやすくなる。
-    // 長く持ち続けると多くの人は報われない（平均・中央値はインデックス＋金より低い）が、上位数%はインデックス＋金を大きく上回る
-    const CRYPTO_MODEL = { lo: -0.35, hi: 0.35, crashChance: 0.12, crashLo: 0.65, crashHi: 0.80, moonChance: 0.06, moonLo: 3.0, moonHi: 7.0,
-        moonSoftCap: 1000, highCrashMult: 4, cycleMult: 1.5, floor: 1 };
+    // 長く持ち続けると多くの人は報われない（中央値はインデックス＋金より低い）が、上位数%はインデックス＋金を大きく上回る（大当たりは残す）
+    const CRYPTO_MODEL = { lo: -0.35, hi: 0.35, crashChance: 0.12, crashLo: 0.65, crashHi: 0.80, moonChance: 0.04, moonLo: 3.0, moonHi: 5.0,
+        moonSoftCap: 400, highCrashMult: 4, cycleMult: 1.5, floor: 1 };
 
     // --- モード別の経済設定 ---
     // growthBoost：株・仮想通貨の毎年の成長率への補正
