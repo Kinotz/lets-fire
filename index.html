@@ -88,6 +88,7 @@
     max-width: 100%;
 }
 
+        .rank-legacy-tag { font-size: 0.75rem; font-weight: 800; color: var(--text-sub); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; white-space: nowrap; }
         .site-footer { display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 12px; font-size: 0.75rem; color: var(--text-sub); }
         .footer-link { background: none; border: none; color: var(--text-sub); font: inherit; font-size: 0.75rem; text-decoration: underline; padding: 12px 8px; min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; }
         .op-disclaimer-note { font-size: 0.75rem; color: var(--text-sub); margin: 10px 0 0; line-height: 1.45; }
@@ -4880,6 +4881,24 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         window.addEventListener('resize', function() { clearTimeout(resizeTimer); resizeTimer = setTimeout(drawChart, 100); });
     }
 
+    // --- 🏆 ランキング表示（送信する項目と Firestore のルールは変えず、表示側だけで並べ方を決める）---
+    // ルール変更（インフレ・取り崩し・新しいFIRE判定）を公開した日時。これより前の記録は「旧ルール」として区別して表示する
+    // ※ 公開した日時に合わせて直してください
+    const RANKING_RULES_V2_FROM = Date.parse('2026-11-16T00:00:00+09:00');
+    let rankingTab = 'fire';
+    function isLegacyRankingRecord(rec) {
+        const t = rec && rec.createdAt && typeof rec.createdAt.toMillis === 'function' ? rec.createdAt.toMillis() : null;
+        return t !== null && t < RANKING_RULES_V2_FROM;
+    }
+    function rankingRowHtml(rec, label) {
+        const safeName = escapeHtml((rec.name || '???').toString().slice(0, 20));
+        const fireMark = rec.fireAchieved ? ' 🔥' : '';
+        const legacy = isLegacyRankingRecord(rec) ? ' <span class="rank-legacy-tag">旧ルール</span>' : '';
+        return '<div style="display:flex; justify-content:space-between; gap:8px; padding:6px 2px; border-bottom:1px solid var(--border); font-size:0.875rem;">'
+            + '<span style="overflow-wrap:anywhere;">' + label + ' ' + safeName + fireMark + legacy + '</span>'
+            + '<span style="color:var(--accent-green); font-weight:800; white-space:nowrap;">' + fmtShort(Number(rec.netWorth) || 0) + '</span>'
+            + '</div>';
+    }
     function openRankingModal() {
         const d = i18n.ja;
         document.getElementById('info-modal-title').innerText = d.rankTitleModal;
@@ -4892,37 +4911,72 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             bodyEl.innerText = ('🚧 オンラインランキング機能は準備中です。\n\n現在のあなたの資産: ' + fmtShort(getNetWorth()));
             return;
         }
-        bodyEl.innerHTML = '<div style="padding:16px 0; text-align:center; color:var(--text-sub);">読み込み中…</div>';
-
+        bodyEl.innerHTML =
+            '<div class="ac-filter-row" style="margin-bottom:6px;">'
+            + '<button type="button" class="ac-filter-btn" id="rank-tab-fire" onclick="switchRankingTab(\'fire\')">🔥 FIRE成功者</button>'
+            + '<button type="button" class="ac-filter-btn" id="rank-tab-all" onclick="switchRankingTab(\'all\')">🌐 全体（純資産順）</button>'
+            + '</div>'
+            + '<div id="ranking-note" style="font-size:0.75rem; color:var(--text-sub); margin-bottom:6px; white-space:normal;"></div>'
+            + '<div id="ranking-list"></div>'
+            + '<div style="margin-top:10px; font-size:0.875rem; color:var(--text-sub);">現在のあなたの資産: ' + fmtShort(getNetWorth()) + '</div>';
+        switchRankingTab(rankingTab);
+    }
+    // FIRE成功者の記録を集める。複合インデックスが無い・ルールで弾かれる場合は、純資産上位から絞り込む
+    function fetchFireRankingDocs() {
+        const col = fbDb.collection('leaderboard');
+        return col.where('fireAchieved', '==', true).orderBy('netWorth', 'desc').limit(30).get({ source: 'server' })
+            .catch(function() { return col.where('fireAchieved', '==', true).limit(200).get({ source: 'server' }); })
+            .catch(function() { return col.orderBy('netWorth', 'desc').limit(30).get({ source: 'server' }); })
+            .then(function(snap) {
+                const recs = [];
+                snap.forEach(function(doc) { const r = doc.data() || {}; if (r.fireAchieved) recs.push(r); });
+                return recs;
+            });
+    }
+    function switchRankingTab(tab) {
+        rankingTab = tab === 'all' ? 'all' : 'fire';
+        ['fire', 'all'].forEach(function(k) { const b = document.getElementById('rank-tab-' + k); if (b) b.classList.toggle('active', k === rankingTab); });
+        const listEl = document.getElementById('ranking-list');
+        const noteEl = document.getElementById('ranking-note');
+        if (!listEl) return;
+        noteEl.innerText = rankingTab === 'fire'
+            ? '65歳までにFIREし、90歳まで資産を保った人だけを純資産の順に表示します。早くFIREした人ほど取り崩す年数が長いので、純資産だけでなく🔥の有無も見てください。「旧ルール」は、インフレと取り崩しを入れる前の記録です（当時のFIREの基準で🔥）。'
+            : 'すべての記録を純資産の順に表示します。働き続けた人ほど純資産は多くなりやすい点に注意。「旧ルール」は、インフレと取り崩しを入れる前の記録です。';
+        listEl.innerHTML = '<div style="padding:16px 0; text-align:center; color:var(--text-sub);">読み込み中…</div>';
+        const want = rankingTab;
         ensureFirebase().then(function(ok) {
             if (!ok) throw new Error('通信環境をご確認ください。');
-            // オフライン時に空のキャッシュを「記録なし」と表示しないよう、必ずサーバーから取得する
-            return fbDb.collection('leaderboard').orderBy('netWorth', 'desc').limit(30).get({ source: 'server' });
-        }).then(function(snapshot) {
-            if (document.getElementById('info-modal').classList.contains('hidden')) return;
-            if (snapshot.empty) {
-                bodyEl.innerHTML = '<div style="padding:16px 0; text-align:center; color:var(--text-sub);">' + ('まだ記録がありません。最初の記録者になりましょう！') + '</div>';
+            if (want === 'fire') return fetchFireRankingDocs();
+            return fbDb.collection('leaderboard').orderBy('netWorth', 'desc').limit(30).get({ source: 'server' }).then(function(snap) {
+                const recs = []; snap.forEach(function(doc) { recs.push(doc.data() || {}); }); return recs;
+            });
+        }).then(function(recs) {
+            if (rankingTab !== want || document.getElementById('info-modal').classList.contains('hidden')) return;
+            if (!recs.length) {
+                listEl.innerHTML = '<div style="padding:16px 0; text-align:center; color:var(--text-sub);">' + (want === 'fire' ? 'まだFIRE成功者の記録がありません。最初の1人になりましょう！' : 'まだ記録がありません。最初の記録者になりましょう！') + '</div>';
                 return;
             }
+            const byNw = function(a, b) { return (Number(b.netWorth) || 0) - (Number(a.netWorth) || 0); };
             const medals = ['🥇', '🥈', '🥉'];
-            let html = '<div style="max-height:320px; overflow-y:auto; text-align:left;">';
-            let rank = 0;
-            snapshot.forEach(function(doc) {
-                rank++;
-                const rec = doc.data() || {};
-                const medal = medals[rank - 1] || (rank + '.');
-                const safeName = escapeHtml((rec.name || '???').toString().slice(0, 20));
-                const fireMark = rec.fireAchieved ? ' 🔥' : '';
-                html += '<div style="display:flex; justify-content:space-between; gap:8px; padding:6px 2px; border-bottom:1px solid var(--border); font-size:0.875rem;">'
-                    + '<span style="overflow-wrap:anywhere;">' + medal + ' ' + safeName + fireMark + '</span>'
-                    + '<span style="color:var(--accent-green); font-weight:800; white-space:nowrap;">' + fmtShort(Number(rec.netWorth) || 0) + '</span>'
-                    + '</div>';
-            });
-            html += '</div><div style="margin-top:10px; font-size:0.875rem; color:var(--text-sub);">' + ('現在のあなたの資産: ') + fmtShort(getNetWorth()) + '</div>';
-            bodyEl.innerHTML = html;
+            let html = '<div style="max-height:300px; overflow-y:auto; text-align:left;">';
+            if (want === 'fire') {
+                const current = recs.filter(function(r) { return !isLegacyRankingRecord(r); }).sort(byNw).slice(0, 30);
+                const legacy = recs.filter(isLegacyRankingRecord).sort(byNw).slice(0, 30);
+                current.forEach(function(r, i) { html += rankingRowHtml(r, medals[i] || (i + 1) + '.'); });
+                if (!current.length) html += '<div style="padding:8px 2px; color:var(--text-sub); font-size:0.875rem;">新しいルールでのFIRE成功者はまだいません。</div>';
+                if (legacy.length) {
+                    html += '<div style="margin-top:10px; padding:4px 2px; font-size:0.75rem; font-weight:800; color:var(--text-sub);">▼ ルール変更前の記録（インフレ・取り崩しなし）</div>';
+                    legacy.forEach(function(r, i) { html += rankingRowHtml(r, (i + 1) + '.'); });
+                }
+            } else {
+                recs.sort(byNw).forEach(function(r, i) { html += rankingRowHtml(r, medals[i] || (i + 1) + '.'); });
+            }
+            html += '</div>';
+            listEl.innerHTML = html;
         }).catch(function(err) {
-            bodyEl.innerHTML = '';
-            bodyEl.innerText = '⚠️ ランキングの取得に失敗しました。通信環境をご確認ください。' + (err && err.code ? '（' + err.code + '）' : '');
+            if (rankingTab !== want) return;
+            listEl.innerHTML = '';
+            listEl.innerText = '⚠️ ランキングの取得に失敗しました。通信環境をご確認ください。' + (err && err.code ? '（' + err.code + '）' : '');
         });
     }
 
