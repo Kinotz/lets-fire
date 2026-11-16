@@ -371,7 +371,7 @@
         </div>
         <div class="select-card" id="mode-hard" onclick="selectMode('hard')">
             <div class="select-card-top"><span id="lbl-m-hard">🔴 ハードコア (上級者向け)</span><span class="select-tag" id="tag-m-hard">サバイバル経済</span></div>
-            <div style="font-size:0.875rem; color:var(--text-sub);" id="lbl-d-hard">【上級者向け】市場の成長が鈍く、貯蓄に回せるお金も少なめ。暴落・利上げ・詐欺などのピンチが頻発します。生活費（FIRE目標）は年500。神話級称号も狙えるプロモード。</div>
+            <div style="font-size:0.875rem; color:var(--text-sub);" id="lbl-d-hard">【上級者向け】市場の成長がやや鈍く、物価も上がりやすい。暴落・利上げ・詐欺などのピンチが頻発し、暗号資産の大当たりも起きにくい。生活費（FIRE目標）は年500。神話級称号も狙えるプロモード。</div>
         </div>
         <div class="select-card" id="mode-scenario" onclick="selectMode('scenario')">
             <div class="select-card-top"><span id="lbl-m-scenario">🕰️ ヒストリカル・シナリオ</span><span class="select-tag" id="tag-m-scenario">実際の経済危機を追体験</span></div>
@@ -1043,7 +1043,7 @@
     const MODE_ECON = {
         easy:     { growthBoost: 0.015, fireGoal: 300, savingsRate: 0.35, cryptoMoonMult: 1 },
         normal:   { growthBoost: 0.000, fireGoal: 400, savingsRate: 0.35, cryptoMoonMult: 1 },
-        hard:     { growthBoost: -0.010, fireGoal: 500, savingsRate: 0.30, cryptoMoonMult: 0.7 },
+        hard:     { growthBoost: -0.005, fireGoal: 500, savingsRate: 0.35, cryptoMoonMult: 0.7 },
         scenario: { growthBoost: 0.000, fireGoal: 300, savingsRate: 0.35, cryptoMoonMult: 1 }
     };
     const ECON = {
