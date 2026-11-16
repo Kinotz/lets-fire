@@ -2883,6 +2883,22 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         }
     }
 
+    // --- 詐欺・口座乗っ取り・所得隠しの損失：資産が大きいほど被害も大きくなる（すぐ売れる資産に対する割合。最低額あり）---
+    // ゲーム上の設定。現実の投資詐欺や証券口座の乗っ取りでは、預けた資産の大部分を失うこともある
+    const EVENT_LOSS = { scam: { min: 250, rate: 0.10 }, phishing: { min: 200, rate: 0.05 }, taxEvasion: { min: 350, rate: 0.05 } };
+    function eventLossAmount(kind) {
+        const c = EVENT_LOSS[kind];
+        return Math.max(c.min, Math.round(getLiquidAssets() * c.rate));
+    }
+    // 現金から払い、足りなければインデックス株→金を売って払う（実際に失った額を返す）
+    function takeFromLiquid(amount) {
+        let left = amount;
+        const fromCash = Math.min(Math.max(0, g.cash), left); g.cash -= fromCash; left -= fromCash;
+        const fromInd = Math.min(g.indexAsset, left); g.indexAsset -= fromInd; left -= fromInd;
+        const fromGold = Math.min(g.goldAsset, left); g.goldAsset -= fromGold; left -= fromGold;
+        return amount - left;
+    }
+
     // --- 7. 全14種の経済イベント ---
     const dynamicEvents = [
         {
@@ -2949,14 +2965,14 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             desc: "知人から『元本保証で毎月10%の配当が出る特別なAIファンドがある』と勧誘されました！",
             beginnerTip: "【危機回避ガイド】\n「元本保証で高利回り」は100%詐欺（ポンジ・スキーム）です！断れば専用称号も獲得できます！",
             choices: [
-                { label: "🛡️ 「そんなうまい話はない！」とキッパリ断る", whatIf: "もし出資していたら、現金を最大250失い、お金は二度と戻ってきませんでした。", action: function() {
+                { label: "🛡️ 「そんなうまい話はない！」とキッパリ断る", whatIf: function() { return "もし出資していたら、" + fmtShort(eventLossAmount('scam')) + "（250か、すぐ売れる資産の10%の大きい方）を失い、お金は二度と戻ってきませんでした。"; }, action: function() {
                     recordCrisisSurvived(); unlockTitle('t_scam_buster');
                     showEventResult("🕵️ 詐欺を完全回避！", "ファンドは詐欺事件として摘発されました！資産を1円も失わず、称号『🛡️ 詐欺勧誘スルー』を獲得しました！", false);
                 }},
                 { label: "🤑 一攫千金を狙って資金を振り込んでしまう", whatIf: "もし断っていたら、資産を1円も失わずに済み、専用の称号も獲得できていました。", action: function() {
                     recordCrisisSurvived();
-                    let dmg = Math.min(g.cash, 250); g.cash -= dmg;
-                    showEventResult("😭 投資詐欺で資産喪失…", "業者が逃亡し、振り込んだ -" + fmtShort(dmg) + " が騙し取られました…。", true);
+                    const dmg = takeFromLiquid(eventLossAmount('scam'));
+                    showEventResult("😭 投資詐欺で資産喪失…", "現金だけでは足りず株も売って振り込みましたが、業者が逃亡し、-" + fmtShort(dmg) + " が騙し取られました…。\n💡 投資詐欺では、持っている資産が多いほど狙われる金額も大きくなります。", true);
                 }}
             ]
         },
@@ -3030,7 +3046,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             desc: "税務署の調査官がやってきました！過去の投資利益や不動産収支の帳簿チェックが行われます！",
             beginnerTip: "【ハプニング対策ガイド】\n誠実に対応すれば称号『🧾 まじめな納税者』を獲得できます。隠蔽は重加算税の対象です！",
             choices: [
-                { label: "🧾 堂々と帳簿を開示し、誠実に税務調査へ協力する", whatIf: "もし隠蔽していたら、重加算税で現金を最大350も失っていました。", action: function() {
+                { label: "🧾 堂々と帳簿を開示し、誠実に税務調査へ協力する", whatIf: function() { return "もし隠蔽していたら、重加算税などで " + fmtShort(eventLossAmount('taxEvasion')) + "（350か、すぐ売れる資産の5%の大きい方）を失っていました。"; }, action: function() {
                     recordCrisisSurvived(); unlockTitle('t_tax_guardian');
                     if (g.isCorp) {
                         g.cash += 100;
@@ -3042,7 +3058,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 }},
                 { label: "💦 慌てて資料を隠し、利益をごまかそうとする", whatIf: "もし誠実に対応していたら、法人なら+100の還付、個人でも最大80の納付で済み、称号も獲得できていました。", action: function() {
                     recordCrisisSurvived();
-                    let heavyTax = Math.min(g.cash, 350); g.cash -= heavyTax;
+                    const heavyTax = takeFromLiquid(eventLossAmount('taxEvasion'));
                     showEventResult("🚨 重加算税の大ペナルティ…", "隠蔽が見破られ、重加算税で -" + fmtShort(heavyTax) + " を徴収されました…。", true);
                 }}
             ]
@@ -3052,15 +3068,15 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             desc: "巧妙な偽メールが届き、同時に不正ログイン攻撃が仕掛けられています！",
             beginnerTip: "【ハプニング対策ガイド】\n二段階認証とセキュリティ強化を行えば資産を守れ、称号『🔐 二段階認証ユーザー』が手に入ります！",
             choices: [
-                { label: "🔐 二段階認証とセキュリティ強化（費用 40）で完全ブロックする", whatIf: "もし対策せずにリンクを開いていたら、不正送金で現金を最大200失っていました。", action: function() {
+                { label: "🔐 二段階認証とセキュリティ強化（費用 40）で完全ブロックする", whatIf: function() { return "もし対策せずにリンクを開いていたら、口座を乗っ取られて " + fmtShort(eventLossAmount('phishing')) + "（200か、すぐ売れる資産の5%の大きい方）を失っていました。"; }, action: function() {
                     recordCrisisSurvived(); unlockTitle('t_cyber_defender');
                     let fee = Math.min(g.cash, 40); g.cash -= fee;
                     showEventResult("🔐 ハッキング完全阻止！", "セキュリティ対策（-" + fmtShort(fee) + "）で不正アクセスを遮断し、称号を獲得しました！", false);
                 }},
                 { label: "📱 対策せずにメールのリンクを開いてしまう", whatIf: "もしセキュリティ対策していたら、費用は最大40で済み、称号も獲得できていました。", action: function() {
                     recordCrisisSurvived();
-                    let stolen = Math.min(g.cash, 200); g.cash -= stolen;
-                    showEventResult("😱 口座乗っ取り被害発生…", "不正送金により現金 -" + fmtShort(stolen) + " の被害を受けました…！", true);
+                    const stolen = takeFromLiquid(eventLossAmount('phishing'));
+                    showEventResult("😱 口座乗っ取り被害発生…", "証券口座を乗っ取られ、勝手に株を売られて送金され、-" + fmtShort(stolen) + " の被害を受けました…！\n💡 二段階認証などの対策は、資産が増えるほど大切になります。", true);
                 }}
             ]
         },
