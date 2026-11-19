@@ -270,7 +270,10 @@
         .cf-cell > span { display: block; font-size: var(--fs-xs); color: var(--sub); }
         .cf-cell > span span { display: inline; }
         .cf-cell strong { font-size: var(--fs-m); font-weight: 500; }
-        .rival-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; border-top: 1px solid var(--rule); margin-top: 8px; padding-top: 8px; font-size: var(--fs-s); color: var(--sub); }
+        .rival-name { display: inline-flex; align-items: center; gap: 6px; }
+        .rival-row .rival-diff-badge { margin-left: auto; white-space: nowrap; }
+        .legend-item.is-zero { display: none; }
+        .rival-row { display: flex; justify-content: flex-start; align-items: center; flex-wrap: nowrap; gap: 8px; white-space: nowrap; border-top: 1px solid var(--rule); margin-top: 8px; padding-top: 8px; font-size: var(--fs-s); color: var(--sub); }
         .rival-diff-badge { font-size: var(--fs-xs); }
         .rival-diff-badge.ahead { color: var(--ink); }
         .rival-diff-badge.behind { color: var(--red); }
@@ -755,11 +758,12 @@
                 <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('debt')" aria-label="銀行借入の説明を見る"><span><span id="lbl-cf-debt">銀行借入</span> ⓘ</span><strong id="disp-debt" style="color:var(--accent-red);">¥0</strong></button>
             </div>
             <div class="fire-progress" id="fire-progress">
-                <div class="fire-progress-text" id="fire-progress-text">🎯 FIRE目標まで 0%</div>
+                <div class="fire-progress-text"><span id="fire-progress-text">FIRE目標まで 0%</span> <button type="button" class="term-btn" data-nav-free onclick="openTermHelp('firegoal')" aria-label="FIRE目標の条件">?</button></div>
                 <div class="fire-progress-bar"><div class="fire-progress-fill" id="fire-progress-fill" style="width:0%;"></div></div>
             </div>
             <div class="rival-row" id="rival-row">
-                <span><span id="lbl-rival">🤖 ライバル投資家(放置インデックス)</span>: <strong id="disp-rival">¥600</strong></span>
+                <span class="rival-name"><span id="lbl-rival">放置インデックス</span><button type="button" class="term-btn" data-nav-free onclick="openRivalHelp()" aria-label="放置インデックスとは">?</button></span>
+                <strong id="disp-rival">¥600</strong>
                 <span class="rival-diff-badge" id="rival-diff-badge"></span>
             </div>
         </div>
@@ -2573,6 +2577,15 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const el = document.getElementById(key === 'gold' ? 'lbl-gold-sub' : 'lbl-ind-sub');
         if (el && el.dataset.full) document.getElementById('acad-modal-desc').innerText += '\n\n【このゲームでの想定】\n' + el.dataset.full;
     }
+    function openRivalHelp() {
+        showInfo('ライバル投資家（放置インデックス）', '何もせず「放置インデックス」を続けた場合の目安です。\n600万円から全額をインデックス株で持ち、配当を再投資し、毎年' + fmtShort(RIVAL_ANNUAL_DEPOSIT) + 'を足し続けます。売ることも、取り崩すこともしません。');
+    }
+    // 大きな金額は「¥1億」「¥1.25億」のように短く書く（日本市場のとき）
+    function fmtCompact(v) {
+        v = Math.round(v);
+        if (market !== 'jp' || Math.abs(v) < 10000) return fmtShort(v);
+        return '¥' + parseFloat((v / 10000).toFixed(2)) + '億';
+    }
     function openHedgeHelp() {
         const btn = document.getElementById('btn-hedge');
         showInfo('暴落保険', (btn && btn.dataset.full) || '');
@@ -3746,7 +3759,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         document.getElementById('fire-progress-fill').style.width = pct + '%';
         let label;
         if (g.retired) label = '🏖️ ' + g.retireAge + '歳からリタイア中（生活費 ' + fmtShort(getLivingCost()) + '／年）';
-        else label = '🎯 FIRE目標まで ' + pct + '%（投資に使える資産 ' + fmtShort(inv) + '／' + fmtShort(need) + '、または不労所得CFが生活費以上）';
+        // 条件（投資に使える資産、または不労所得CFが生活費以上）は「？」の中で説明する
+        else label = 'FIRE目標まで ' + pct + '%（' + fmtCompact(inv) + '／' + fmtCompact(need) + '）';
         document.getElementById('fire-progress-text').innerText = label;
     }
     function canRetireNow() {
@@ -4348,6 +4362,10 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         document.getElementById('l-gold').innerText = d.legGold + '(' + pGold + '%)';
         document.getElementById('l-crypto').innerText = d.legCrypto + '(' + pCrypto + '%)';
         document.getElementById('l-prop').innerText = d.legProp + '(' + pProp + '%)';
+        [['l-cash', pCash], ['l-stock', pStock], ['l-gold', pGold], ['l-crypto', pCrypto], ['l-prop', pProp]].forEach(function(x) {
+            const item = document.getElementById(x[0]).closest('.legend-item');
+            if (item) item.classList.toggle('is-zero', x[1] === 0);
+        });
 
         document.getElementById('breakdown-bar').innerHTML =
             '<div class="bar-seg" style="width:' + pCash + '%; background:var(--accent-blue);"></div>' +
@@ -4381,16 +4399,16 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         }
 
         const lblRival = document.getElementById('lbl-rival');
-        if (lblRival) lblRival.innerText = d.rivalLabel;
+        if (lblRival) lblRival.innerText = '放置インデックス';
         const dispRival = document.getElementById('disp-rival');
         if (dispRival) dispRival.innerText = fmtShort(g.rivalNetWorth);
         const rivalDiffBadge = document.getElementById('rival-diff-badge');
         if (rivalDiffBadge) {
             if (netWorth >= g.rivalNetWorth) {
-                rivalDiffBadge.innerText = '✅ ' + d.rivalAheadMsg;
+                rivalDiffBadge.innerText = 'あなたが優勢';
                 rivalDiffBadge.className = 'rival-diff-badge ahead';
             } else {
-                rivalDiffBadge.innerText = '⚠️ ' + d.rivalBehindMsg;
+                rivalDiffBadge.innerText = '相手が優勢';
                 rivalDiffBadge.className = 'rival-diff-badge behind';
             }
         }
