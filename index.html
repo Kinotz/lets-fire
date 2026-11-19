@@ -782,7 +782,7 @@
             <div class="coach-box" id="coach-box">
                 <div class="coach-head">
                     <span id="lbl-coach-head">📊 AIファイナンシャル・コーチの資産診断</span>
-                    <button type="button" class="term-btn" onclick="triggerEduQuiz(true)" id="btn-take-quiz">🎓 知識クイズに挑戦</button>
+                    <button type="button" class="term-btn" onclick="triggerEduQuiz(true)" id="btn-take-quiz">知識クイズ（解説のみ）</button>
                 </div>
                 <div class="coach-body" id="coach-advice-text">
                     現在は現金100%の状態です。インフレ（物価上昇）が起きると現金の実質価値は目減りしてしまうため、まずは「全世界インデックス株」と「金（ゴールド）」に分散して複利を働かせましょう！
@@ -909,7 +909,7 @@
 <div class="modal-overlay hidden" id="quiz-modal" role="dialog" aria-modal="true" aria-labelledby="quiz-title">
     <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="quiz-title">🎓 実践マネーリテラシー検定</div>
-        <div style="font-size:0.75rem; color:var(--accent-blue); font-weight:500; margin-bottom:6px;">正解すると知識ボーナス（現金 +80）を獲得！</div>
+        <div style="font-size:0.75rem; color:var(--accent-blue); font-weight:500; margin-bottom:6px;" id="quiz-bonus-note">正解すると知識ボーナス（現金 +80）を獲得！</div>
         <div class="modal-desc" id="quiz-question" style="white-space:pre-line;">問題文</div>
         <div id="quiz-choices"></div>
     </div>
@@ -1680,6 +1680,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         setPendingFlow({ type: 'quiz', idx: qIdx, manual: !!isManual, order: order });
 
         openModalQueued('quiz-modal', function() {
+        // 現金ボーナスは5年ごとの自動クイズだけ。手動で挑戦するクイズは解説のみ（何度でも押せるため）
+        document.getElementById('quiz-bonus-note').innerText = isManual ? '練習のクイズです。ボーナスはありません。' : '正解すると知識ボーナス（現金 +80）を獲得！';
         document.getElementById('quiz-question').innerText = qObj.q;
         const cBox = document.getElementById('quiz-choices');
         cBox.innerHTML = '';
@@ -1693,7 +1695,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 quizResultShowing = true;
                 document.getElementById('quiz-modal').classList.add('hidden');
                 pendingFlow = null;
-                if (idx === qObj.ans) {
+                if (idx === qObj.ans && isManual) {
+                    showEventResult("⭕ 正解（手動のクイズは解説のみ）", qObj.exp, false);
+                } else if (idx === qObj.ans) {
                     if (g.quizBonusEarned < QUIZ_BONUS_CAP) {
                         let bonus = Math.min(80, QUIZ_BONUS_CAP - g.quizBonusEarned);
                         g.cash += bonus;
