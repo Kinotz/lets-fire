@@ -144,8 +144,17 @@
         #result-view { padding: 4px 0 8px; }
         .res-ring-wrap { display: flex; justify-content: center; margin-top: 4px; }
         .res-span { text-align: center; font-size: var(--fs-s); color: var(--sub); margin-top: 4px; }
-        .res-title { font-family: var(--font-serif); font-weight: 500; font-size: 1.375rem; margin: 14px 0 6px; line-height: 1.5; }
-        .res-main { border-top: 1.5px solid var(--ink); padding-top: 10px; }
+        .res-title { font-family: var(--font-serif); font-weight: 500; font-size: 1.375rem; margin: 6px 0 8px; line-height: 1.5; }
+        .res-fire-line { font-size: var(--fs-m); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+        .res-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; font-size: var(--fs-s); color: var(--sub); padding: 8px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin: 4px 0 0; }
+        .res-meta #res-title, .res-meta #res-titles-count { color: var(--ink); }
+        .res-rival { padding: 10px 0; border-bottom: 1px solid var(--rule); margin-bottom: 6px; }
+        .res-rival-line { font-size: var(--fs-s); color: var(--sub); }
+        .res-rival-line #res-rival { color: var(--ink); }
+        .res-donate { text-align: center; margin-top: 18px; }
+        .ending-flavor-text .more-link { font-family: var(--font-sans); }
+
+        .res-main { border-top: 1.5px solid var(--ink); padding: 10px 0 4px; }
         .res-nw { font-size: 2rem; line-height: 1.25; }
         .res-nw .u { font-size: 1rem; margin-left: 2px; }
         .res-nominal { font-size: var(--fs-s); color: var(--sub); margin: 2px 0 8px; }
@@ -857,25 +866,23 @@
 
     <!-- 3. ゲームリザルト画面 -->
     <div id="result-view" class="hidden">
-        <div class="res-ring-wrap"><svg id="res-ring" class="life-ring" width="240" height="240" viewBox="0 0 240 240" role="img" aria-label="一生の年輪"></svg></div>
-        <div class="res-span" id="res-span">25歳 ─ 90歳</div>
         <h2 class="res-title" id="lbl-res-title">66年の記帳を終えました</h2>
-        <div class="ending-flavor-text" id="ending-flavor-text" style="display:none;"></div>
         <div class="res-main">
             <div class="hero-lbl" id="lbl-res-nw">最終純資産（今の価値＝25歳時点の物価）</div>
             <div class="res-nw" id="res-networth">¥0</div>
-            <div class="res-nominal" id="res-nominal"></div>
+            <div class="res-nominal" id="res-nominal-row"><span id="res-nominal"></span> <button type="button" class="term-btn" onclick="showInfo('額面と物価', document.getElementById('res-nominal-row').dataset.full || '')" aria-label="額面と物価の説明">?</button></div>
+            <div class="res-fire-line"><span id="lbl-res-fire-label" class="hidden">FIRE</span><span id="res-fire">-</span> <button type="button" class="term-btn" onclick="showInfo('FIREとリタイアの結果', document.getElementById('res-fire').dataset.full || '')" aria-label="FIREとリタイアの結果の詳しい説明">?</button><span class="hidden" id="res-retire"></span></div>
         </div>
-        <table class="res-table">
-            <tr><th id="lbl-res-fire-label">FIRE</th><td id="res-fire">-</td></tr>
-            <tr><th>リタイア</th><td id="res-retire"></td></tr>
-            <tr><th id="lbl-res-rank-label">資産家ランク</th><td id="res-title"></td></tr>
-            <tr><th>称号</th><td id="res-titles-count">0 / 43</td></tr>
-            <tr><th id="lbl-res-rival-label">放置インデックス</th><td><span id="res-rival">¥0</span> <span id="res-rival-result"></span></td></tr>
-            <tr class="res-rival-why-row"><td colspan="2"><div class="res-rival-why hidden" id="res-rival-why"></div></td></tr>
-        </table>
+        <div class="res-ring-wrap"><svg id="res-ring" class="life-ring" width="240" height="240" viewBox="0 0 240 240" role="img" aria-label="一生の年輪"></svg></div>
+        <div class="res-span" id="res-span">25歳 ─ 90歳</div>
+        <div class="ending-flavor-text" id="ending-flavor-text" style="display:none;"></div>
+        <div class="res-meta"><span><span id="lbl-res-rank-label">資産家ランク</span> <span id="res-title"></span></span><span>称号 <span id="res-titles-count">0 / 43</span></span></div>
         <div class="best-record-banner" id="best-record-banner" style="display:none;">
             <div id="best-record-text">自己ベスト: ¥0</div>
+        </div>
+        <div class="res-rival">
+            <div class="res-rival-line"><span id="lbl-res-rival-label">放置インデックス</span> <span id="res-rival">¥0</span> <span id="res-rival-result"></span></div>
+            <div class="res-rival-why hidden" id="res-rival-why"></div>
         </div>
         <div class="res-section" id="ranking-submit-box">
             <div class="sheet-sub" id="lbl-ranking-submit-title">みんなのランキングに登録する</div>
@@ -888,7 +895,6 @@
             <button type="button" class="asset-btn" onclick="copyShareText()" id="btn-copy-share">文章をコピー</button>
             <button type="button" class="asset-btn" onclick="generateShareCard()" id="btn-gen-share-card">画像にする</button>
         </div>
-        <button type="button" class="text-btn" onclick="openTitlesModal()" id="btn-res-titles"><svg class="ico s"><use href="#i-seal"/></svg>称号の一覧を見る</button>
         <div class="promo-box aff-elem hidden" style="margin-bottom:12px;">
             <span class="promo-badge">PR</span>
             <div class="promo-title" id="lbl-res-promo-title">次は、現実の資産形成へ</div>
@@ -898,9 +904,10 @@
                 <button type="button" class="promo-link-btn secondary" onclick="openMonetizeLink('book')" id="btn-res-aff-book">入門書を見る</button>
             </div>
         </div>
-        <button type="button" class="promo-link-btn donate-btn donate-elem hidden" style="margin-bottom:12px;" onclick="openMonetizeLink('donate')" id="btn-res-donate">面白かったら、開発者を応援する</button>
-        <div class="res-disclaimer-note">この結果はゲーム内の設定によるもので、現実の将来の運用成果を示すものではありません。 <button type="button" class="footer-link" style="min-height:0;padding:0" onclick="openDisclaimerModal()" id="btn-res-disclaimer">免責事項</button></div>
-        <button type="button" class="next-btn" style="margin-top:16px;" onclick="location.reload()" id="lbl-retry-btn">もう一度はじめる</button>
+        <button type="button" class="text-btn" onclick="openTitlesModal()" id="btn-res-titles"><svg class="ico s"><use href="#i-seal"/></svg>称号の一覧を見る</button>
+        <button type="button" class="next-btn" style="margin-top:8px;" onclick="location.reload()" id="lbl-retry-btn">もう一度はじめる</button>
+        <div class="res-disclaimer-note">ゲーム内の設定による結果です。<button type="button" class="more-link" onclick="showInfo('この結果について', RESULT_NOTE_FULL)" id="btn-res-disclaimer">詳しく</button></div>
+        <div class="res-donate"><button type="button" class="footer-link donate-elem hidden" onclick="openMonetizeLink('donate')" id="btn-res-donate">面白かったら、開発者を応援する</button></div>
     </div>
 
     <div id="ad-banner-slot" class="ad-banner-slot hidden">
@@ -2586,6 +2593,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         if (market !== 'jp' || Math.abs(v) < 10000) return fmtShort(v);
         return '¥' + parseFloat((v / 10000).toFixed(2)) + '億';
     }
+    const RESULT_NOTE_FULL = 'この結果はゲーム内の設定によるもので、現実の将来の運用成果を示すものではありません。';
     function openHedgeHelp() {
         const btn = document.getElementById('btn-hedge');
         showInfo('暴落保険', (btn && btn.dataset.full) || '');
@@ -5488,7 +5496,15 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const fireAchieved = getFinalFireAchieved();
         const flavorEl = document.getElementById('ending-flavor-text');
         if (flavorEl) {
-            flavorEl.innerText = getEndingFlavor(nw, fireAchieved);
+            const flavor = getEndingFlavor(nw, fireAchieved);
+            const first = (flavor.match(/^[\s\S]*?[。！？]/) || [flavor])[0];
+            flavorEl.innerText = first;
+            if (first.length < flavor.length) {
+                const more = document.createElement('button');
+                more.type = 'button'; more.className = 'more-link'; more.innerText = '続き';
+                more.onclick = function() { flavorEl.innerText = flavor; };
+                flavorEl.appendChild(more);
+            }
             flavorEl.style.display = 'block';
         }
         document.getElementById('res-networth').innerHTML = heroMoneyHTML(nw);
@@ -5509,7 +5525,12 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             void last;
         }
         const resNominal = document.getElementById('res-nominal');
-        if (resNominal) resNominal.innerText = gameMode === 'scenario' ? '' : ('額面（' + g.age + '歳時点の金額）では ' + fmtShort(nw * (g.priceIndex || 1)) + '。物価は25歳のときの ' + (g.priceIndex || 1).toFixed(2) + '倍になりました。');
+        if (resNominal) {
+            const row = document.getElementById('res-nominal-row');
+            row.classList.toggle('hidden', gameMode === 'scenario');
+            row.dataset.full = '額面（' + g.age + '歳時点の金額）では ' + fmtShort(nw * (g.priceIndex || 1)) + '。物価は25歳のときの ' + (g.priceIndex || 1).toFixed(2) + '倍になりました。';
+            resNominal.innerText = '額面 ' + fmtShort(nw * (g.priceIndex || 1));
+        }
         // FIREの結果：成功／途中で資産が尽きた／FIREではないリタイア／リタイアせず
         const resFireEl = document.getElementById('res-fire');
         if (resFireEl) {
@@ -5527,6 +5548,19 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             resRetireEl.innerText = gameMode === 'scenario' ? '' : (g.retireAge || g.freeYears
                 ? (g.retireAge ? g.retireAge + '歳' : '-') + '／自由に過ごせた年数：' + (g.freeYears || 0) + '年' + (g.depletedEver ? '（途中で資産が尽きたことあり）' : '')
                 : 'せず（最後まで働いた）／自由に過ごせた年数：0年');
+        }
+        if (resFireEl) {
+            const free = g.freeYears || 0;
+            const freeTxt = free > 0 ? '・自由に' + free + '年' : '';
+            let line;
+            if (gameMode === 'scenario') line = 'FIRE：対象外（シナリオ）';
+            else if (fireAchieved) line = 'FIRE成功（' + g.fireAchievedAge + '歳）' + freeTxt;
+            else if (g.fireAchievedAge) line = 'FIRE後に資産切れ' + freeTxt;
+            else if (g.retireAge) line = 'FIRE未達成・' + g.retireAge + '歳で引退' + freeTxt;
+            else line = 'FIRE未達成・リタイアせず働き続けた';
+            const retireText = resRetireEl ? resRetireEl.innerText : '';
+            resFireEl.dataset.full = 'FIRE：' + resFireEl.innerText + (retireText ? '\nリタイア：' + retireText : '');
+            resFireEl.innerText = line;
         }
         document.getElementById('res-title').innerText = getRankTitle(rObj.lv);
         document.getElementById('res-rival').innerText = fmtShort(g.rivalNetWorth);
