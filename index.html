@@ -136,6 +136,7 @@
         .pr-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; padding: 8px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--paper); border-top: 1px solid var(--rule); display: flex; gap: 8px; justify-content: center; }
         .pr-actions > * { flex: 1 1 0; max-width: 528px; min-height: 56px; }
         .pr-actions .asset-btn { font-size: var(--fs-m); }
+        .ev-tip-btn { color: var(--sub); margin: -6px 0 8px -4px; text-decoration: underline; text-underline-offset: 3px; }
         .unlock-k { font-size: var(--fs-xs); color: var(--red); letter-spacing: 0.12em; margin-bottom: 2px; }
         .hint-ring { outline: 2px solid var(--red) !important; outline-offset: 3px; transition: outline-color 0.6s; }
         .gate-note { font-size: var(--fs-xs); color: var(--sub); margin: 10px 0 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid var(--rule); padding-top: 8px; }
@@ -1006,6 +1007,7 @@
     <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="ev-title">臨時マーケットイベント</div>
         <div class="modal-desc" id="ev-desc">説明文</div>
+        <button type="button" class="text-btn ev-tip-btn hidden" id="btn-ev-tip" onclick="revealEventTip()">？ 対策ガイドを見る</button>
         <div id="ev-beginner-tip" class="modal-note">💡 解説</div>
         <div id="ev-choices"></div>
     </div>
@@ -3948,6 +3950,11 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         if (g.history && g.history.nw) yearNotes[g.history.nw.length - 1] = shortTitle(ev.title);
         document.getElementById('ev-desc').innerText = ev.desc;
         document.getElementById('ev-beginner-tip').innerText = ev.beginnerTip;
+        // ランダムに起きるイベントの対策ガイドは答えを先に書いているので、スタンダード以上では「？」を押したときだけ見せる
+        // （ライフイベントとリタイア後の選択は、ルールを知るための説明なので常に見せる）
+        const hideTip = gameMode !== 'easy' && !!pendingFlow && pendingFlow.type === 'event' && !!ev.beginnerTip;
+        document.getElementById('ev-beginner-tip').classList.toggle('hidden', hideTip);
+        document.getElementById('btn-ev-tip').classList.toggle('hidden', !hideTip);
         const cBox = document.getElementById('ev-choices');
         cBox.innerHTML = '';
         ev.choices.forEach(function(c) {
@@ -4027,6 +4034,10 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         renderEventModal(ev);
     }
 
+    function revealEventTip() {
+        document.getElementById('ev-beginner-tip').classList.remove('hidden');
+        document.getElementById('btn-ev-tip').classList.add('hidden');
+    }
     let quizResultShowing = false;
     function showEventResult(subtitle, desc, isBad) {
         if (!quizResultShowing) yearEventResult = { turn: g.turn, subtitle: stripEmoji(subtitle || '').trim(), isBad: !!isBad };
