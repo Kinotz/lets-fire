@@ -127,6 +127,18 @@
         .year-l1, .year-l2 { font-size: var(--fs-m); line-height: 1.7; }
         .year-l2 { color: var(--sub); }
         .year-l1 .minus, .year-l2 .minus { color: var(--red); }
+        /* 練習の5年 */
+        #practice-view { padding-top: 2px; }
+        .pr-top { display: flex; justify-content: space-between; align-items: center; }
+        .pr-label { font-family: var(--font-serif); font-size: 1.125rem; }
+        .pr-ring-wrap { width: 220px; height: 220px; }
+        .pr-ring-wrap .life-ring { width: 220px; height: 220px; }
+        .pr-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; padding: 8px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--paper); border-top: 1px solid var(--rule); display: flex; gap: 8px; justify-content: center; }
+        .pr-actions > * { flex: 1 1 0; max-width: 528px; min-height: 56px; }
+        .pr-actions .asset-btn { font-size: var(--fs-m); }
+        .unlock-k { font-size: var(--fs-xs); color: var(--red); letter-spacing: 0.12em; margin-bottom: 2px; }
+        .hint-ring { outline: 2px solid var(--red) !important; outline-offset: 3px; transition: outline-color 0.6s; }
+        .gate-note { font-size: var(--fs-xs); color: var(--sub); margin: 10px 0 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid var(--rule); padding-top: 8px; }
         /* 結果画面 */
         #result-view { padding: 4px 0 8px; }
         .res-ring-wrap { display: flex; justify-content: center; margin-top: 4px; }
@@ -526,7 +538,27 @@
                 <div style="font-size:0.75rem; color:var(--text-sub); margin-top:4px;" id="lbl-challenge-desc">通常プレイ：すべての資産クラスを自由に活用できます。</div>
             </div>
         </details>
-        <button type="button" class="start-game-btn" onclick="startInitialSimulation()" id="lbl-start-btn">この設定ではじめる</button>
+        <button type="button" class="start-game-btn" onclick="beginFromSetup()" id="lbl-start-btn">この設定ではじめる</button>
+    </div>
+
+    <!-- 練習の5年：本番とは別の数字で、積み立て→増える→暴落→回復を一度だけ体験する -->
+    <div id="practice-view" class="hidden" aria-live="polite">
+        <div class="pr-top"><span class="pr-label" id="pr-label">練習の5年</span><button type="button" class="text-btn" id="pr-skip" onclick="endPractice(true)">練習をとばす</button></div>
+        <div class="ring-wrap pr-ring-wrap"><svg id="pr-ring" class="life-ring" width="220" height="220" viewBox="0 0 220 220" aria-hidden="true"></svg></div>
+        <div class="hero-nums">
+            <div class="hero-left">
+                <div class="hero-lbl">練習の残高（本番には残りません）</div>
+                <div class="hero-nw" id="pr-nw">¥600<span class="u">万</span></div>
+                <div class="hero-delta" id="pr-delta"></div>
+            </div>
+            <div class="hero-right"><div class="hero-lbl">うち株</div><div class="hero-pct" id="pr-stock">¥0万</div></div>
+        </div>
+        <div class="year-card" id="pr-card">
+            <div class="year-k" id="pr-k"></div>
+            <div class="year-l1" id="pr-l1"></div>
+            <div class="year-l2" id="pr-l2"></div>
+        </div>
+        <div class="pr-actions" id="pr-actions"></div>
     </div>
 
     <!-- 2. ゲームプレイ画面 -->
@@ -667,7 +699,7 @@
 
         <button type="button" class="hedge-btn" id="btn-hedge" onclick="toggleHedge()">🛡️ 暴落保険に加入（株の年間下落5%超を補償）</button>
 
-            <div class="asset-note-wrap"></div>
+            <div class="gate-note hidden" id="gate-note"><span id="gate-note-text"></span><button type="button" class="text-btn" data-nav-free onclick="openAllFeatures()">全部開く</button></div>
                 </div>
             </div>
         </div>
@@ -901,11 +933,12 @@
 <!-- 🎓 チュートリアルコーナーモーダル -->
 <div class="modal-overlay hidden" id="tutorial-corner-modal" role="dialog" aria-modal="true" aria-labelledby="lbl-tut-corner-title">
     <div tabindex="-1" class="modal-card">
-        <div class="modal-title" id="lbl-tut-corner-title">🎓 チュートリアル ＆ 攻略ステップ</div>
-        <div class="modal-desc" id="lbl-tut-corner-sub" style="margin-bottom:10px;">強制ナビゲーションは最初の1回のみです。ここではいつでも基本ステップを見返したり、データを初期化して最初からやり直せます！</div>
+        <div class="modal-title" id="lbl-tut-corner-title">遊び方</div>
+        <div class="modal-desc" id="lbl-tut-corner-sub" style="margin-bottom:10px;">練習はいつでもやり直せます。本番の数字には影響しません。</div>
         <div id="tutorial-steps-list" style="max-height:240px; overflow-y:auto; margin-bottom:10px;"></div>
-        <button type="button" class="asset-btn buy" style="width:100%; padding:10px; font-weight:500; margin-bottom:6px;" id="btn-restart-nav" onclick="restartInteractiveTutorial()">🔄 ステップナビを最初から再体験する</button>
-        <button type="button" class="asset-btn sell" style="width:100%; padding:9px; font-weight:500; margin-bottom:8px;" onclick="resetAllSavedData()" id="btn-reset-from-tut">🗑️ 全データ（称号・チュートリアル）を初期化する</button>
+        <button type="button" class="asset-btn buy" style="width:100%; margin-bottom:6px;" id="btn-restart-nav" onclick="restartInteractiveTutorial()">練習の5年をもう一度</button>
+        <button type="button" class="asset-btn hidden" style="width:100%; margin-bottom:6px;" id="btn-open-all" onclick="openAllFeatures()">段階的な解放をやめて、全部開く</button>
+        <button type="button" class="asset-btn sell" style="width:100%; margin-bottom:8px;" onclick="resetAllSavedData()" id="btn-reset-from-tut">全データ（称号・記録）を初期化する</button>
         <button type="button" class="next-btn" onclick="closeTutorialCornerModal()" id="btn-tut-corner-close">閉じる</button>
     </div>
 </div>
@@ -938,6 +971,17 @@
         <div class="modal-desc" id="nav-pop-desc" style="white-space:pre-line;">説明</div>
         <button type="button" class="start-game-btn" style="margin-top:4px; padding:12px;" onclick="closeNavPopup()" id="btn-nav-ok">OK！光っているボタンを押す →</button>
         <button type="button" class="icon-btn" style="margin-top:8px; width:100%; padding:8px; color:var(--text-sub);" onclick="skipTutorialNow()" id="btn-nav-skip-modal">⏭️ チュートリアルをスキップして自由に遊ぶ</button>
+    </div>
+</div>
+
+<!-- 新しく開いた機能の1枚 -->
+<div class="modal-overlay hidden" id="unlock-modal" role="dialog" aria-modal="true" aria-labelledby="unlock-title">
+    <div tabindex="-1" class="modal-card">
+        <div class="unlock-k" id="unlock-k">新しく開いた</div>
+        <div class="modal-title" id="unlock-title"></div>
+        <div class="modal-desc" id="unlock-desc" style="white-space:pre-line;"></div>
+        <button type="button" class="next-btn" id="btn-unlock-try" onclick="tryUnlockedFeature()">見てみる</button>
+        <button type="button" class="text-btn" style="width:100%; justify-content:center;" id="btn-unlock-later" onclick="closeUnlockModal()">あとで</button>
     </div>
 </div>
 
@@ -2563,6 +2607,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     function resumeSavedGame() {
         const data = loadSavedGameData();
         if (!data) { refreshContinueButton(); return; }
+        gatingThisGame = !anyTutDone() && !hasBestRecords();
         resetHeroState();
         const academy = g.academy;
         Object.assign(g, data.g);
@@ -2584,8 +2629,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         gameMode = data.gameMode || 'easy';
         market = data.market || 'jp';
         if (data.scenarioId && historicalScenarios[data.scenarioId]) selectedScenarioId = data.scenarioId;
-        navStep = data.navStep || 99;
-        isForcedTutorialActive = !!data.tutorialActive;
+        // 旧い版の強制ナビの途中で保存されていても、続きからはナビなしで遊ぶ
+        navStep = 99;
+        isForcedTutorialActive = false;
         ipoAppliedThisTurn = !!data.ipoApplied;
         usedQuizIndices = Array.isArray(data.usedQuiz) ? data.usedQuiz : [];
         sponsorClaimed = !!data.sponsorClaimed;
@@ -2638,6 +2684,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     }
 
     function startInitialSimulation() {
+        gatingThisGame = !isExistingPlayer();
         resetHeroState();
         const nameInput = document.getElementById('player-name-input').value.trim();
         if (nameInput) g.name = nameInput;
@@ -2703,13 +2750,6 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             updateUI();
             playSound('action');
             showScenarioIntro();
-        } else if (!hasCompletedTutorialBefore()) {
-            isForcedTutorialActive = true;
-            navStep = 1;
-            document.getElementById('btn-skip-tut').classList.remove('hidden');
-            updateUI();
-            playSound('action');
-            triggerNavStepPopup();
         } else {
             isForcedTutorialActive = false;
             navStep = 99;
@@ -2743,15 +2783,15 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     }
 
     function openTutorialCornerModal() {
-        const navDict = navI18n.ja;
-        const scenario = gameMode === 'easy' ? navDict.easy : navDict.adv;
+        closeHeaderMenu(false);
+        HOWTO_BASICS[3].desc = '投資に使える資産が生活費の' + ECON.retire.fireMultiple + '倍に届くと目標到達。\n' + FIRE_DEADLINE_AGE + '歳までにリタイアすると達成。';
         const listEl = document.getElementById('tutorial-steps-list');
         listEl.innerHTML = '';
-        Object.keys(scenario).forEach(function(k) {
-            const stepObj = scenario[k];
-            if (!stepObj.targetId) return;
-            listEl.innerHTML += '<div class="tut-step-card"><strong>' + stepObj.title + '</strong><div style="color:var(--sub); white-space:pre-line;">' + stepObj.desc + '</div></div>';
+        HOWTO_BASICS.concat(FEATURE_GATES.map(function(f) { return { title: f.title, desc: f.desc }; })).forEach(function(c) {
+            listEl.innerHTML += '<div class="tut-step-card"><strong>' + c.title + '</strong><div style="color:var(--sub); white-space:pre-line;">' + c.desc + '</div></div>';
         });
+        const openAll = document.getElementById('btn-open-all');
+        if (openAll) openAll.classList.toggle('hidden', !gatingActive());
         document.getElementById('tutorial-corner-modal').classList.remove('hidden');
         playSound('click');
     }
@@ -2763,12 +2803,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
 
     function restartInteractiveTutorial() {
         document.getElementById('tutorial-corner-modal').classList.add('hidden');
-        if (!isGameStarted) startInitialSimulation();
-        isForcedTutorialActive = true;
-        navStep = 1;
-        document.getElementById('btn-skip-tut').classList.remove('hidden');
-        switchTab('portfolio');
-        triggerNavStepPopup();
+        startPractice(isGameStarted ? 'replay-game' : 'replay-title');
     }
 
     // --- 6. ナビ制御＆メインゲーム進行 ---
@@ -4009,6 +4044,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         'rankup-modal': function() { closeRankUpModal(); },
         'event-result-modal': function() { closeEventResultModal(); },
         'academy-modal': function() { closeAcademyModal(); },
+        'unlock-modal': function() { closeUnlockModal(); },
         'info-modal': function() { document.getElementById('info-modal').classList.add('hidden'); },
         'app-dialog': function() { closeDialog(false); }
         // 'event-modal' と 'quiz-modal' は選択が必要なので背景タップ・Escでは閉じない
@@ -5313,6 +5349,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
 
     function endGame() {
         isGameFinished = true;
+        // 一度最後まで遊んだら、次からは機能を最初から全部見せる
+        if (gameMode !== 'scenario') markTutorialCompleted();
         clearSavedGame();
         if (gameMode !== 'scenario') unlockTitle('t_life_master');
         checkAllTitlesAndRank();
@@ -5540,6 +5578,254 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
 
 
 
+
+    // ===== 遊び方：初めての人には「練習の5年」、機能は年齢に合わせて少しずつ開く =====
+    const HOWTO_BASICS = [
+        { title: '一年を記す', desc: '押すと一年進み、年輪が一本増える。\n純資産が減った年は、灰色の細い輪になる。' },
+        { title: '資産を育てる', desc: '株や金を買う・売る場所。\n迷ったら、インデックス株を少しずつ。' },
+        { title: '記録を見る', desc: '内訳・グラフ・これまでの記帳を見る場所。' },
+        { title: 'FIRE', desc: '' }
+    ];
+    const FEATURE_GATES = [
+        { key: 'career', age: 26, tab: 'career', target: 'career-up-btn', title: 'キャリア', desc: '自分に投資すると、毎年の給与が上がる。\n費用は先にかかるが、長く効く。' },
+        { key: 'realestate', age: 28, tab: 'realestate', target: null, title: '不動産', desc: '頭金2割で物件を買い、毎年家賃を受け取る。\n借入があるので、空室と金利に注意。' },
+        { key: 'stocks', age: 30, tab: 'stocks', modes: ['normal', 'hard'], target: null, title: '個別株・IPO', desc: '一社に集中すると、大きく上下する。\n全体の一部にとどめるのが基本。' },
+        { key: 'crypto', age: 32, tab: 'crypto', modes: ['normal', 'hard'], target: null, title: '仮想通貨', desc: '値動きがとても大きい資産。\n失っても困らない額だけにする。' },
+        { key: 'hedge', age: 35, tab: null, target: 'btn-hedge', title: '暴落保険', desc: '保険料を払うと、株の大きな下落の一部が戻る。\n入るかどうかは毎年決める。' }
+    ];
+    function anyTutDone() {
+        try { return localStorage.getItem('uws_tut_done_easy_v1') === '1' || localStorage.getItem('uws_tut_done_adv_v1') === '1'; } catch (e) { return true; }
+    }
+    // セーブ・称号・自己ベスト・チュートリアル完了のどれかがあれば、すでに遊んだことがある人
+    function isExistingPlayer() {
+        try {
+            if (anyTutDone()) return true;
+            if (localStorage.getItem('uws_save_game_v1')) return true;
+            const t = localStorage.getItem('uws_unlocked_titles_v1');
+            if (t && t !== '{}') return true;
+            const b = localStorage.getItem('uws_best_records_v1');
+            if (b && b !== '{}') return true;
+        } catch (e) { return true; }
+        return false;
+    }
+    // このゲームで段階的に開くか（始めた時点で決める。セーブには入れず、続きからは「最後まで遊んだ記録がない」ことで判断する）
+    let gatingThisGame = false;
+    function hasBestRecords() { try { const b = localStorage.getItem('uws_best_records_v1'); return !!(b && b !== '{}'); } catch (e) { return true; } }
+    function gatingActive() {
+        return gatingThisGame && isGameStarted && gameMode !== 'scenario' && (g.challengeMode || 'none') === 'none' && !anyTutDone();
+    }
+    function gateAllowedInMode(f) { return !f.modes || f.modes.indexOf(gameMode) >= 0; }
+    function isFeatureOpen(f) { return !gatingActive() || g.age >= f.age; }
+    let gateSeen = null;   // この画面で「開いた」と知らせた機能
+    function applyGates() {
+        if (!isGameStarted) return;
+        FEATURE_GATES.forEach(function(f) {
+            const open = gateAllowedInMode(f) && isFeatureOpen(f);
+            if (f.tab) {
+                const btn = document.getElementById('tab-btn-' + f.tab);
+                if (btn) btn.classList.toggle('hidden', !open);
+                const panel = document.getElementById('tab-' + f.tab);
+                if (!open && panel && !panel.classList.contains('hidden')) switchTab('portfolio');
+            } else if (f.key === 'hedge' && !open) {
+                const hb = document.getElementById('btn-hedge');
+                if (hb) hb.classList.add('hidden');
+            }
+        });
+        const note = document.getElementById('gate-note');
+        if (note) {
+            const next = gatingActive() ? FEATURE_GATES.filter(function(f) { return gateAllowedInMode(f) && g.age < f.age; })[0] : null;
+            note.classList.toggle('hidden', !next);
+            if (next) document.getElementById('gate-note-text').innerText = '次に開くもの：' + next.age + '歳で' + next.title;
+            // すべて開いたら、次のゲームからは最初から全部見せる
+            if (gatingActive() && !next) markTutorialCompleted();
+        }
+        if (gateSeen === null) {
+            gateSeen = {};
+            FEATURE_GATES.forEach(function(f) { if (gateAllowedInMode(f) && isFeatureOpen(f)) gateSeen[f.key] = true; });
+        }
+    }
+    function announceNewFeatures() {
+        if (!gateSeen) return;
+        FEATURE_GATES.forEach(function(f) {
+            if (gateSeen[f.key] || !gateAllowedInMode(f) || !isFeatureOpen(f)) return;
+            gateSeen[f.key] = true;
+            openModalQueued('unlock-modal', function() {
+                unlockShowing = f;
+                document.getElementById('unlock-title').innerText = f.title;
+                document.getElementById('unlock-desc').innerText = f.desc;
+                playSound('stamp');
+            });
+        });
+    }
+    let unlockShowing = null;
+    function closeUnlockModal() { document.getElementById('unlock-modal').classList.add('hidden'); }
+    function tryUnlockedFeature() {
+        const f = unlockShowing;
+        closeUnlockModal();
+        if (!f) return;
+        openSheet('assets');
+        if (f.tab) switchTab(f.tab);
+        setTimeout(function() {
+            let el = f.target ? document.getElementById(f.target) : null;
+            if (!el && f.tab) el = document.querySelector('#tab-' + f.tab + ' .asset-btn.buy:not([disabled]), #tab-' + f.tab + ' .asset-btn.buy');
+            if (!el) return;
+            el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            el.classList.add('hint-ring');
+            setTimeout(function() { el.classList.remove('hint-ring'); }, 3500);
+        }, 120);
+    }
+    function openAllFeatures() {
+        markTutorialCompleted();
+        applyGates();
+        const openAll = document.getElementById('btn-open-all');
+        if (openAll) openAll.classList.add('hidden');
+        showToast('すべての機能を開きました。次のゲームからも最初から使えます。', 'ok');
+    }
+
+    // ===== 練習の5年（本番の数字・称号・ランキングには一切さわらない）=====
+    const PRACTICE_RATES = [0.08, 0.06, -0.30, 0.20, 0.15];
+    const PRACTICE_SAVE = 120;
+    let pr = null;
+    function shouldOfferPractice() { return gameMode !== 'scenario' && !isExistingPlayer(); }
+    function beginFromSetup() {
+        if (shouldOfferPractice()) startPractice('first');
+        else startInitialSimulation();
+    }
+    function startPractice(mode) {
+        pr = { mode: mode, step: 0, cash: 600, idx: 0, hist: [600], held: true, prevTotal: 600 };
+        ['opening-view', 'setup-view', 'market-bar-wrap', 'game-view'].forEach(function(id) { const el = document.getElementById(id); if (el) el.classList.add('hidden'); });
+        closeSheet();
+        document.getElementById('practice-view').classList.remove('hidden');
+        window.scrollTo(0, 0);
+        renderPractice(false);
+    }
+    function endPractice(skipped) {
+        const mode = pr ? pr.mode : 'first';
+        pr = null;
+        document.getElementById('practice-view').classList.add('hidden');
+        if (mode === 'first') { startInitialSimulation(); return; }
+        if (mode === 'replay-game') { document.getElementById('game-view').classList.remove('hidden'); renderHero(); return; }
+        document.getElementById('opening-view').classList.remove('hidden');
+        void skipped;
+    }
+    function practiceTotal() { return pr.cash + pr.idx; }
+    function practiceAltTotal() {
+        // 暴落の年に、もう一方を選んでいたら
+        let cash = 300, idx = 300;
+        PRACTICE_RATES.forEach(function(r, i) {
+            idx = Math.round(idx * (1 + r));
+            cash += PRACTICE_SAVE;
+            if (i === 2 && pr.held) { cash += idx; idx = 0; }
+        });
+        return cash + idx;
+    }
+    function practiceButton(label, onClick, quiet) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = quiet ? 'asset-btn' : 'next-btn';
+        b.innerText = label;
+        b.onclick = onClick;
+        return b;
+    }
+    function practiceAdvanceYear() {
+        const i = pr.step - 2;
+        const r = PRACTICE_RATES[i];
+        pr.prevTotal = practiceTotal();
+        pr.lastGain = Math.round(pr.idx * (1 + r)) - pr.idx;
+        pr.idx += pr.lastGain;
+        pr.cash += PRACTICE_SAVE;
+        pr.hist.push(practiceTotal());
+        pr.step++;
+        renderPractice(true);
+    }
+    function renderPractice(animate) {
+        if (!pr) return;
+        const k = document.getElementById('pr-k'), l1 = document.getElementById('pr-l1'), l2 = document.getElementById('pr-l2');
+        const box = document.getElementById('pr-actions');
+        box.innerHTML = '';
+        const total = practiceTotal();
+        const yearNo = pr.hist.length - 1;
+        l1.classList.remove('minus');
+        let lines;
+        switch (pr.step) {
+            case 0:
+                lines = ['練習の5年', '本番の前に、5年だけ練習します。', '数字は練習用です。本番には残りません。'];
+                box.appendChild(practiceButton('はじめる', function() { pr.step = 1; renderPractice(false); }));
+                break;
+            case 1:
+                lines = ['積み立てる', '手元の600万円のうち、300万円で株を買う。', '世界中の会社を少しずつ持つ「インデックス株」です。'];
+                box.appendChild(practiceButton('300万円分 買う', function() { pr.cash = 300; pr.idx = 300; pr.step = 2; pr.bought = true; renderPractice(false); playSound('year-good'); }));
+                break;
+            default: {
+                const i = pr.step - 2;   // 次に進める年
+                if (pr.bought) {
+                    pr.bought = false;
+                    lines = ['積み立てる', '株を300万円分持った。', 'ここから一年ずつ進めます。'];
+                    box.appendChild(practiceButton('一年を記す', practiceAdvanceYear));
+                    break;
+                }
+                const r = PRACTICE_RATES[i - 1];
+                const g1 = '株価 ' + pctStr(r) + '。株が ' + fmtDelta(pr.lastGain) + '。';
+                if (i === 1) lines = ['練習 ' + yearNo + '年目', g1, '給与からも ＋' + PRACTICE_SAVE + '万を貯めた。輪が一本増えた。'];
+                else if (i === 2) lines = ['練習 ' + yearNo + '年目', g1, '持っているだけで、増えた分がまた増える。'];
+                else if (i === 3 && !pr.decided) {
+                    lines = ['練習 ' + yearNo + '年目', g1, '暴落です。あなたならどうする？'];
+                    l1.classList.add('minus');
+                    box.appendChild(practiceButton('持ち続ける', function() { pr.decided = true; pr.held = true; renderPractice(false); }, true));
+                    box.appendChild(practiceButton('売って現金にする', function() { pr.decided = true; pr.held = false; pr.cash += pr.idx; pr.idx = 0; renderPractice(false); }, true));
+                    break;
+                } else if (i === 3) {
+                    lines = pr.held
+                        ? ['練習 ' + yearNo + '年目', '売らずに持ち続けた。', '下がったのは値段だけ。まだ何も失っていない。']
+                        : ['練習 ' + yearNo + '年目', '株を売って現金にした。', '下がった値段で売ったので、損が確定した。'];
+                } else if (i === 4) {
+                    lines = pr.held
+                        ? ['練習 ' + yearNo + '年目', g1, '持ち続けた株が戻ってきた。']
+                        : ['練習 ' + yearNo + '年目', '株価 ' + pctStr(r) + '。', '株を持っていないので、戻りを受け取れない。'];
+                } else if (i === 5) {
+                    const alt = practiceAltTotal();
+                    const diff = total - alt;
+                    lines = ['練習 おしまい', '5年で ' + fmtShort(600) + ' → ' + fmtShort(total) + '。',
+                        (pr.held ? '暴落の年に売っていたら ' + fmtShort(alt) + '（' + fmtDelta(-diff) + '）だった。' : '持ち続けていたら ' + fmtShort(alt) + '（' + fmtDelta(-diff) + '）だった。')];
+                    box.appendChild(practiceButton('もう一度', function() { startPractice(pr.mode); }, true));
+                    box.appendChild(practiceButton(pr.mode === 'first' ? '本番をはじめる' : '戻る', function() { endPractice(false); }));
+                    break;
+                }
+                if (i <= 4) box.appendChild(practiceButton('一年を記す', practiceAdvanceYear));
+            }
+        }
+        k.innerText = lines[0]; l1.innerText = lines[1]; l2.innerText = lines[2];
+        document.getElementById('pr-label').innerText = pr.step >= 7 ? '練習の5年' : '練習の5年';
+        document.getElementById('pr-skip').classList.toggle('hidden', pr.step >= 7);
+        // 数字と年輪
+        const nwEl = document.getElementById('pr-nw');
+        const deltaEl = document.getElementById('pr-delta');
+        document.getElementById('pr-stock').innerText = fmtShort(pr.idx);
+        const last = drawRings(document.getElementById('pr-ring'), pr.hist, { size: 220, target: 1000, color: '#7B5E41', crash: '#A49E93', targetColor: '#D8CFBF', seed: 5 });
+        const dv = total - pr.prevTotal;
+        if (pr.hist.length >= 2 && animate) { deltaEl.innerText = '前の年から ' + fmtDelta(dv); deltaEl.classList.toggle('minus', dv < 0); }
+        else if (!animate && pr.step < 2) { deltaEl.innerText = ''; }
+        const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (animate && !reduce) {
+            if (last) {
+                let len = 0; try { len = last.getTotalLength(); } catch (e) {}
+                if (len) { last.style.strokeDasharray = len; last.style.strokeDashoffset = len; last.getBoundingClientRect(); last.style.transition = 'stroke-dashoffset ' + (dv < 0 ? 1.1 : 0.8) + 's ease-out'; last.style.strokeDashoffset = '0'; }
+            }
+            const from = pr.prevTotal, to = total, t0 = performance.now(), dur = dv < 0 ? 900 : 700;
+            const stepFn = function(now) {
+                const kk = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - kk, 3);
+                nwEl.innerHTML = heroMoneyHTML(from + (to - from) * e);
+                if (kk < 1) requestAnimationFrame(stepFn);
+            };
+            requestAnimationFrame(stepFn);
+            const card = document.getElementById('pr-card');
+            card.classList.remove('enter'); void card.offsetWidth; card.classList.add('enter');
+            playSound(dv < 0 ? 'year-bad' : 'year-good');
+        } else {
+            nwEl.innerHTML = heroMoneyHTML(total);
+        }
+    }
+
     // ===== 下から出るシート =====
     let openSheetName = null;
     let sheetReturnFocus = null;
@@ -5661,7 +5947,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     function getYearSummaryLines() {
         const y = lastYear;
         if (!y || y.turn !== g.turn) {
-            if (g.turn <= 1) return ['初めの残高は' + fmtShort(g.history && g.history.nw ? g.history.nw[0] : 600) + '。', '「一年を記す」で一年が進みます。'];
+            if (g.turn <= 1) return ['初めの残高は' + fmtShort(g.history && g.history.nw ? g.history.nw[0] : 600) + '。', gatingActive() ? '「資産を育てる」で株を買ってから、一年を記す。' : '「一年を記す」で一年が進みます。'];
             const raw = (document.getElementById('news-strip') || {}).innerText || '';
             const body = stripEmoji(raw.replace(/^[\s\S]*?】\s*/, '')).trim();
             return [(body.split(/(?<=[。！])/)[0] || '').trim(), ''];
@@ -5714,6 +6000,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const bad = from !== null && to < from;
         checkMilestones(from, to);
         renderHero();
+        announceNewFeatures();
         const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         // 輪：外側の数本を、内側から順に描く
         const svg = document.getElementById('life-ring');
@@ -5806,7 +6093,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     }
     function resetHeroState() {
         lastYear = null; yearEventResult = null; yearMilestoneText = '';
-        fireStampMax = null; nwStampMax = null;
+        fireStampMax = null; nwStampMax = null; gateSeen = null;
         yearAnim.pending = false; yearAnim.from = null; yearAnim.rings = 0;
         Object.keys(yearNotes).forEach(function(k) { delete yearNotes[k]; });
         const box = document.getElementById('ring-stamps');
@@ -5843,6 +6130,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const mk = document.getElementById('rec-market');
         if (mk) mk.innerText = ({ jp: '日本市場', us: '米国市場', gl: '全世界市場' })[market] || '市場';
         if (openSheetName === 'record') renderLedger();
+        applyGates();
     }
     function renderLedger() {
         const tb = document.getElementById('ledger-body');
