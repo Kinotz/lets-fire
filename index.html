@@ -357,7 +357,11 @@
         .turn-bar-inner .next-btn { flex: 1 1 auto; min-width: 0; }
         .turn-bar-inner .skip-btn { flex: 0 0 auto; width: auto; min-width: 0; background: transparent; color: var(--ink); border: 1px solid var(--rule-strong); font-size: var(--fs-s); letter-spacing: 0; padding: 8px 12px; }
         .turn-bar .next-btn { min-height: 56px; }
-        .hedge-btn { background: transparent; border: 1px solid var(--rule-strong); color: var(--ink); width: 100%; padding: 8px 10px; font-size: var(--fs-s); border-radius: var(--r-s); cursor: pointer; margin: 4px 0 8px; text-align: left; }
+        .more-link { background: none; border: none; padding: 0 0 0 6px; font: inherit; font-size: var(--fs-xs); color: var(--sub); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; white-space: nowrap; position: relative; }
+        .more-link::after { content: ''; position: absolute; left: -4px; right: -4px; top: -12px; bottom: -12px; }
+        .hedge-row { display: flex; align-items: center; gap: 10px; margin: 4px 0 8px; }
+        .hedge-row:has(.hedge-btn.hidden) { display: none; }
+        .hedge-btn { background: transparent; border: 1px solid var(--rule-strong); color: var(--ink); flex: 1; width: auto; padding: 8px 10px; font-size: var(--fs-s); border-radius: var(--r-s); cursor: pointer; text-align: left; }
         .hedge-btn.active { border-color: var(--green); box-shadow: inset 3px 0 0 var(--green); }
         .hot-flame-tag { font-size: var(--fs-xs); padding: 0 5px; border-radius: var(--r-s); color: var(--red); border: 1px solid var(--red); margin-left: 4px; }
         .vol-row { margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid var(--rule); }
@@ -636,9 +640,9 @@
         <!-- タブ1: 王道投資 -->
         <div id="tab-portfolio" class="panel-box">
             <div style="font-size:1rem; font-weight:500; margin-bottom:4px;">🌎 <span id="lbl-core-title">王道の資産運用</span> <button type="button" class="term-btn" onclick="openTermHelp('allocation')" id="btn-help-port">💡 ポートフォリオとは？</button></div>
-            <div style="font-size:0.875rem; color:var(--text-sub); margin-bottom:8px;" id="lbl-core-desc">ボタンを押して「インデックス株」と「金(ゴールド)」を購入しましょう！暴落や急な出費に備えて「金」と「手元現金」も残すのがコツです。</div>
+            <div class="hidden" style="font-size:0.875rem; color:var(--text-sub); margin-bottom:8px;" id="lbl-core-desc">ボタンを押して「インデックス株」と「金(ゴールド)」を購入しましょう！暴落や急な出費に備えて「金」と「手元現金」も残すのがコツです。</div>
             <div class="asset-card">
-                <div class="asset-card-top"><span class="asset-name">📈 <span id="lbl-ind-name">全世界インデックス株</span> <button type="button" class="term-btn" onclick="openTermHelp('index')">?</button></span><span class="asset-holding-val" id="val-index-hold">保有: ¥0</span></div>
+                <div class="asset-card-top"><span class="asset-name">📈 <span id="lbl-ind-name">全世界インデックス株</span> <button type="button" class="term-btn" onclick="openAssetHelp('index')" aria-label="インデックス株の説明とゲーム内の想定">?</button></span><span class="asset-holding-val" id="val-index-hold">保有: ¥0</span></div>
                 <div class="asset-sub-info"><span id="lbl-ind-sub">ゲーム内の想定: 値上がり＋配当（年ごとに上下します）</span><span id="lbl-ind-tag" class="hidden">王道の主力資産</span></div>
                 <div class="asset-actions">
                     <button type="button" class="asset-btn buy" id="btn-buy-ind-100" onclick="tradeCore('ind', 100)">購入 (+100)</button>
@@ -647,7 +651,7 @@
                 </div>
             </div>
             <div class="asset-card">
-                <div class="asset-card-top"><span class="asset-name">🪙 <span id="lbl-gold-name">安全資産・金 (ゴールド)</span> <button type="button" class="term-btn" onclick="openTermHelp('gold')">?</button></span><span class="asset-holding-val" id="val-gold-hold">保有: ¥0</span></div>
+                <div class="asset-card-top"><span class="asset-name">🪙 <span id="lbl-gold-name">安全資産・金 (ゴールド)</span> <button type="button" class="term-btn" onclick="openAssetHelp('gold')" aria-label="金の説明とゲーム内の想定">?</button></span><span class="asset-holding-val" id="val-gold-hold">保有: ¥0</span></div>
                 <div class="asset-sub-info"><span id="lbl-gold-sub">ゲーム内の想定: 値上がりのみ（配当なし）</span><span id="lbl-gold-tag" class="hidden">暴落時の守り神</span></div>
                 <div class="asset-actions">
                     <button type="button" class="asset-btn buy" id="btn-buy-gold-50" onclick="tradeCore('gold', 50)">購入 (+50)</button>
@@ -655,7 +659,7 @@
                     <button type="button" class="asset-btn sell" id="btn-sell-gold" onclick="tradeCore('gold', -50)">売却 (-50)</button>
                 </div>
             </div>
-            <div class="asset-note" id="lbl-asset-note">※ 上の数字はこのゲーム用の設定で、物価上昇分を除いた「実質」です（額面ではこれに物価上昇が加わります）。現実の将来の成績を示したり保証したりするものではありません。</div>
+            <div class="asset-note" id="lbl-asset-note">数字はゲーム用の設定（物価を除いた実質）<button type="button" class="more-link" data-nav-free onclick="showInfo('数字について', ASSET_NOTE_FULL)">詳しく</button></div>
             <div class="sponsor-reward-bar hidden" id="sponsor-reward-bar">
                 <div style="font-size:0.875rem; font-weight:500; color:var(--amber);" id="lbl-sponsor-bar-txt">🎁 【1回限定】おすすめ投資コラム(PR)をチェックして臨時資金 +200 を受け取ろう！</div>
                 <button type="button" class="sponsor-reward-btn" onclick="claimSponsorBonus()" id="btn-sponsor-claim">PRを見て +200 獲得</button>
@@ -707,7 +711,7 @@
             </div>
         </div>
 
-        <button type="button" class="hedge-btn" id="btn-hedge" onclick="toggleHedge()">🛡️ 暴落保険に加入（株の年間下落5%超を補償）</button>
+        <div class="hedge-row"><button type="button" class="hedge-btn" id="btn-hedge" onclick="toggleHedge()">暴落保険に加入</button><button type="button" class="term-btn" data-nav-free onclick="openHedgeHelp()" id="btn-hedge-help" aria-label="暴落保険の条件">?</button></div>
 
             <div class="gate-note hidden" id="gate-note"><span id="gate-note-text"></span><button type="button" class="text-btn" data-nav-free onclick="openAllFeatures()">全部開く</button></div>
                 </div>
@@ -1251,15 +1255,19 @@
         const goldEl = document.getElementById('lbl-gold-sub');
         if (!indEl || !goldEl) return;
         if (gameMode === 'scenario') {
-            indEl.innerText = 'ゲーム内の想定: 実際の危機をもとにした、年ごとに決まった値動き＋配当';
-            goldEl.innerText = 'ゲーム内の想定: 実際の危機をもとにした、年ごとに決まった値動き（配当なし）';
+            indEl.dataset.full = 'ゲーム内の想定: 実際の危機をもとにした、年ごとに決まった値動き＋配当';
+            goldEl.dataset.full = 'ゲーム内の想定: 実際の危機をもとにした、年ごとに決まった値動き（配当なし）';
+            indEl.innerText = '実際の危機の値動き・配当あり';
+            goldEl.innerText = '実際の危機の値動き・配当なし';
             return;
         }
         const ind = getAssetExpectation('index');
         const modeNote = ind.modeAdj ? '・モード補正' + fmtPct(ind.modeAdj) + 'を含む' : '';
-        indEl.innerText = 'ゲーム内の想定（実質）: 値上がり 年平均' + fmtPct(ind.mean) + '（年ごとに' + fmtPct(ind.lo) + '〜' + fmtPct(ind.hi) + modeNote + '）＋配当' + (ind.div * 100).toFixed(1) + '%。暴落などのイベントは別';
+        indEl.dataset.full = 'ゲーム内の想定（実質）: 値上がり 年平均' + fmtPct(ind.mean) + '（年ごとに' + fmtPct(ind.lo) + '〜' + fmtPct(ind.hi) + modeNote + '）＋配当' + (ind.div * 100).toFixed(1) + '%。暴落などのイベントは別';
+        indEl.innerText = '年平均 ' + fmtPct(ind.mean) + '・配当 ' + (ind.div * 100).toFixed(1) + '%';
         const gold = getAssetExpectation('gold');
-        goldEl.innerText = 'ゲーム内の想定（実質）: 値上がり 年平均' + fmtPct(gold.mean) + '（年ごとに' + fmtPct(gold.lo) + '〜' + fmtPct(gold.hi) + '）・配当なし';
+        goldEl.dataset.full = 'ゲーム内の想定（実質）: 値上がり 年平均' + fmtPct(gold.mean) + '（年ごとに' + fmtPct(gold.lo) + '〜' + fmtPct(gold.hi) + '）・配当なし';
+        goldEl.innerText = '年平均 ' + fmtPct(gold.mean) + '・配当なし';
     }
 
     // --- 個別株・暗号資産の値動きモデル ---
@@ -2550,6 +2558,25 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         playSound('click');
     }
 
+    // 「？」「詳しく」で、短くした説明の全文を見せる
+    const ASSET_NOTE_FULL = '※ 上の数字はこのゲーム用の設定で、物価上昇分を除いた「実質」です（額面ではこれに物価上昇が加わります）。現実の将来の成績を示したり保証したりするものではありません。';
+    function showInfo(title, body) {
+        document.getElementById('info-modal-title').innerText = title;
+        const b = document.getElementById('info-modal-body');
+        b.innerHTML = '';
+        b.innerText = body;
+        document.getElementById('info-modal').classList.remove('hidden');
+        playSound('click');
+    }
+    function openAssetHelp(key) {
+        openTermHelp(key);
+        const el = document.getElementById(key === 'gold' ? 'lbl-gold-sub' : 'lbl-ind-sub');
+        if (el && el.dataset.full) document.getElementById('acad-modal-desc').innerText += '\n\n【このゲームでの想定】\n' + el.dataset.full;
+    }
+    function openHedgeHelp() {
+        const btn = document.getElementById('btn-hedge');
+        showInfo('暴落保険', (btn && btn.dataset.full) || '');
+    }
     function getTutStorageKey() { return gameMode === 'easy' ? 'uws_tut_done_easy_v1' : 'uws_tut_done_adv_v1'; }
     function markTutorialCompleted() { try { localStorage.setItem(getTutStorageKey(), '1'); } catch (e) {} }
     function hasCompletedTutorialBefore() { try { return localStorage.getItem(getTutStorageKey()) === '1'; } catch (e) { return false; } }
@@ -4371,7 +4398,11 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const hedgeBtn = document.getElementById('btn-hedge');
         if (hedgeBtn) {
             hedgeBtn.classList.toggle('hidden', gameMode === 'scenario');
+            // ボタンには費用（加入中は状態）だけを出し、補償の条件は「？」で見せる
             hedgeBtn.innerText = g.hedgeActive
+                ? '保険加入中（タップで解約）'
+                : '暴落保険に加入 ' + fmtShort(quoteHedgePremium()) + '/年';
+            hedgeBtn.dataset.full = g.hedgeActive
                 ? d.hedgeBtnOn(fmtShort(g.hedgeCover || g.indexAsset))
                 : d.hedgeBtnOff(fmtShort(quoteHedgePremium()), (getHedgeRate() * 100).toFixed(1));
             hedgeBtn.className = 'hedge-btn' + (g.hedgeActive ? ' active' : '') + (gameMode === 'scenario' ? ' hidden' : '');
