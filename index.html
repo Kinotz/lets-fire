@@ -1044,6 +1044,8 @@
         <div class="event-result-banner" id="ev-res-banner-box">
             <div style="font-size:1rem; font-weight:500; color:var(--accent-gold); margin-bottom:4px;" id="ev-res-subtitle">大成功！</div>
             <div style="font-size:1rem; color:var(--ink); line-height:1.7; white-space:pre-line;" id="ev-res-desc">詳細</div>
+            <button type="button" class="more-link hidden" id="btn-ev-res-more" onclick="openEventResultMore()" style="padding-left:0; margin-top:6px;">続き</button>
+            <div class="hidden" style="font-size:1rem; color:var(--ink); line-height:1.7; white-space:pre-line; margin-top:10px;" id="ev-res-more"></div>
         </div>
         <button type="button" class="next-btn" onclick="closeEventResultModal()" id="btn-ev-res-ok">確認して進む →</button>
     </div>
@@ -4042,10 +4044,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 const hedgePay = lastIndexShock ? applyHedgeLoss(lastIndexShock.rate) : 0;
                 lastIndexShock = null;
                 updateUI();
-                if (whatIfText) {
-                    const descEl = document.getElementById('ev-res-desc');
-                    if (descEl) descEl.innerText = descEl.innerText + "\n\n📊 もし別の選択をしていたら:\n" + whatIfText;
-                }
+                if (whatIfText) addEventResultMore("📊 もし別の選択をしていたら:\n" + whatIfText);
                 if (hedgePay > 0) {
                     const descH = document.getElementById('ev-res-desc');
                     if (descH) descH.innerText = descH.innerText + "\n\n🛡️ 暴落保険が発動！今年の株の下落のうち5%を超えた分として +" + fmtShort(hedgePay) + " が支払われました。";
@@ -4053,8 +4052,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 if (pendingCrisisLesson) {
                     pendingCrisisLesson = false;
                     const lesson = onePointLessons.firstCrisisSurvived;
-                    const descEl2 = document.getElementById('ev-res-desc');
-                    if (descEl2 && lesson) descEl2.innerText = descEl2.innerText + "\n\n💡 " + lesson.title + "\n" + lesson.desc;
+                    if (lesson) addEventResultMore("💡 " + lesson.title + "\n" + lesson.desc);
                 }
             };
             cBox.appendChild(btn);
@@ -4107,6 +4105,18 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         document.getElementById('ev-beginner-tip').classList.remove('hidden');
         document.getElementById('btn-ev-tip').classList.add('hidden');
     }
+    // イベント結果の「続き」（もし別の選択をしていたら・学び）
+    function addEventResultMore(text) {
+        const more = document.getElementById('ev-res-more');
+        if (!more) return;
+        // 隠れている要素の innerText は改行が消えるので、textContent で持つ（表示は white-space: pre-line）
+        more.textContent = more.textContent ? more.textContent + '\n\n' + text : text;
+        if (more.classList.contains('hidden')) document.getElementById('btn-ev-res-more').classList.remove('hidden');
+    }
+    function openEventResultMore() {
+        document.getElementById('ev-res-more').classList.remove('hidden');
+        document.getElementById('btn-ev-res-more').classList.add('hidden');
+    }
     let quizResultShowing = false;
     function showEventResult(subtitle, desc, isBad) {
         if (!quizResultShowing) yearEventResult = { turn: g.turn, subtitle: stripEmoji(subtitle || '').trim(), isBad: !!isBad };
@@ -4116,6 +4126,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             if (bannerBox) bannerBox.className = isBad ? 'event-result-banner bad' : 'event-result-banner';
             document.getElementById('ev-res-subtitle').innerText = subtitle;
             document.getElementById('ev-res-desc').innerText = desc;
+            const more = document.getElementById('ev-res-more');
+            more.textContent = ''; more.classList.add('hidden');
+            document.getElementById('btn-ev-res-more').classList.add('hidden');
             playSound(isBad ? 'bad' : 'action');
         });
     }
