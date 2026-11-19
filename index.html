@@ -150,9 +150,13 @@
         .res-nw .u { font-size: 1rem; margin-left: 2px; }
         .res-nominal { font-size: var(--fs-xs); color: var(--sub); margin: 2px 0 8px; }
         .res-table { width: 100%; border-collapse: collapse; font-size: var(--fs-s); margin-bottom: 12px; }
-        .res-table th { text-align: left; font-weight: 400; color: var(--sub); width: 7.5em; padding: 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+        .res-table th { text-align: left; font-weight: 400; color: var(--sub); width: 8.5em; white-space: nowrap; padding: 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
         .res-table td { padding: 7px 0; border-bottom: 1px solid var(--rule); }
         .res-section { padding: 6px 0 12px; }
+        .res-rival-why { font-size: var(--fs-xs); color: var(--sub); line-height: 1.7; white-space: pre-line; }
+        .res-table tr.res-rival-why-row td { padding-top: 0; }
+        .res-table tr:has(+ tr.res-rival-why-row) td, .res-table tr:has(+ tr.res-rival-why-row) th { border-bottom: none; }
+        .res-table tr.res-rival-why-row:has(.res-rival-why.hidden) { display: none; }
         .res-share { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
         /* 一年の演出 */
         .life-ring.ring-grew { animation: ringGrew 0.7s ease-out; }
@@ -857,6 +861,7 @@
             <tr><th id="lbl-res-rank-label">資産家ランク</th><td id="res-title"></td></tr>
             <tr><th>称号</th><td id="res-titles-count">0 / 43</td></tr>
             <tr><th id="lbl-res-rival-label">放置インデックス</th><td><span id="res-rival">¥0</span> <span id="res-rival-result"></span></td></tr>
+            <tr class="res-rival-why-row"><td colspan="2"><div class="res-rival-why hidden" id="res-rival-why"></div></td></tr>
         </table>
         <div class="best-record-banner" id="best-record-banner" style="display:none;">
             <div id="best-record-text">自己ベスト: ¥0</div>
@@ -1801,6 +1806,14 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         playSound('rankup');
     }
 
+    // 放置インデックス（600万円から全額インデックス、毎年 RIVAL_ANNUAL_DEPOSIT を足し、取り崩さない）に届かなかった理由
+    function getRivalGapReason() {
+        const dep = fmtShort(RIVAL_ANNUAL_DEPOSIT);
+        if (g.retireAge) return ['相手は90歳まで毎年' + dep + 'を足し、取り崩さない。', 'あなたは' + g.retireAge + '歳から生活費を取り崩した。'];
+        const total = getTotalAssets();
+        if (total > 0 && g.cash / total >= 0.4) return ['現金の割合が多く、物価で目減りした。', '相手はずっと株だけを持ち続けた。'];
+        return ['相手は一度も売らず、毎年' + dep + 'を足し続けた。', 'あなたの売買やイベントの出費が差になった。'];
+    }
     let titleToastTimer = null;
     function openTitlesModal() {
         const listEl = document.getElementById('titles-list-container');
@@ -5461,6 +5474,13 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         }
         document.getElementById('res-title').innerText = getRankTitle(rObj.lv);
         document.getElementById('res-rival').innerText = fmtShort(g.rivalNetWorth);
+        // 放置インデックスに届かなかったときだけ、理由を2行で出す（数値とルールは変えない）
+        const whyEl = document.getElementById('res-rival-why');
+        if (whyEl) {
+            const lines = nw < g.rivalNetWorth ? getRivalGapReason() : null;
+            whyEl.classList.toggle('hidden', !lines);
+            whyEl.innerText = lines ? lines.join('\n') : '';
+        }
         const rivalResultEl = document.getElementById('res-rival-result');
         if (rivalResultEl) {
             if (nw >= g.rivalNetWorth) {
