@@ -683,9 +683,9 @@
             <div style="font-size:1rem; font-weight:500; margin-bottom:6px;">🚀 <span id="lbl-stock-title">ハイテク個別株 & リアルIPO抽選</span> <button type="button" class="term-btn" onclick="openTermHelp('ipo')">?</button></div>
             <div id="stocks-container"></div>
             <div style="border-top:1px solid var(--rule); padding:10px 0 0; margin-top:8px;">
-                <div style="font-size:1rem; font-weight:500; color:var(--accent-purple);" id="lbl-ipo-head">🌟 IPO（新規公開株）ブックビルディング抽選（年1回・当選率 8%）</div>
-                <div style="font-size:0.875rem; color:var(--text-sub); margin-bottom:6px; line-height:1.7;" id="lbl-ipo-sub">【現実のIPOルールを再現】抽選参加自体は無料（外れてもお金は減りません）ですが、申込には<strong>「買付余力（手元現金 300以上）」</strong>が必要です。当選時は80%で初値高騰（+150〜+350）、20%で<strong>公募割れ（-40〜-80の損失）</strong>となります！</div>
-                <button type="button" class="asset-btn buy" style="width:100%; padding:8px; font-weight:500;" onclick="tryIPO()" id="lbl-ipo-btn">IPOブックビルディングに申し込む（要買付余力: 現金300）</button>
+                <div style="font-size:1rem; font-weight:500; color:var(--accent-purple);" id="lbl-ipo-head">IPO抽選（年1回） <button type="button" class="term-btn" onclick="showInfo('IPO抽選', IPO_RULES_FULL)" aria-label="IPO抽選の条件">?</button></div>
+                <div class="hidden" style="font-size:0.875rem; color:var(--text-sub); margin-bottom:6px; line-height:1.7;" id="lbl-ipo-sub" hidden>【現実のIPOルールを再現】抽選参加自体は無料（外れてもお金は減りません）ですが、申込には<strong>「買付余力（手元現金 300以上）」</strong>が必要です。当選時は80%で初値高騰（+150〜+350）、20%で<strong>公募割れ（-40〜-80の損失）</strong>となります！</div>
+                <button type="button" class="asset-btn buy" style="width:100%; padding:8px; font-weight:500;" onclick="tryIPO()" id="lbl-ipo-btn">IPOに申し込む（現金300以上）</button>
             </div>
         </div>
 
@@ -2602,6 +2602,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const st = document.getElementById('retire-status');
         if (st && st.dataset.full) document.getElementById('acad-modal-desc').innerText += '\n\n【いまの見込み】\n' + st.dataset.full;
     }
+    const IPO_RULES_FULL = '🌟 IPO（新規公開株）ブックビルディング抽選（年1回・当選率 8%）\n\n【現実のIPOルールを再現】抽選参加自体は無料（外れてもお金は減りません）ですが、申込には「買付余力（手元現金 300以上）」が必要です。当選時は80%で初値高騰（+150〜+350）、20%で公募割れ（-40〜-80の損失）となります！';
     function openHedgeHelp() {
         const btn = document.getElementById('btn-hedge');
         showInfo('暴落保険', (btn && btn.dataset.full) || '');
@@ -4258,10 +4259,10 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const btn = document.getElementById('lbl-ipo-btn');
         if (!btn) return;
         if (ipoAppliedThisTurn) {
-            btn.innerText = '今年のIPO抽選は申込済み（また来年挑戦できます）';
+            btn.innerText = '今年は申込済み（来年また申し込める）';
             btn.setAttribute('disabled', 'true');
         } else {
-            btn.innerText = 'IPOブックビルディングに申し込む（要買付余力: 現金300）';
+            btn.innerText = 'IPOに申し込む（現金300以上）';
             btn.removeAttribute('disabled');
         }
     }
