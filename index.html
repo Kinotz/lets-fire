@@ -50,6 +50,7 @@
         strong, b { font-weight: 600; }
         .serif { font-family: var(--font-serif); }
         .header:has(#header-age-badge:not(.hidden)) .app-title { display: none; }
+        .header:not(:has(#header-age-badge:not(.hidden))) #btn-menu-learn { display: none; }
         .age-badge .age-num { font-size: 1.5rem; color: var(--ink); font-weight: 500; letter-spacing: 0.01em; }
         .age-badge .age-unit { font-size: var(--fs-m); color: var(--ink); margin: 0 10px 0 2px; }
         .container { width: 100%; max-width: 560px; padding: 8px 16px 12px; position: relative; }
@@ -102,6 +103,70 @@
         .site-footer { display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 12px; font-size: var(--fs-xs); color: var(--sub); }
         .footer-link { background: none; border: none; color: var(--sub); font: inherit; font-size: var(--fs-xs); text-decoration: underline; text-underline-offset: 3px; padding: 12px 8px; min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; }
         .asset-note { font-size: var(--fs-xs); color: var(--sub); line-height: 1.6; margin: 4px 0 8px; }
+        /* ===== 主画面：年輪と純資産 ===== */
+        .hero { display: flex; flex-direction: column; }
+        .ring-wrap { position: relative; width: 256px; height: 256px; margin: 4px auto 0; }
+        .life-ring { width: 256px; height: 256px; display: block; overflow: visible; }
+        .ring-stamps { position: absolute; inset: 0; pointer-events: none; }
+        .ring-legend { display: flex; justify-content: center; gap: 16px; font-size: 0.6875rem; color: var(--sub); margin-top: 2px; }
+        .ring-legend i { display: inline-block; width: 14px; vertical-align: middle; margin-right: 4px; }
+        .ring-legend .lg-target { border-top: 1px dashed var(--amber-line); }
+        .ring-legend .lg-shrank { border-top: 2.4px solid var(--ash); }
+        .hero-nums { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; margin-top: 14px; }
+        .hero-lbl { font-size: var(--fs-xs); color: var(--sub); letter-spacing: 0.04em; display: flex; align-items: center; gap: 6px; }
+        .hero-nw { font-size: 2.25rem; font-weight: 400; line-height: 1.2; letter-spacing: 0.01em; white-space: nowrap; }
+        .hero-nw .u { font-size: 1rem; margin-left: 2px; }
+        .hero-delta { font-size: var(--fs-s); min-height: 1.4em; }
+        .hero-delta.minus { color: var(--red); }
+        .hero-right { text-align: right; flex: none; }
+        .hero-right .hero-lbl { justify-content: flex-end; }
+        .hero-pct { font-size: 1.375rem; font-weight: 500; line-height: 1.3; }
+        .hero-right .fire-badge { display: inline-block; margin-top: 2px; }
+        .year-card { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule); min-height: 92px; }
+        .year-k { font-size: var(--fs-xs); color: var(--sub); letter-spacing: 0.12em; }
+        .year-l1, .year-l2 { font-size: var(--fs-m); line-height: 1.7; }
+        .year-l2 { color: var(--sub); }
+        .year-l1 .minus, .year-l2 .minus { color: var(--red); }
+        .hero-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; }
+        .text-btn { background: none; border: none; color: var(--ink); font-size: var(--fs-s); min-height: 44px; display: inline-flex; align-items: center; gap: 6px; padding: 0 4px; cursor: pointer; }
+        .text-btn:active { color: var(--sub); }
+        #btn-hero-retire { color: var(--green); text-decoration: underline; text-underline-offset: 3px; }
+        .next-btn .next-sub { font-size: var(--fs-xs); opacity: 0.75; margin-left: 10px; letter-spacing: 0.02em; }
+        /* ===== 下から出るシート（資産を育てる・記録・学ぶ）===== */
+        .sheet { position: fixed; inset: 0; z-index: 800; display: flex; flex-direction: column; justify-content: flex-end; }
+        .sheet-backdrop { position: absolute; inset: 0; background: rgba(48, 42, 34, 0.35); }
+        .sheet-card { position: relative; background: var(--paper); border-top: 3px solid var(--ink); border-radius: 6px 6px 0 0; max-height: 90vh; max-height: 90dvh; display: flex; flex-direction: column; width: 100%; max-width: 560px; margin: 0 auto; animation: sheetIn 0.22s ease-out; }
+        .sheet-card:focus { outline: none; }
+        @keyframes sheetIn { from { transform: translateY(24px); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } }
+        .sheet-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px 0 16px; }
+        .sheet-title { font-family: var(--font-serif); font-size: 1.125rem; font-weight: 500; margin: 0; }
+        .sheet-body { overflow-y: auto; padding: 4px 16px calc(24px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling: touch; }
+        .sheet-sub { font-size: var(--fs-xs); color: var(--sub); letter-spacing: 0.08em; margin: 14px 0 6px; }
+        .rec-market { display: flex; align-items: center; gap: 10px; font-size: var(--fs-s); padding: 6px 0; border-bottom: 1px solid var(--rule); }
+        .rec-market .term-btn { margin-left: auto; }
+        body.sheet-open { overflow: hidden; }
+        /* 通帳の罫線の表 */
+        .ledger { width: 100%; border-collapse: collapse; font-size: var(--fs-s); border-top: 1.5px solid var(--ink); }
+        .ledger th { font-size: 0.6875rem; color: var(--sub); font-weight: 400; text-align: left; padding: 5px 2px; border-bottom: 1px solid var(--rule); letter-spacing: 0.06em; }
+        .ledger td { padding: 7px 2px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+        .ledger td:first-child { width: 36px; }
+        .ledger .num { text-align: right; white-space: nowrap; }
+        .ledger .minus { color: var(--red); }
+        .ledger tr.now td { background: var(--paper-lo); }
+        .ledger .memo { color: var(--ink); }
+        /* 設定画面 */
+        .select-short { font-size: var(--fs-s); color: var(--sub); }
+        .select-more { display: none; font-size: var(--fs-xs); color: var(--sub); margin-top: 4px; line-height: 1.7; }
+        .select-card.selected .select-more { display: block; }
+        .select-card.selected .select-short { color: var(--ink); }
+        .select-tag:empty { display: none; }
+        .setup-more { margin-top: 12px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+        .setup-more > summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; font-size: var(--fs-s); cursor: pointer; list-style: none; }
+        .setup-more > summary::-webkit-details-marker { display: none; }
+        .setup-more > summary::after { content: '開く'; font-size: var(--fs-xs); color: var(--sub); }
+        .setup-more[open] > summary::after { content: '閉じる'; }
+        .setup-more[open] { padding-bottom: 10px; }
+        .setup-more #market-bar-wrap { margin: 0; }
         /* ===== 市場・景気 ===== */
         .market-switcher { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-bottom: 6px; border: 1px solid var(--rule-strong); border-radius: var(--r-s); overflow: hidden; }
         .mkt-btn { background: transparent; border: none; border-right: 1px solid var(--rule); color: var(--sub); font-size: var(--fs-s); padding: 6px 2px; cursor: pointer; text-align: center; }
@@ -152,7 +217,8 @@
         .cf-cell { background: transparent; border: none; border-bottom: 1px solid var(--rule); padding: 8px 2px; color: inherit; font-family: inherit; cursor: pointer; min-height: 48px; display: flex; flex-direction: column; text-align: left; }
         .cf-cell:nth-child(odd) { border-right: 1px solid var(--rule); padding-right: 10px; }
         .cf-cell:nth-child(even) { padding-left: 10px; }
-        .cf-cell span { display: block; font-size: var(--fs-xs); color: var(--sub); }
+        .cf-cell > span { display: block; font-size: var(--fs-xs); color: var(--sub); }
+        .cf-cell > span span { display: inline; }
         .cf-cell strong { font-size: var(--fs-m); font-weight: 500; }
         .rival-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; border-top: 1px solid var(--rule); margin-top: 8px; padding-top: 8px; font-size: var(--fs-s); color: var(--sub); }
         .rival-diff-badge { font-size: var(--fs-xs); }
@@ -327,6 +393,7 @@
                 <button type="button" class="icon-btn header-icon" id="btn-menu" onclick="toggleHeaderMenu()" aria-haspopup="true" aria-expanded="false" aria-controls="header-menu" aria-label="メニュー"><svg class="ico"><use href="#i-menu"/></svg></button>
                 <div class="header-menu hidden" id="header-menu" role="menu" aria-label="メニュー">
                     <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openTutorialCornerModal)" id="btn-tutorial"><svg class="ico s"><use href="#i-help"/></svg>遊び方・チュートリアル</button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(function(){ openSheet('learn'); })" id="btn-menu-learn"><svg class="ico s"><use href="#i-book"/></svg>学ぶ（無料講座）</button>
                     <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openTitlesModal)"><svg class="ico s"><use href="#i-seal"/></svg><span id="btn-titles">称号(0/43)</span></button>
                     <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openRankingModal)" id="btn-ranking"><svg class="ico s"><use href="#i-rows"/></svg>ランキング</button>
                     <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openSoundModal)" id="btn-sound"><svg class="ico s"><use href="#i-sound"/></svg>音量</button>
@@ -360,43 +427,33 @@
         <div class="op-disclaimer-note">金融の仕組みを学ぶ教育用ゲームです。投資の勧誘や助言ではありません。 <button type="button" class="footer-link" style="min-height:0;padding:0" onclick="openDisclaimerModal()" id="lbl-op-disclaimer-btn">免責事項</button> ／ <button type="button" class="footer-link" style="min-height:0;padding:0" onclick="resetAllSavedData()" id="lbl-op-reset-btn">データ初期化</button></div>
     </div>
 
-    <!-- 市場切り替えバー -->
-    <div id="market-bar-wrap" class="hidden">
-        <div class="market-switcher">
-            <button type="button" class="mkt-btn active" id="mkt-btn-jp" onclick="switchMarket('jp')">🇯🇵 日本市場</button>
-            <button type="button" class="mkt-btn" id="mkt-btn-us" onclick="switchMarket('us')">🇺🇸 米国市場</button>
-            <button type="button" class="mkt-btn" id="mkt-btn-gl" onclick="switchMarket('gl')">🌐 グローバル</button>
-        </div>
-        <div class="market-info-bar">
-            <span id="market-desc-inline">🇯🇵 <strong>日本市場 (JPY)</strong>（説明を読み込み中）<br>※ 市場はゲーム開始時に固定され、プレイ中は変更できません</span>
-            <button type="button" class="term-btn" onclick="openMarketGuideModal()" id="btn-mkt-guide" style="white-space:nowrap;">？市場の違い</button>
-        </div>
-        <div class="cycle-badge cycle-boom" id="cycle-badge">📈 好景気</div>
-    </div>
-
-    <!-- 1. セットアップ画面 -->
+    <!-- 1. セットアップ画面：おすすめを先に、市場と縛りは「詳しく選ぶ」の中 -->
     <div id="setup-view" class="setup-box hidden">
-        <div class="setup-section-title" id="lbl-set-name">プレイヤーネーム設定</div>
-        <input type="text" id="player-name-input" class="name-input" placeholder="投資家名を入力..." value="億り人候補生">
-        <div class="setup-section-title" id="lbl-set-mode">1. ゲームモード（難易度）を選択</div>
+        <div class="setup-section-title" id="lbl-set-name">名義</div>
+        <input type="text" id="player-name-input" class="name-input" placeholder="名前を入力" value="億り人候補生">
+        <div class="setup-section-title" id="lbl-set-mode">モード</div>
         <div class="select-card selected" id="mode-easy" onclick="selectMode('easy')">
-            <div class="select-card-top"><span id="lbl-m-easy">🟢 ビギナーズ (初心者向け)</span><span class="select-tag" id="tag-m-easy">王道＋不動産ナビ＆爆益</span></div>
-            <div style="font-size:0.875rem; color:var(--text-sub);" id="lbl-d-easy">【投資知識ゼロでも安心】インデックス株・金・キャリア・不動産を体験。市場は追い風で、チャンスのイベントが多め。生活費（FIRE目標）は年300。</div>
+            <div class="select-card-top"><span id="lbl-m-easy">ビギナーズ</span><span class="select-tag" id="tag-m-easy">おすすめ</span></div>
+            <div class="select-short">はじめての人に。市場は追い風。</div>
+            <div class="select-more" id="lbl-d-easy">【投資知識ゼロでも安心】インデックス株・金・キャリア・不動産を体験。市場は追い風で、チャンスのイベントが多め。生活費（FIRE目標）は年300。</div>
         </div>
         <div class="select-card" id="mode-normal" onclick="selectMode('normal')">
-            <div class="select-card-top"><span id="lbl-m-norm">🔵 スタンダード (標準)</span><span class="select-tag" id="tag-m-norm">個別株・IPO・仮想通貨解放！</span></div>
-            <div style="font-size:0.875rem; color:var(--text-sub);" id="lbl-d-norm">【中級者向け】個別株・IPO・仮想通貨まで解放。ピンチとチャンスが半々で、考えて分散すればFIREに届く王道モード。生活費（FIRE目標）は年400。</div>
+            <div class="select-card-top"><span id="lbl-m-norm">スタンダード</span><span class="select-tag" id="tag-m-norm"></span></div>
+            <div class="select-short">個別株・仮想通貨も使える標準。</div>
+            <div class="select-more" id="lbl-d-norm">【中級者向け】個別株・IPO・仮想通貨まで解放。ピンチとチャンスが半々で、考えて分散すればFIREに届く王道モード。生活費（FIRE目標）は年400。</div>
         </div>
         <div class="select-card" id="mode-hard" onclick="selectMode('hard')">
-            <div class="select-card-top"><span id="lbl-m-hard">🔴 ハードコア (上級者向け)</span><span class="select-tag" id="tag-m-hard">サバイバル経済</span></div>
-            <div style="font-size:0.875rem; color:var(--text-sub);" id="lbl-d-hard">【上級者向け】市場の成長がやや鈍く、物価も上がりやすい。暴落・利上げ・詐欺などのピンチが頻発し、暗号資産の大当たりも起きにくい。生活費（FIRE目標）は年500。神話級称号も狙えるプロモード。</div>
+            <div class="select-card-top"><span id="lbl-m-hard">ハードコア</span><span class="select-tag" id="tag-m-hard"></span></div>
+            <div class="select-short">ピンチが多い上級者向け。</div>
+            <div class="select-more" id="lbl-d-hard">【上級者向け】市場の成長がやや鈍く、物価も上がりやすい。暴落・利上げ・詐欺などのピンチが頻発し、暗号資産の大当たりも起きにくい。生活費（FIRE目標）は年500。神話級称号も狙えるプロモード。</div>
         </div>
         <div class="select-card" id="mode-scenario" onclick="selectMode('scenario')">
-            <div class="select-card-top"><span id="lbl-m-scenario">🕰️ ヒストリカル・シナリオ</span><span class="select-tag" id="tag-m-scenario">実際の経済危機を追体験</span></div>
-            <div style="font-size:0.875rem; color:var(--text-sub);" id="lbl-d-scenario">【教育特化】リーマンショックなど実際の経済危機を短期間で再現。暴落にどう対応すべきかを実例で学べるモード。</div>
+            <div class="select-card-top"><span id="lbl-m-scenario">ヒストリカル</span><span class="select-tag" id="tag-m-scenario"></span></div>
+            <div class="select-short">実際の経済危機を短く追体験。</div>
+            <div class="select-more" id="lbl-d-scenario">【教育特化】リーマンショックなど実際の経済危機を短期間で再現。暴落にどう対応すべきかを実例で学べるモード。</div>
         </div>
         <div class="scenario-pick-row hidden" id="scenario-pick-row">
-            <div class="setup-section-title" id="lbl-set-scenario" style="margin-top:4px;">シナリオを選択</div>
+            <div class="setup-section-title" id="lbl-set-scenario" style="margin-top:4px;">どの危機を体験するか</div>
             <div class="select-card scenario-sub selected" id="scen-lehman" onclick="selectScenario('lehman')">
                 <div class="select-card-top"><span>🏦 2008年 世界金融危機</span><span class="select-tag">長期低迷からの回復</span></div>
                 <div style="font-size:0.75rem; color:var(--text-sub);">住宅バブル崩壊から連鎖する大暴落。長い冬を乗り越えられるか？</div>
@@ -410,17 +467,33 @@
                 <div style="font-size:0.75rem; color:var(--text-sub);">パンデミックで歴史的急落。だが回復は誰よりも早かった。</div>
             </div>
         </div>
-        <div class="challenge-pick-row" id="challenge-pick-row">
-            <div class="setup-section-title" id="lbl-set-challenge">2. 縛りプレイチャレンジ（任意）</div>
-            <div class="challenge-chip-row">
-                <button type="button" class="challenge-chip active" id="chal-none" onclick="selectChallenge('none')">🚫 縛りなし（通常プレイ）</button>
-                <button type="button" class="challenge-chip" id="chal-crypto_only" onclick="selectChallenge('crypto_only')" disabled>🪙 暗号資産オンリー（スタンダード以上）</button>
-                <button type="button" class="challenge-chip" id="chal-real_estate_only" onclick="selectChallenge('real_estate_only')">🏠 不動産王一本勝負</button>
-                <button type="button" class="challenge-chip" id="chal-conservative_only" onclick="selectChallenge('conservative_only')">🛡️ 超保守型（株・金のみ）</button>
+        <details class="setup-more" id="setup-more">
+            <summary>詳しく選ぶ（市場・縛りプレイ）</summary>
+            <div class="setup-section-title">市場</div>
+        <div id="market-bar-wrap" class="hidden">
+            <div class="market-switcher">
+                <button type="button" class="mkt-btn active" id="mkt-btn-jp" onclick="switchMarket('jp')">日本</button>
+                <button type="button" class="mkt-btn" id="mkt-btn-us" onclick="switchMarket('us')">米国</button>
+                <button type="button" class="mkt-btn" id="mkt-btn-gl" onclick="switchMarket('gl')">全世界</button>
             </div>
-            <div style="font-size:0.75rem; color:var(--text-sub); margin-top:4px;" id="lbl-challenge-desc">通常プレイ：すべての資産クラスを自由に活用できます。</div>
+            <div class="market-info-bar">
+                <span id="market-desc-inline">🇯🇵 <strong>日本市場 (JPY)</strong>（説明を読み込み中）<br>※ 市場はゲーム開始時に固定され、プレイ中は変更できません</span>
+                <button type="button" class="term-btn" onclick="openMarketGuideModal()" id="btn-mkt-guide" style="white-space:nowrap;">？市場の違い</button>
+            </div>
         </div>
-        <button type="button" class="start-game-btn" onclick="startInitialSimulation()" id="lbl-start-btn">🚀 この設定でシミュレーション開始！</button>
+
+            <div class="challenge-pick-row" id="challenge-pick-row">
+                <div class="setup-section-title" id="lbl-set-challenge">縛りプレイ（任意）</div>
+                <div class="challenge-chip-row">
+                    <button type="button" class="challenge-chip active" id="chal-none" onclick="selectChallenge('none')">🚫 縛りなし（通常プレイ）</button>
+                    <button type="button" class="challenge-chip" id="chal-crypto_only" onclick="selectChallenge('crypto_only')" disabled>🪙 暗号資産オンリー（スタンダード以上）</button>
+                    <button type="button" class="challenge-chip" id="chal-real_estate_only" onclick="selectChallenge('real_estate_only')">🏠 不動産王一本勝負</button>
+                    <button type="button" class="challenge-chip" id="chal-conservative_only" onclick="selectChallenge('conservative_only')">🛡️ 超保守型（株・金のみ）</button>
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-sub); margin-top:4px;" id="lbl-challenge-desc">通常プレイ：すべての資産クラスを自由に活用できます。</div>
+            </div>
+        </details>
+        <button type="button" class="start-game-btn" onclick="startInitialSimulation()" id="lbl-start-btn">この設定ではじめる</button>
     </div>
 
     <!-- 2. ゲームプレイ画面 -->
@@ -430,52 +503,38 @@
             <span style="font-size:0.75rem; text-decoration:underline;">一覧を見る &gt;</span>
         </button>
 
-        <div class="summary-card">
-            <div class="rank-strip">
-                <span>👑 <span id="lbl-rank-prefix" class="hidden">資産家ランク</span><strong id="disp-rank" style="color:var(--accent-gold);">🌱 ビギナー投資家</strong></span>
-                <button type="button" class="term-btn" onclick="openTermHelp('compound')" id="btn-help-comp">💡 複利とは？</button>
+        <!-- 主画面：年輪・純資産・FIREまでの進み具合・今年の一言・主ボタンだけ -->
+        <section class="hero" id="hero">
+            <div class="ring-wrap">
+                <svg id="life-ring" class="life-ring" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="純資産の年輪"></svg>
+                <div class="ring-stamps" id="ring-stamps" aria-hidden="true"></div>
             </div>
-            <div class="net-worth-label">
-                <div>
-                    <span id="lbl-networth">純資産（今の価値）</span>
-                    <button type="button" class="term-btn" onclick="openTermHelp('nw')">？意味</button>
-                    <span id="corp-status-pill" class="fire-badge hidden" style="margin-left:4px;">🏢 法人化済</span>
-                    <span class="fire-badge hidden" id="fire-badge" style="margin-left:4px;">FIRE達成 🔥</span>
+            <div class="ring-legend" id="ring-legend" aria-hidden="true"><span><i class="lg-target"></i>FIRE目標</span><span><i class="lg-shrank"></i>減った年</span></div>
+            <div class="hero-nums">
+                <div class="hero-left">
+                    <div class="hero-lbl">純資産（今の価値） <button type="button" class="term-btn" data-nav-free onclick="openTermHelp('nw')" aria-label="純資産（今の価値）とは">?</button></div>
+                    <div class="hero-nw" id="hero-nw">¥600<span class="u">万</span></div>
+                    <div class="hero-delta" id="hero-delta"></div>
                 </div>
-                <div style="font-size:0.75rem;">
-                    💵 <span id="lbl-free-cash">手元現金</span>: <strong id="disp-cash-top" style="color:var(--accent-blue);">¥600万</strong>
+                <div class="hero-right" id="hero-fire">
+                    <div class="hero-lbl" id="hero-fire-lbl">FIRE目標まで</div>
+                    <div class="hero-pct" id="hero-pct">0%</div>
+                    <span class="fire-badge hidden" id="fire-badge"></span>
                 </div>
             </div>
-            <div class="net-worth-row">
-                <div class="net-worth-val" id="disp-networth">¥600万</div>
-                <span class="growth-pill" id="disp-growth">前年比 +0.0%</span>
+            <div class="year-card" id="year-card" aria-live="polite">
+                <div class="year-k" id="year-k">25歳</div>
+                <div class="year-l1" id="year-l1">初めの残高は600万円。</div>
+                <div class="year-l2" id="year-l2"></div>
             </div>
-            <div class="nominal-line" id="nominal-line"><span id="disp-nominal">額面 ¥600万</span><button type="button" class="term-btn" data-nav-free onclick="openTermHelp('inflation')" id="btn-inflation">物価 ×1.00（今年 +2.0%）？</button></div>
-            <div class="breakdown-bar" id="breakdown-bar">
-                <div class="bar-seg" style="width:100%; background:var(--accent-blue);"></div>
+            <!-- 旧い表示先（JSが書き込む）。画面には出さない -->
+            <div class="hidden" aria-hidden="true"><span id="disp-networth"></span><span class="growth-pill" id="disp-growth"></span></div>
+            <div class="hero-actions">
+                <button type="button" class="text-btn" id="btn-open-assets" onclick="openSheet('assets')"><svg class="ico s"><use href="#i-sprout"/></svg>資産を育てる</button>
+                <button type="button" class="text-btn hidden" id="btn-hero-retire" onclick="openSheet('assets'); switchTab('career');">リタイアを考える</button>
+                <button type="button" class="text-btn" id="btn-open-record" onclick="openSheet('record')"><svg class="ico s"><use href="#i-rows"/></svg>記録を見る</button>
             </div>
-            <div class="legend-row">
-                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('cash')"><span class="dot" style="background:var(--accent-blue);"></span><span id="l-cash">現金(100%)</span></button>
-                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('index')"><span class="dot" style="background:var(--accent-green);"></span><span id="l-stock">株式(0%)</span></button>
-                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('gold')"><span class="dot" style="background:var(--accent-gold);"></span><span id="l-gold">金(0%)</span></button>
-                <button type="button" class="legend-item" data-nav-free id="legend-crypto" onclick="openTermHelp('crypto')"><span class="dot" style="background:var(--accent-crypto);"></span><span id="l-crypto">仮想通貨(0%)</span></button>
-                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('reals')"><span class="dot" style="background:var(--accent-purple);"></span><span id="l-prop">不動産(0%)</span></button>
-            </div>
-            <div class="cf-grid">
-                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('salary')" aria-label="給与貯蓄の説明を見る"><span><span id="lbl-cf-sal">給与貯蓄</span> ⓘ</span><strong id="disp-salary" style="color:var(--accent-blue);">+¥160万</strong></button>
-                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('passive')" aria-label="不労所得CFの説明を見る"><span><span id="lbl-cf-pas">不労所得CF</span> ⓘ</span><strong id="disp-passive" style="color:var(--accent-green);">+¥0</strong></button>
-                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('firegoal')" aria-label="FIRE目標の説明を見る"><span><span id="lbl-cf-fire">生活費/年(FIRE目標)</span> ⓘ</span><strong id="disp-firegoal" style="color:var(--accent-gold);">¥300万</strong></button>
-                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('debt')" aria-label="銀行借入の説明を見る"><span><span id="lbl-cf-debt">銀行借入</span> ⓘ</span><strong id="disp-debt" style="color:var(--accent-red);">¥0</strong></button>
-            </div>
-            <div class="fire-progress" id="fire-progress">
-                <div class="fire-progress-text" id="fire-progress-text">🎯 FIRE目標まで 0%</div>
-                <div class="fire-progress-bar"><div class="fire-progress-fill" id="fire-progress-fill" style="width:0%;"></div></div>
-            </div>
-            <div class="rival-row" id="rival-row">
-                <span><span id="lbl-rival">🤖 ライバル投資家(放置インデックス)</span>: <strong id="disp-rival">¥600</strong></span>
-                <span class="rival-diff-badge" id="rival-diff-badge"></span>
-            </div>
-        </div>
+        </section>
 
         <div class="nav-guide-banner" id="nav-guide-banner">
             <div class="nav-guide-top">
@@ -485,15 +544,18 @@
             <div class="nav-guide-desc" id="nav-guide-desc">光っているボタンを押して進みましょう！</div>
         </div>
 
-        <div class="news-strip" id="news-strip">📰 ニュース: 25歳、投資家ライフがスタート！まずは資産を買ってみましょう。</div>
-
+        <div class="sheet hidden" id="sheet-assets" role="dialog" aria-modal="true" aria-labelledby="sheet-assets-title">
+            <div class="sheet-backdrop" onclick="closeSheet()"></div>
+            <div class="sheet-card" tabindex="-1">
+                <div class="sheet-head"><h2 class="sheet-title" id="sheet-assets-title">資産を育てる</h2><button type="button" class="icon-btn header-icon" data-nav-free onclick="closeSheet()" aria-label="閉じる"><svg class="ico"><use href="#i-close"/></svg></button></div>
+                <div class="sheet-body">
         <div class="main-tabs" id="main-tabs-container">
             <button type="button" class="m-tab active" onclick="switchTab('portfolio')" id="tab-btn-portfolio">王道投資</button>
             <button type="button" class="m-tab" onclick="switchTab('stocks')" id="tab-btn-stocks">個別株・IPO</button>
             <button type="button" class="m-tab" onclick="switchTab('crypto')" id="tab-btn-crypto">仮想通貨</button>
             <button type="button" class="m-tab" onclick="switchTab('realestate')" id="tab-btn-realestate">不動産</button>
             <button type="button" class="m-tab" onclick="switchTab('career')" id="tab-btn-career">キャリア</button>
-            <button type="button" class="m-tab" onclick="switchTab('academy')" id="tab-btn-academy">無料講座(24)</button>
+            <button type="button" class="m-tab hidden" onclick="switchTab('academy')" id="tab-btn-academy">講座</button>
         </div>
 
         <!-- タブ1: 王道投資 -->
@@ -570,6 +632,98 @@
             </div>
         </div>
 
+        <button type="button" class="hedge-btn" id="btn-hedge" onclick="toggleHedge()">🛡️ 暴落保険に加入（株の年間下落5%超を補償）</button>
+
+            <div class="asset-note-wrap"></div>
+                </div>
+            </div>
+        </div>
+        <div class="sheet hidden" id="sheet-record" role="dialog" aria-modal="true" aria-labelledby="sheet-record-title">
+            <div class="sheet-backdrop" onclick="closeSheet()"></div>
+            <div class="sheet-card" tabindex="-1">
+                <div class="sheet-head"><h2 class="sheet-title" id="sheet-record-title">記録</h2><button type="button" class="icon-btn header-icon" data-nav-free onclick="closeSheet()" aria-label="閉じる"><svg class="ico"><use href="#i-close"/></svg></button></div>
+                <div class="sheet-body">
+            <div class="rec-market"><span id="rec-market">市場</span><span class="cycle-badge cycle-boom" id="cycle-badge">好景気</span><button type="button" class="term-btn" data-nav-free onclick="openMarketGuideModal()">市場の違い</button></div>
+        <div class="summary-card">
+            <div class="rank-strip">
+                <span>👑 <span id="lbl-rank-prefix" class="hidden">資産家ランク</span><strong id="disp-rank" style="color:var(--accent-gold);">🌱 ビギナー投資家</strong></span>
+                <button type="button" class="term-btn" onclick="openTermHelp('compound')" id="btn-help-comp">💡 複利とは？</button>
+            </div>
+            <div class="net-worth-label">
+                <div>
+                    <span id="lbl-networth">いまの内訳</span>
+                    <span id="corp-status-pill" class="fire-badge hidden" style="margin-left:4px;">🏢 法人化済</span>
+                </div>
+                <div style="font-size:0.75rem;">
+                    💵 <span id="lbl-free-cash">手元現金</span>: <strong id="disp-cash-top" style="color:var(--accent-blue);">¥600万</strong>
+                </div>
+            </div>
+            <div class="nominal-line" id="nominal-line"><span id="disp-nominal">額面 ¥600万</span><button type="button" class="term-btn" data-nav-free onclick="openTermHelp('inflation')" id="btn-inflation">物価 ×1.00（今年 +2.0%）？</button></div>
+            <div class="breakdown-bar" id="breakdown-bar">
+                <div class="bar-seg" style="width:100%; background:var(--accent-blue);"></div>
+            </div>
+            <div class="legend-row">
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('cash')"><span class="dot" style="background:var(--accent-blue);"></span><span id="l-cash">現金(100%)</span></button>
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('index')"><span class="dot" style="background:var(--accent-green);"></span><span id="l-stock">株式(0%)</span></button>
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('gold')"><span class="dot" style="background:var(--accent-gold);"></span><span id="l-gold">金(0%)</span></button>
+                <button type="button" class="legend-item" data-nav-free id="legend-crypto" onclick="openTermHelp('crypto')"><span class="dot" style="background:var(--accent-crypto);"></span><span id="l-crypto">仮想通貨(0%)</span></button>
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('reals')"><span class="dot" style="background:var(--accent-purple);"></span><span id="l-prop">不動産(0%)</span></button>
+            </div>
+            <div class="cf-grid">
+                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('salary')" aria-label="給与貯蓄の説明を見る"><span><span id="lbl-cf-sal">給与貯蓄</span> ⓘ</span><strong id="disp-salary" style="color:var(--accent-blue);">+¥160万</strong></button>
+                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('passive')" aria-label="不労所得CFの説明を見る"><span><span id="lbl-cf-pas">不労所得CF</span> ⓘ</span><strong id="disp-passive" style="color:var(--accent-green);">+¥0</strong></button>
+                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('firegoal')" aria-label="FIRE目標の説明を見る"><span><span id="lbl-cf-fire">生活費/年(FIRE目標)</span> ⓘ</span><strong id="disp-firegoal" style="color:var(--accent-gold);">¥300万</strong></button>
+                <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('debt')" aria-label="銀行借入の説明を見る"><span><span id="lbl-cf-debt">銀行借入</span> ⓘ</span><strong id="disp-debt" style="color:var(--accent-red);">¥0</strong></button>
+            </div>
+            <div class="fire-progress" id="fire-progress">
+                <div class="fire-progress-text" id="fire-progress-text">🎯 FIRE目標まで 0%</div>
+                <div class="fire-progress-bar"><div class="fire-progress-fill" id="fire-progress-fill" style="width:0%;"></div></div>
+            </div>
+            <div class="rival-row" id="rival-row">
+                <span><span id="lbl-rival">🤖 ライバル投資家(放置インデックス)</span>: <strong id="disp-rival">¥600</strong></span>
+                <span class="rival-diff-badge" id="rival-diff-badge"></span>
+            </div>
+        </div>
+
+            <div class="ledger-wrap">
+                <div class="sheet-sub">これまでの記帳（単位：今の価値）</div>
+                <table class="ledger" id="ledger"><thead><tr><th>年齢</th><th>摘要</th><th class="num">増減</th><th class="num">残高</th></tr></thead><tbody id="ledger-body"></tbody></table>
+            </div>
+        <div class="sheet-sub">今年のニュース</div>
+        <div class="news-strip" id="news-strip">📰 ニュース: 25歳、投資家ライフがスタート！まずは資産を買ってみましょう。</div>
+
+            <div class="chart-section">
+                <div class="chart-header">
+                    <span id="lbl-chart-title">📈 純資産の推移</span>
+                    <span><span id="lbl-total-assets">総資産</span>: <strong id="disp-total-assets-top" style="color:var(--accent-gold);">¥600万</strong></span>
+                </div>
+                <div class="chart-legend" aria-hidden="true">
+                    <span><i class="lg-swatch you"></i>あなた（純資産） <strong id="chart-lg-you">¥600万</strong></span>
+                    <span><i class="lg-swatch rival"></i>ライバル <strong id="chart-lg-rival">¥600万</strong></span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="simChart" role="img" aria-label="純資産の推移グラフ"></canvas>
+                    <div class="chart-tip hidden" id="chart-tip"></div>
+                </div>
+            </div>
+
+            <div class="coach-box" id="coach-box">
+                <div class="coach-head">
+                    <span id="lbl-coach-head">📊 AIファイナンシャル・コーチの資産診断</span>
+                    <button type="button" class="term-btn" onclick="triggerEduQuiz(true)" id="btn-take-quiz">🎓 知識クイズに挑戦</button>
+                </div>
+                <div class="coach-body" id="coach-advice-text">
+                    現在は現金100%の状態です。インフレ（物価上昇）が起きると現金の実質価値は目減りしてしまうため、まずは「全世界インデックス株」と「金（ゴールド）」に分散して複利を働かせましょう！
+                </div>
+            </div>
+                </div>
+            </div>
+        </div>
+        <div class="sheet hidden" id="sheet-learn" role="dialog" aria-modal="true" aria-labelledby="sheet-learn-title">
+            <div class="sheet-backdrop" onclick="closeSheet()"></div>
+            <div class="sheet-card" tabindex="-1">
+                <div class="sheet-head"><h2 class="sheet-title" id="sheet-learn-title">学ぶ（無料講座）</h2><button type="button" class="icon-btn header-icon" data-nav-free onclick="closeSheet()" aria-label="閉じる"><svg class="ico"><use href="#i-close"/></svg></button></div>
+                <div class="sheet-body">
         <!-- タブ6: 無料投資アカデミー -->
         <div id="tab-academy" class="panel-box hidden">
             <div style="font-size:0.875rem; font-weight:500; margin-bottom:4px;" id="lbl-acad-head">💡 投資アカデミー (完全無料・全24講座)</div>
@@ -605,42 +759,15 @@
             </div>
         </div>
 
-        <button type="button" class="hedge-btn" id="btn-hedge" onclick="toggleHedge()">🛡️ 暴落保険に加入（株の年間下落5%超を補償）</button>
-
-        <!-- 優先度の低い情報（グラフ・AIコーチ）は操作エリアの下にまとめ、折りたためるようにする -->
-        <details class="insight-panel" id="insight-panel" open>
-            <summary>📊 資産グラフ・AIコーチの診断</summary>
-            <div class="chart-section">
-                <div class="chart-header">
-                    <span id="lbl-chart-title">📈 純資産の推移</span>
-                    <span><span id="lbl-total-assets">総資産</span>: <strong id="disp-total-assets-top" style="color:var(--accent-gold);">¥600万</strong></span>
-                </div>
-                <div class="chart-legend" aria-hidden="true">
-                    <span><i class="lg-swatch you"></i>あなた（純資産） <strong id="chart-lg-you">¥600万</strong></span>
-                    <span><i class="lg-swatch rival"></i>ライバル <strong id="chart-lg-rival">¥600万</strong></span>
-                </div>
-                <div class="chart-canvas-wrap">
-                    <canvas id="simChart" role="img" aria-label="純資産の推移グラフ"></canvas>
-                    <div class="chart-tip hidden" id="chart-tip"></div>
                 </div>
             </div>
-
-            <div class="coach-box" id="coach-box">
-                <div class="coach-head">
-                    <span id="lbl-coach-head">📊 AIファイナンシャル・コーチの資産診断</span>
-                    <button type="button" class="term-btn" onclick="triggerEduQuiz(true)" id="btn-take-quiz">🎓 知識クイズに挑戦</button>
-                </div>
-                <div class="coach-body" id="coach-advice-text">
-                    現在は現金100%の状態です。インフレ（物価上昇）が起きると現金の実質価値は目減りしてしまうため、まずは「全世界インデックス株」と「金（ゴールド）」に分散して複利を働かせましょう！
-                </div>
-            </div>
-        </details>
+        </div>
 
         <!-- 毎ターン押すボタンは画面下に固定（スクロール不要）-->
         <div class="turn-bar" id="turn-bar">
             <div class="turn-bar-inner">
-                <button type="button" class="next-btn" id="next-turn-btn" onclick="nextTurn()">次の年へ進む →</button>
-                <button type="button" class="next-btn skip-btn hidden" id="skip5-btn" onclick="advanceYears(5)" aria-label="5年まとめて進む（イベントなどが起きたらそこで止まります）">⏩ 5年進む</button>
+                <button type="button" class="next-btn" id="next-turn-btn" onclick="nextTurn()"><span id="next-turn-label">一年を記す</span><small class="next-sub" id="next-turn-sub"></small></button>
+                <button type="button" class="next-btn skip-btn hidden" id="skip5-btn" onclick="advanceYears(5)" aria-label="5年まとめて進む（イベントなどが起きたらそこで止まります）">5年進む</button>
             </div>
         </div>
     </div>
@@ -2567,6 +2694,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         document.getElementById('nav-popup-modal').classList.add('hidden');
         document.getElementById('btn-skip-tut').classList.add('hidden');
         updateNavBannerText();
+        closeSheet();
         const gameView = document.getElementById('game-view');
         gameView.querySelectorAll('button').forEach(function(b) { b.classList.remove('nav-locked', 'nav-highlight'); });
         playSound('action');
@@ -2678,6 +2806,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 b.classList.add('nav-locked');
             }
         });
+        revealNavTarget(targetId);
     }
 
     function tradeCore(type, amount) {
@@ -3460,6 +3589,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const need = fireGoal * ECON.retire.fireMultiple;
         const inv = Math.max(0, getInvestableNetWorth());
         const pct = Math.max(Math.min(100, Math.round(inv / need * 100)), Math.min(100, Math.round(Math.max(0, totalPassive) / fireGoal * 100)));
+        lastFirePct = pct;
         document.getElementById('fire-progress-fill').style.width = pct + '%';
         let label;
         if (g.retired) label = '🏖️ ' + g.retireAge + '歳からリタイア中（生活費 ' + fmtShort(getLivingCost()) + '／年）';
@@ -4115,6 +4245,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         drawChart();
         checkAllTitlesAndRank();
         applyStrictLock();
+        renderHero();
         saveGameProgress();
     }
 
@@ -5345,6 +5476,147 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         playSound('click');
     }
 
+
+
+    // ===== 下から出るシート =====
+    let openSheetName = null;
+    let sheetReturnFocus = null;
+    function openSheet(name) {
+        closeHeaderMenu(false);
+        ['assets', 'record', 'learn'].forEach(function(n) {
+            const el = document.getElementById('sheet-' + n);
+            if (el) el.classList.toggle('hidden', n !== name);
+        });
+        const el = document.getElementById('sheet-' + name);
+        if (!el) return;
+        openSheetName = name;
+        sheetReturnFocus = document.activeElement;
+        document.body.classList.add('sheet-open');
+        if (name === 'assets') {
+            // 講座はタブ列から外したので、資産シートを開くときは資産のタブに戻す
+            const acadOpen = !document.getElementById('tab-academy').classList.contains('hidden');
+            if (acadOpen) switchTab('portfolio');
+        }
+        if (name === 'learn') switchTab('academy');
+        if (name === 'record') { renderLedger(); requestAnimationFrame(drawChart); }
+        const card = el.querySelector('.sheet-card');
+        if (card) { card.scrollTop = 0; card.focus({ preventScroll: true }); }
+        const body = el.querySelector('.sheet-body');
+        if (body) body.scrollTop = 0;
+        playSound('click');
+    }
+    function closeSheet() {
+        if (!openSheetName) return;
+        const el = document.getElementById('sheet-' + openSheetName);
+        if (el) el.classList.add('hidden');
+        if (openSheetName === 'learn') switchTab('portfolio');
+        openSheetName = null;
+        document.body.classList.remove('sheet-open');
+        if (sheetReturnFocus && document.body.contains(sheetReturnFocus)) { try { sheetReturnFocus.focus({ preventScroll: true }); } catch (e) {} }
+        sheetReturnFocus = null;
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape' || !openSheetName) return;
+        const modalOpen = [...document.querySelectorAll('.modal-overlay')].some(function(o) { return !o.classList.contains('hidden'); });
+        if (!modalOpen) closeSheet();
+    });
+    // ナビの対象がシートの中にあれば開き、主ボタンが対象ならシートを閉じる
+    function revealNavTarget(targetId) {
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        const sheet = target.closest('.sheet');
+        if (sheet) {
+            const name = sheet.id.replace('sheet-', '');
+            if (openSheetName !== name) openSheet(name);
+            const panel = target.closest('.panel-box');
+            if (panel && panel.classList.contains('hidden')) switchTab(panel.id.replace('tab-', ''));
+            setTimeout(function() { target.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
+        } else if (openSheetName) {
+            closeSheet();
+        }
+    }
+
+    // ===== 主画面（年輪・純資産・FIREまでの進み具合・今年の一言）=====
+    let lastFirePct = 0;
+    const yearNotes = {};   // 年ごとの短い摘要（画面のためだけ。セーブには入れない）
+    function heroMoneyHTML(v) {
+        v = Math.round(v);
+        if (market !== 'jp') return fmtShort(v);
+        const sign = v < 0 ? '−' : '';
+        const a = Math.abs(v);
+        if (a >= 10000) return sign + (a / 10000).toFixed(2) + '<span class="u">億円</span>';
+        return sign + '¥' + a.toLocaleString() + '<span class="u">万</span>';
+    }
+    function fmtDelta(v) {
+        v = Math.round(v);
+        return (v >= 0 ? '＋' : '−') + fmtShort(Math.abs(v));
+    }
+    function getRingTarget(nw) {
+        if (gameMode === 'scenario') return 0;
+        // 表示している％と輪の位置がそろうように、目標の円は「今の純資産 ÷ 進み具合」に置く
+        if (lastFirePct >= 3 && nw > 0) return nw * 100 / lastFirePct;
+        return getModeEcon().fireGoal * ECON.retire.fireMultiple;
+    }
+    function drawLifeRing() {
+        const svg = document.getElementById('life-ring');
+        if (!svg) return null;
+        const vals = (g.history && g.history.nw) ? g.history.nw.slice() : [g.cash];
+        const nw = getNetWorth();
+        return drawRings(svg, vals, { size: 256, target: getRingTarget(nw), color: '#7B5E41', crash: '#A49E93', targetColor: '#B9853F', seed: 11 });
+    }
+    function getYearSummaryLines() {
+        // 手順3で「出来事」と「判断の結果」に作り直す。ここではニュースの最初の一文を短く出す
+        const raw = (document.getElementById('news-strip') || {}).innerText || '';
+        const body = raw.replace(/^[\s\S]*?】\s*/, '').trim();
+        const first = (body.split(/(?<=[。！])/)[0] || '').trim();
+        return [first, ''];
+    }
+    function renderHero() {
+        const hero = document.getElementById('hero');
+        if (!hero || !isGameStarted) return;
+        const nw = getNetWorth();
+        document.getElementById('hero-nw').innerHTML = heroMoneyHTML(nw);
+        const hist = (g.history && g.history.nw) || [];
+        const deltaEl = document.getElementById('hero-delta');
+        if (hist.length >= 2) {
+            const dv = nw - hist[hist.length - 2];
+            deltaEl.innerText = '前の年から ' + fmtDelta(dv);
+            deltaEl.classList.toggle('minus', dv < 0);
+        } else { deltaEl.innerText = ''; deltaEl.classList.remove('minus'); }
+        const fireBox = document.getElementById('hero-fire');
+        fireBox.classList.toggle('hidden', gameMode === 'scenario');
+        document.getElementById('hero-fire-lbl').innerText = g.retired ? 'リタイア中' : 'FIRE目標まで';
+        document.getElementById('hero-pct').innerText = g.retired ? (g.retireAge + '歳から') : (lastFirePct + '%');
+        document.getElementById('ring-legend').classList.toggle('hidden', gameMode === 'scenario');
+        drawLifeRing();
+        const retireBtn = document.getElementById('btn-hero-retire');
+        if (retireBtn) retireBtn.classList.toggle('hidden', !(gameMode !== 'scenario' && !g.retired && isFireTargetReached() && isFinalNavStep()));
+        const k = document.getElementById('year-k');
+        const lines = getYearSummaryLines();
+        k.innerText = g.turn <= 1 ? g.age + '歳' : (g.age - 1) + '歳の一年';
+        document.getElementById('year-l1').innerText = lines[0] || '';
+        document.getElementById('year-l2').innerText = lines[1] || '';
+        const sub = document.getElementById('next-turn-sub');
+        if (sub) sub.innerText = g.turn >= g.maxTurns ? '最後の記帳' : (g.age + ' → ' + (g.age + 1) + '歳');
+        const mk = document.getElementById('rec-market');
+        if (mk) mk.innerText = ({ jp: '日本市場', us: '米国市場', gl: '全世界市場' })[market] || '市場';
+        if (openSheetName === 'record') renderLedger();
+    }
+    function renderLedger() {
+        const tb = document.getElementById('ledger-body');
+        if (!tb) return;
+        const hist = (g.history && g.history.nw) || [];
+        const rows = [];
+        const from = Math.max(0, hist.length - 20);
+        for (let i = hist.length - 1; i >= from; i--) {
+            const v = hist[i];
+            const prev = i > 0 ? hist[i - 1] : null;
+            const d = prev === null ? null : v - prev;
+            const memo = yearNotes[i] || (i === 0 ? '開始' : '');
+            rows.push('<tr' + (i === hist.length - 1 ? ' class="now"' : '') + '><td>' + (25 + i) + '</td><td class="memo">' + memo + '</td><td class="num' + (d !== null && d < 0 ? ' minus' : '') + '">' + (d === null ? '' : fmtDelta(d)) + '</td><td class="num">' + fmtShort(v) + '</td></tr>');
+        }
+        tb.innerHTML = rows.join('');
+    }
 
     // ===== 表示の仕上げ：絵文字をアイコン代わりに使わない =====
     // データ（イベント・称号・講座の文章）は変えず、画面に出すときだけ絵文字を外す
