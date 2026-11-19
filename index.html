@@ -946,20 +946,20 @@
 <!-- 🔊 BGM・SE 個別音量調整モーダル -->
 <div class="modal-overlay hidden" id="sound-modal" role="dialog" aria-modal="true" aria-labelledby="lbl-snd-title">
     <div tabindex="-1" class="modal-card">
-        <div class="modal-title" id="lbl-snd-title">🔊 BGM・効果音 (SE) 音量設定</div>
+        <div class="modal-title" id="lbl-snd-title">音量</div>
         <div class="vol-row">
-            <div class="vol-top"><span id="lbl-bgm-vol">🎵 BGM (背景音楽) 音量</span><strong id="disp-bgm-vol" style="color:var(--accent-blue);">30%</strong></div>
+            <div class="vol-top"><span id="lbl-bgm-vol">環境音（小さな風の音）</span><strong id="disp-bgm-vol" style="color:var(--accent-blue);">30%</strong></div>
             <input type="range" class="vol-slider" id="slider-bgm-vol" min="0" max="100" value="30" oninput="changeBgmVolume(this.value)">
         </div>
         <div class="vol-row">
-            <div class="vol-top"><span id="lbl-se-vol">🔔 SE (効果音・チャイム) 音量</span><strong id="disp-se-vol" style="color:var(--accent-green);">60%</strong></div>
+            <div class="vol-top"><span id="lbl-se-vol">効果音（木・紙・判子）</span><strong id="disp-se-vol" style="color:var(--accent-green);">60%</strong></div>
             <input type="range" class="vol-slider" id="slider-se-vol" min="0" max="100" value="60" oninput="changeSeVolume(this.value)">
         </div>
         <div style="display:flex; gap:8px; margin-bottom:12px;">
-            <button type="button" class="asset-btn buy" style="flex:1; padding:10px;" onclick="playSound('event')" id="btn-se-test">🔔 効果音テスト</button>
-            <button type="button" class="asset-btn sell" style="flex:1; padding:10px;" onclick="muteAllAudio()" id="btn-se-mute">🔇 すべてミュート(0%)</button>
+            <button type="button" class="asset-btn buy" style="flex:1; padding:10px;" onclick="playSound('year-good')" id="btn-se-test">効果音を試す</button>
+            <button type="button" class="asset-btn sell" style="flex:1; padding:10px;" onclick="muteAllAudio()" id="btn-se-mute">すべて消す</button>
         </div>
-        <button type="button" class="next-btn" onclick="closeSoundModal()" id="btn-snd-close">設定を完了する</button>
+        <button type="button" class="next-btn" onclick="closeSoundModal()" id="btn-snd-close">閉じる</button>
     </div>
 </div>
 
@@ -2031,83 +2031,125 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     let bgmTimer = null;
     let bgmStep = 0;
 
-    const bgmProg = [
-        { root: 174.61, chord: [261.63, 329.63, 440.00], melody: [523.25, 659.25, 587.33, 523.25] },
-        { root: 196.00, chord: [246.94, 293.66, 392.00], melody: [587.33, 659.25, 783.99, 659.25] },
-        { root: 164.81, chord: [246.94, 293.66, 392.00], melody: [659.25, 587.33, 493.88, 587.33] },
-        { root: 220.00, chord: [261.63, 329.63, 392.00], melody: [523.25, 493.88, 440.00, 392.00] }
-    ];
-    // 不景気・調整局面用の緊張感のあるマイナー進行（不穏な低音＋ギザギザした音色）
-    const bgmProgTension = [
-        { root: 146.83, chord: [174.61, 220.00, 277.18], melody: [220.00, 196.00, 174.61, 196.00] },
-        { root: 155.56, chord: [185.00, 233.08, 277.18], melody: [196.00, 174.61, 155.56, 174.61] },
-        { root: 138.59, chord: [164.81, 207.65, 261.63], melody: [174.61, 155.56, 138.59, 155.56] },
-        { root: 130.81, chord: [155.56, 196.00, 246.94], melody: [164.81, 138.59, 130.81, 138.59] }
-    ];
+    // ===== 音：木・紙・判子・風。素の波形のピコピコ音やメロディのループは使わない =====
+    // 鳴らすのは「意味のある結果」（一年の結果・節目・イベントの結果・売買）だけ。毎回、高さ・長さ・音量を少し揺らす
+    let audioMaster = null, audioNoise = null;
+    let bgmNodes = null;
     let bgmMood = 'normal';
-    // 市場サイクルに応じてBGMの雰囲気を切り替える（不景気・調整局面では緊張感のある進行に）
+    function jitter(x, pct) { return x * (1 + (Math.random() * 2 - 1) * pct); }
+    function ensureAudioGraph() {
+        if (!audioCtx || audioMaster) return;
+        const comp = audioCtx.createDynamicsCompressor();
+        comp.threshold.value = -18; comp.knee.value = 12; comp.ratio.value = 3; comp.attack.value = 0.004; comp.release.value = 0.25;
+        audioMaster = audioCtx.createGain();
+        audioMaster.gain.value = 0.85;
+        audioMaster.connect(comp); comp.connect(audioCtx.destination);
+        // 2秒分のノイズ（少し低域寄りにした、ざらつきの少ないノイズ）
+        const len = audioCtx.sampleRate * 2;
+        audioNoise = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+        const d = audioNoise.getChannelData(0);
+        let last = 0;
+        for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; last = (last + 0.04 * w) / 1.04; d[i] = w * 0.55 + last * 3.2; }
+    }
     function updateBgmMood(cycleId) {
-        const newMood = (cycleId === 'recession' || cycleId === 'correction') ? 'tension' : 'normal';
-        if (newMood !== bgmMood) {
-            bgmMood = newMood;
-            bgmStep = 0;
+        bgmMood = (cycleId === 'recession' || cycleId === 'correction') ? 'tension' : 'normal';
+        if (bgmNodes && audioCtx) {
+            const t = audioCtx.currentTime;
+            bgmNodes.filter.frequency.setTargetAtTime(bgmMood === 'tension' ? 260 : 420, t, 3);
         }
     }
 
     function initAudio() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') { try { const pr0 = audioCtx.resume(); if (pr0 && pr0.catch) pr0.catch(function() {}); } catch (e) {} }
+        ensureAudioGraph();
+    }
+    function noiseSource(t, dur) {
+        const src = audioCtx.createBufferSource();
+        src.buffer = audioNoise;
+        src.start(t, Math.random() * 1.2, dur + 0.05);
+        return src;
+    }
+    // 木を叩く音：木の棒の倍音（1 : 2.76 : 5.4）を短く減衰させ、叩いた瞬間のノイズを足す
+    function sndWood(t, f, vol, decay) {
+        const out = audioCtx.createGain(); out.gain.value = vol;
+        const lp = audioCtx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = jitter(3200, 0.15); lp.Q.value = 0.5;
+        out.connect(lp); lp.connect(audioMaster);
+        [[1, 1, decay], [2.76, 0.35, decay * 0.45], [5.4, 0.12, decay * 0.25]].forEach(function(m) {
+            const o = audioCtx.createOscillator(); o.type = 'sine';
+            o.frequency.setValueAtTime(f * m[0] * jitter(1, 0.012), t);
+            const gg = audioCtx.createGain();
+            gg.gain.setValueAtTime(0.0001, t); gg.gain.exponentialRampToValueAtTime(m[1], t + 0.003); gg.gain.exponentialRampToValueAtTime(0.0001, t + m[2]);
+            o.connect(gg); gg.connect(out); o.start(t); o.stop(t + m[2] + 0.02);
+        });
+        const n = noiseSource(t, 0.03);
+        const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = jitter(2400, 0.2); bp.Q.value = 1.4;
+        const ng = audioCtx.createGain(); ng.gain.setValueAtTime(0.5, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.025);
+        n.connect(bp); bp.connect(ng); ng.connect(out);
+    }
+    // 紙：短いノイズの粒を、帯域を変えながら数個重ねる
+    function sndPaper(t, dur, vol, grains) {
+        const out = audioCtx.createGain(); out.gain.value = vol;
+        const hp = audioCtx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900;
+        out.connect(hp); hp.connect(audioMaster);
+        for (let i = 0; i < grains; i++) {
+            const gt = t + Math.random() * dur;
+            const gl = 0.02 + Math.random() * 0.05;
+            const n = noiseSource(gt, gl);
+            const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2500 + Math.random() * 3500; bp.Q.value = 0.9;
+            const g = audioCtx.createGain();
+            g.gain.setValueAtTime(0.0001, gt); g.gain.exponentialRampToValueAtTime(0.25 + Math.random() * 0.5, gt + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, gt + gl);
+            n.connect(bp); bp.connect(g); g.connect(out);
+        }
+    }
+    // 判子：こもった打撃（低いノイズ＋落ちていく低音）と、ゴムが紙に触れる小さな音
+    function sndStamp(t, vol) {
+        const out = audioCtx.createGain(); out.gain.value = vol; out.connect(audioMaster);
+        const n = noiseSource(t, 0.16);
+        const lp = audioCtx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = jitter(420, 0.15); lp.Q.value = 0.8;
+        const g = audioCtx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.9, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+        n.connect(lp); lp.connect(g); g.connect(out);
+        const o = audioCtx.createOscillator(); o.type = 'sine';
+        o.frequency.setValueAtTime(jitter(130, 0.06), t); o.frequency.exponentialRampToValueAtTime(58, t + 0.09);
+        const og = audioCtx.createGain(); og.gain.setValueAtTime(0.0001, t); og.gain.exponentialRampToValueAtTime(0.7, t + 0.004); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+        o.connect(og); og.connect(out); o.start(t); o.stop(t + 0.15);
+        sndPaper(t + 0.008, 0.03, vol * 0.35, 2);
+    }
+    // 風：帯域を下げていくノイズ（減った年に、短く）
+    function sndGust(t, dur, vol) {
+        const n = noiseSource(t, dur);
+        const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.7;
+        bp.frequency.setValueAtTime(jitter(900, 0.1), t); bp.frequency.exponentialRampToValueAtTime(260, t + dur);
+        const g = audioCtx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + dur * 0.3); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        n.connect(bp); bp.connect(g); g.connect(audioMaster);
     }
 
+    // 環境音：とても小さな風の音。ときどき遠くで木が鳴る（メロディにはしない）
     function startBGM() {
         bgmWanted = true;
-        if (bgmTimer || audioMuted || document.visibilityState === 'hidden') return;
+        if (bgmNodes || audioMuted || document.visibilityState === 'hidden' || bgmVolume <= 0.001) return;
         initAudio();
-        bgmStep = 0;
-        bgmTimer = setInterval(function() {
-            if (audioMuted || bgmVolume <= 0.001 || !audioCtx) return;
-            try {
-                const now = audioCtx.currentTime;
-                const activeProg = bgmMood === 'tension' ? bgmProgTension : bgmProg;
-                const barIdx = Math.floor(bgmStep / 4) % activeProg.length;
-                const beatIdx = bgmStep % 4;
-                const currentBar = activeProg[barIdx];
-
-                if (beatIdx === 0) {
-                    const bass = audioCtx.createOscillator();
-                    const bGain = audioCtx.createGain();
-                    bass.type = bgmMood === 'tension' ? 'sawtooth' : 'triangle';
-                    bass.frequency.setValueAtTime(currentBar.root, now);
-                    bGain.gain.setValueAtTime(0.16 * bgmVolume, now);
-                    bGain.gain.exponentialRampToValueAtTime(0.002, now + 2.2);
-                    bass.connect(bGain); bGain.connect(audioCtx.destination);
-                    bass.start(now); bass.stop(now + 2.2);
-
-                    currentBar.chord.forEach(function(freq) {
-                        const pad = audioCtx.createOscillator();
-                        const pGain = audioCtx.createGain();
-                        pad.type = 'sine';
-                        pad.frequency.setValueAtTime(freq, now);
-                        pGain.gain.setValueAtTime(0.07 * bgmVolume, now);
-                        pGain.gain.exponentialRampToValueAtTime(0.002, now + 2.1);
-                        pad.connect(pGain); pGain.connect(audioCtx.destination);
-                        pad.start(now); pad.stop(now + 2.1);
-                    });
-                }
-
-                const melFreq = currentBar.melody[beatIdx];
-                const mel = audioCtx.createOscillator();
-                const mGain = audioCtx.createGain();
-                mel.type = 'triangle';
-                mel.frequency.setValueAtTime(melFreq, now);
-                mGain.gain.setValueAtTime(0.12 * bgmVolume, now);
-                mGain.gain.exponentialRampToValueAtTime(0.002, now + 0.55);
-                mel.connect(mGain); mGain.connect(audioCtx.destination);
-                mel.start(now); mel.stop(now + 0.55);
-
-                bgmStep++;
-            } catch (e) {}
-        }, 600);
+        if (!audioCtx || !audioMaster) return;
+        const t = audioCtx.currentTime;
+        const src = audioCtx.createBufferSource(); src.buffer = audioNoise; src.loop = true;
+        const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = bgmMood === 'tension' ? 260 : 420; filter.Q.value = 0.6;
+        const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.0001, t); gain.gain.exponentialRampToValueAtTime(0.09 * bgmVolume + 0.0001, t + 3);
+        const lfo = audioCtx.createOscillator(); lfo.frequency.value = 0.06;
+        const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 0.035 * bgmVolume;
+        lfo.connect(lfoGain); lfoGain.connect(gain.gain);
+        src.connect(filter); filter.connect(gain); gain.connect(audioMaster);
+        src.start(t); lfo.start(t);
+        bgmNodes = { src: src, lfo: lfo, filter: filter, gain: gain, timer: null };
+        const knock = function() {
+            if (!bgmNodes) return;
+            if (!audioMuted && audioCtx.state === 'running') {
+                const tt = audioCtx.currentTime + 0.05;
+                const base = bgmMood === 'tension' ? 98 : 131;
+                sndWood(tt, base * [1, 1.125, 1.333, 1.5][Math.floor(Math.random() * 4)], 0.05 * bgmVolume, 1.4);
+            }
+            bgmNodes.timer = setTimeout(knock, 18000 + Math.random() * 24000);
+        };
+        bgmNodes.timer = setTimeout(knock, 9000 + Math.random() * 9000);
     }
 
     // --- 📊 グラフ・コーチ欄の開閉状態を端末に記憶する ---
@@ -2153,6 +2195,16 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     // BGMを止める（bgmWanted は保つので、タブ復帰やミュート解除で再開できる）
     function stopBGM() {
         if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+        if (bgmNodes) {
+            try {
+                const t = audioCtx.currentTime;
+                bgmNodes.gain.gain.cancelScheduledValues(t);
+                bgmNodes.gain.gain.setTargetAtTime(0.0001, t, 0.3);
+                bgmNodes.src.stop(t + 1.2); bgmNodes.lfo.stop(t + 1.2);
+            } catch (e) {}
+            clearTimeout(bgmNodes.timer);
+            bgmNodes = null;
+        }
     }
 
     // ワンタップでミュート／解除（設定は音量設定と一緒に端末に保存）
@@ -2185,65 +2237,35 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
 
     function playSound(type) {
         if (audioMuted || seVolume <= 0.001) return;
+        // 画面の切り替え（タブ・シート・メニュー）では鳴らさない
+        if (type === 'click') return;
         initAudio();
+        if (!audioCtx || !audioMaster) return;
         try {
-            const now = audioCtx.currentTime;
-            if (type === 'click') {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(750, now);
-                osc.frequency.exponentialRampToValueAtTime(1150, now + 0.06);
-                gain.gain.setValueAtTime(0.09 * seVolume, now);
-                gain.gain.linearRampToValueAtTime(0.005, now + 0.06);
-                osc.start(now); osc.stop(now + 0.06);
-            } else if (type === 'action') {
-                [523.25, 659.25, 783.99, 1046.5].forEach(function(freq, i) {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, now + i * 0.045);
-                    gain.gain.setValueAtTime(0.12 * seVolume, now + i * 0.045);
-                    gain.gain.linearRampToValueAtTime(0.005, now + i * 0.045 + 0.14);
-                    osc.start(now + i * 0.045); osc.stop(now + i * 0.045 + 0.14);
-                });
+            const t = audioCtx.currentTime + 0.01;
+            const v = seVolume;
+            if (type === 'year-good') {
+                // 良い年：木の音を二つ。少し上がる
+                const f = jitter(196, 0.04);
+                sndWood(t, f, 0.32 * v, jitter(0.5, 0.15));
+                sndWood(t + jitter(0.11, 0.2), f * (Math.random() < 0.5 ? 1.25 : 1.333), 0.22 * v, jitter(0.45, 0.15));
+            } else if (type === 'year-bad') {
+                // 減った年：低くこもった木の音と、短い風
+                sndWood(t, jitter(110, 0.05), 0.34 * v, jitter(0.7, 0.1));
+                sndGust(t + 0.05, jitter(1.1, 0.15), 0.12 * v);
+            } else if (type === 'stamp' || type === 'rankup') {
+                sndStamp(t, (type === 'stamp' ? 0.55 : 0.38) * v);
             } else if (type === 'event') {
-                [587.33, 740.0, 880.0, 1174.66].forEach(function(freq, i) {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, now + i * 0.065);
-                    gain.gain.setValueAtTime(0.13 * seVolume, now + i * 0.065);
-                    gain.gain.linearRampToValueAtTime(0.005, now + i * 0.065 + 0.22);
-                    osc.start(now + i * 0.065); osc.stop(now + i * 0.065 + 0.22);
-                });
+                // 紙を一枚置く音
+                sndPaper(t, jitter(0.16, 0.2), 0.45 * v, 5 + Math.floor(Math.random() * 3));
+            } else if (type === 'action') {
+                // 売買など：小さく軽い木の音
+                sndWood(t, jitter(392, 0.05), 0.14 * v, jitter(0.18, 0.2));
             } else if (type === 'bad') {
-                [392.00, 329.63, 277.18].forEach(function(freq, i) {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(freq, now + i * 0.09);
-                    gain.gain.setValueAtTime(0.14 * seVolume, now + i * 0.09);
-                    gain.gain.linearRampToValueAtTime(0.005, now + i * 0.09 + 0.22);
-                    osc.start(now + i * 0.09); osc.stop(now + i * 0.09 + 0.22);
-                });
-            } else if (type === 'rankup') {
-                [523.25, 659.25, 783.99, 1046.5, 987.77, 1046.5, 1318.5].forEach(function(freq, i) {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, now + i * 0.09);
-                    gain.gain.setValueAtTime(0.18 * seVolume, now + i * 0.09);
-                    gain.gain.exponentialRampToValueAtTime(0.005, now + i * 0.09 + 0.35);
-                    osc.start(now + i * 0.09); osc.stop(now + i * 0.09 + 0.35);
-                });
+                sndWood(t, jitter(98, 0.05), 0.3 * v, jitter(0.8, 0.1));
+                sndGust(t + 0.08, jitter(0.8, 0.15), 0.08 * v);
             }
-        } catch(e) {}
+        } catch (e) {}
     }
 
     function openSoundModal() {
@@ -2258,7 +2280,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         bgmVolume = Number(val) / 100;
         document.getElementById('disp-bgm-vol').innerText = val + '%';
         if (bgmVolume > 0 && audioMuted) { audioMuted = false; updateMuteButtonUI(); }
-        if (bgmVolume > 0 && bgmWanted) startBGM();
+        if (bgmNodes && audioCtx) bgmNodes.gain.gain.setTargetAtTime(0.09 * bgmVolume + 0.0001, audioCtx.currentTime, 0.2);
+        if (bgmVolume <= 0.001) stopBGM();
+        else if (bgmWanted) startBGM();
         saveAudioPrefs();
     }
     function changeSeVolume(val) {
