@@ -27,13 +27,13 @@
         :root {
             --paper: #F2EEE5; --paper-hi: #F8F5EF; --paper-lo: #E8E2D5;
             --rule: #D8CFBF; --rule-strong: #B9AF9D;
-            --ink: #3A332B; --sub: #665F55;
+            --ink: #3A332B; --sub: #554E45;
             --wood: #7B5E41; --ash: #A49E93; --red: #B03A2E;
             --green: #3B4A40; --green-press: #2C382F; --on-green: #F2EEE5;
             --amber: #8A6326; --amber-line: #B9853F; --slate: #3F5560; --rose: #8C5A6A;
             --font-sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic", "YuGothic", sans-serif;
             --font-serif: "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Noto Serif JP", "Noto Serif CJK JP", "Yu Mincho", "YuMincho", serif;
-            --fs-xs: 0.75rem; --fs-s: 0.8125rem; --fs-m: 0.875rem; --fs-l: 1rem;
+            --fs-xs: 0.8125rem; --fs-s: 0.875rem; --fs-m: 1rem; --fs-l: 1rem;
             --r-s: 3px; --r-m: 6px;
             /* 旧い変数名は新しい色へつなぐ（JSやインラインの style が参照している） */
             --bg-color: var(--paper); --panel-bg: var(--paper-hi); --card-bg: var(--paper-hi); --border: var(--rule);
@@ -55,18 +55,18 @@
         .age-badge .age-unit { font-size: var(--fs-m); color: var(--ink); margin: 0 10px 0 2px; }
         .container { width: 100%; max-width: 560px; padding: 8px 16px 12px; position: relative; }
         .header { display: flex; justify-content: space-between; align-items: center; min-height: 56px; margin-bottom: 4px; gap: 6px; }
-        .app-title { font-size: var(--fs-s); font-weight: 500; letter-spacing: 0.18em; color: var(--sub); background: transparent; border: none; padding: 0; min-height: 44px; text-align: left; cursor: pointer; text-transform: uppercase; }
+        .app-title { font-size: var(--fs-s); font-weight: 500; letter-spacing: 0; color: var(--sub); background: transparent; border: none; padding: 0; min-height: 44px; text-align: left; cursor: pointer; text-transform: uppercase; }
         .header-right { display: flex; align-items: center; gap: 0; justify-content: flex-end; }
         .icon-btn { font-size: var(--fs-m); padding: 4px 8px; border-radius: var(--r-s); background: transparent; color: var(--ink); border: 1px solid var(--rule); cursor: pointer; white-space: nowrap; }
         .header-icon { width: 44px; height: 44px; padding: 0; border: none; display: inline-flex; align-items: center; justify-content: center; }
         .ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; flex: none; }
         .ico.s { width: 16px; height: 16px; }
         .menu-wrap { position: relative; }
-        .header-menu { position: absolute; right: 0; top: calc(100% + 4px); min-width: 220px; background: var(--paper-hi); border: 1px solid var(--rule-strong); border-radius: var(--r-m); padding: 4px 0; z-index: 900; display: flex; flex-direction: column; }
+        .header-menu { position: absolute; right: 0; top: calc(100% + 4px); min-width: 264px; background: var(--paper-hi); border: 1px solid var(--rule-strong); border-radius: var(--r-m); padding: 4px 0; z-index: 900; display: flex; flex-direction: column; }
         .menu-item { min-height: 48px; text-align: left; padding: 10px 16px; background: transparent; color: var(--ink); border: none; border-bottom: 1px solid var(--rule); font-size: var(--fs-m); cursor: pointer; display: flex; align-items: center; gap: 10px; }
         .menu-item:last-child { border-bottom: none; }
         .menu-item:active { background: var(--paper-lo); }
-        .term-btn { font-family: inherit; display: inline-flex; align-items: center; gap: 2px; background: transparent; color: var(--sub); border: 1px solid var(--rule-strong); border-radius: 999px; padding: 0 7px; font-size: var(--fs-xs); font-weight: 400; cursor: pointer; vertical-align: middle; line-height: 1.6; }
+        .term-btn { font-family: inherit; display: inline-flex; align-items: center; gap: 2px; background: transparent; color: var(--sub); border: 1px solid var(--rule-strong); border-radius: 999px; padding: 0 7px; font-size: var(--fs-xs); font-weight: 400; cursor: pointer; vertical-align: middle; line-height: 1.6; white-space: nowrap; }
         .fire-badge { font-size: var(--fs-xs); padding: 1px 6px; border-radius: var(--r-s); color: var(--green); border: 1px solid var(--green); }
         .age-badge { font-size: var(--fs-s); color: var(--sub); white-space: nowrap; }
         /* ===== タイトル（通帳の表紙）===== */
@@ -74,10 +74,10 @@
         .op-cover { background: #34433D; color: #D8CFB8; border-radius: 4px; position: relative; overflow: hidden; padding: 26px 22px 24px; min-height: 360px; margin: 4px 4px 0; }
         .op-cover::before { content: ''; position: absolute; inset: 9px; border: 1px solid rgba(216,207,184,0.35); border-radius: 2px; z-index: 2; pointer-events: none; }
         .op-cover-rings { position: absolute; right: -180px; top: -150px; opacity: 0.3; z-index: 1; }
-        .op-sub-pill { position: relative; z-index: 3; font-size: 0.6875rem; letter-spacing: 0.3em; opacity: 0.85; }
+        .op-sub-pill { position: relative; z-index: 3; font-size: var(--fs-xs); }
         .op-main-title { position: relative; z-index: 3; font-family: var(--font-serif); font-weight: 500; font-size: 2.25rem; letter-spacing: 0.12em; margin: 52px 0 4px; color: #E4DCC6; line-height: 1.3; }
-        .op-catch { position: relative; z-index: 3; font-size: var(--fs-m); letter-spacing: 0.18em; opacity: 0.85; }
-        .op-cover-foot { position: absolute; z-index: 3; left: 22px; right: 22px; bottom: 26px; font-size: var(--fs-s); letter-spacing: 0.12em; border-bottom: 1px solid rgba(216,207,184,0.45); padding-bottom: 6px; display: flex; justify-content: space-between; }
+        .op-catch { position: relative; z-index: 3; font-size: var(--fs-m); letter-spacing: 0.18em; }
+        .op-cover-foot { position: absolute; z-index: 3; left: 22px; right: 22px; bottom: 26px; font-size: var(--fs-s); border-bottom: 1px solid rgba(216,207,184,0.45); padding-bottom: 6px; display: flex; justify-content: space-between; }
         .op-story-card { margin: 20px 4px 0; font-size: var(--fs-m); line-height: 1.85; white-space: pre-line; }
         .op-start-btn, .start-game-btn, .next-btn { background: var(--green); color: var(--on-green); border: none; width: 100%; min-height: 54px; padding: 12px; font-size: var(--fs-l); font-weight: 500; letter-spacing: 0.1em; border-radius: var(--r-s); cursor: pointer; }
         .op-start-btn:active, .start-game-btn:active, .next-btn:active { background: var(--green-press); }
@@ -86,11 +86,11 @@
         .op-sub-actions { display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 6px; }
         .op-sub-btn { background: transparent; border: none; color: var(--sub); padding: 8px 4px; font-size: var(--fs-s); cursor: pointer; white-space: nowrap; }
         .op-sub-btn.reset { color: var(--red); }
-        .op-disclaimer-note, .res-disclaimer-note { font-size: var(--fs-xs); color: var(--sub); margin: 14px 4px 0; line-height: 1.6; }
+        .op-disclaimer-note, .res-disclaimer-note { font-size: var(--fs-s); color: var(--sub); margin: 14px 4px 0; line-height: 1.6; }
         .op-feature-grid, .op-emblem { display: none; }
         /* ===== 広告・プロモ・寄付（目立たせない）===== */
         .promo-box { border-top: 1px solid var(--rule); padding: 12px 0 0; margin-top: 12px; text-align: left; }
-        .promo-badge { display: inline-block; font-size: 0.6875rem; letter-spacing: 0.1em; color: var(--sub); margin-bottom: 2px; }
+        .promo-badge { display: inline-block; font-size: var(--fs-xs); color: var(--sub); margin-bottom: 2px; }
         .promo-title { font-size: var(--fs-m); font-weight: 500; margin-bottom: 2px; }
         .promo-desc { font-size: var(--fs-s); color: var(--sub); margin-bottom: 8px; line-height: 1.6; }
         .promo-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -102,18 +102,18 @@
         .rank-legacy-tag { font-size: var(--fs-xs); color: var(--sub); border: 1px solid var(--rule); border-radius: var(--r-s); padding: 0 4px; white-space: nowrap; }
         .site-footer { display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 12px; font-size: var(--fs-xs); color: var(--sub); }
         .footer-link { background: none; border: none; color: var(--sub); font: inherit; font-size: var(--fs-xs); text-decoration: underline; text-underline-offset: 3px; padding: 12px 8px; min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; }
-        .asset-note { font-size: var(--fs-xs); color: var(--sub); line-height: 1.6; margin: 4px 0 8px; }
+        .asset-note { font-size: var(--fs-s); color: var(--sub); line-height: 1.6; margin: 4px 0 8px; }
         /* ===== 主画面：年輪と純資産 ===== */
         .hero { display: flex; flex-direction: column; }
         .ring-wrap { position: relative; width: 256px; height: 256px; margin: 4px auto 0; }
         .life-ring { width: 256px; height: 256px; display: block; overflow: visible; }
         .ring-stamps { position: absolute; inset: 0; pointer-events: none; }
-        .ring-legend { display: flex; justify-content: center; gap: 16px; font-size: 0.6875rem; color: var(--sub); margin-top: 2px; }
+        .ring-legend { display: flex; justify-content: center; gap: 16px; font-size: var(--fs-xs); color: var(--sub); margin-top: 2px; }
         .ring-legend i { display: inline-block; width: 14px; vertical-align: middle; margin-right: 4px; }
         .ring-legend .lg-target { border-top: 1px dashed var(--amber-line); }
         .ring-legend .lg-shrank { border-top: 2.4px solid var(--ash); }
         .hero-nums { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; margin-top: 14px; }
-        .hero-lbl { font-size: var(--fs-xs); color: var(--sub); letter-spacing: 0.04em; display: flex; align-items: center; gap: 6px; }
+        .hero-lbl { font-size: var(--fs-xs); color: var(--sub); display: flex; align-items: center; gap: 6px; }
         .hero-nw { font-size: 2.25rem; font-weight: 400; line-height: 1.2; letter-spacing: 0.01em; white-space: nowrap; }
         .hero-nw .u { font-size: 1rem; margin-left: 2px; }
         .hero-delta { font-size: var(--fs-s); min-height: 1.4em; }
@@ -123,9 +123,9 @@
         .hero-pct { font-size: 1.375rem; font-weight: 500; line-height: 1.3; }
         .hero-right .fire-badge { display: inline-block; margin-top: 2px; }
         .year-card { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule); min-height: 92px; }
-        .year-k { font-size: var(--fs-xs); color: var(--sub); letter-spacing: 0.12em; }
+        .year-k { font-size: var(--fs-xs); color: var(--sub); }
         .year-l1, .year-l2 { font-size: var(--fs-m); line-height: 1.7; }
-        .year-l2 { color: var(--sub); }
+        .year-l2 { color: var(--ink); }
         .year-l1 .minus, .year-l2 .minus { color: var(--red); }
         /* 練習の5年 */
         #practice-view { padding-top: 2px; }
@@ -137,23 +137,23 @@
         .pr-actions > * { flex: 1 1 0; max-width: 528px; min-height: 56px; }
         .pr-actions .asset-btn { font-size: var(--fs-m); }
         .ev-tip-btn { color: var(--sub); margin: -6px 0 8px -4px; text-decoration: underline; text-underline-offset: 3px; }
-        .unlock-k { font-size: var(--fs-xs); color: var(--red); letter-spacing: 0.12em; margin-bottom: 2px; }
+        .unlock-k { font-size: var(--fs-xs); color: var(--red); margin-bottom: 2px; }
         .hint-ring { outline: 2px solid var(--red) !important; outline-offset: 3px; transition: outline-color 0.6s; }
-        .gate-note { font-size: var(--fs-xs); color: var(--sub); margin: 10px 0 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid var(--rule); padding-top: 8px; }
+        .gate-note { font-size: var(--fs-s); color: var(--sub); margin: 10px 0 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid var(--rule); padding-top: 8px; }
         /* 結果画面 */
         #result-view { padding: 4px 0 8px; }
         .res-ring-wrap { display: flex; justify-content: center; margin-top: 4px; }
-        .res-span { text-align: center; font-size: var(--fs-xs); color: var(--sub); margin-top: 4px; }
+        .res-span { text-align: center; font-size: var(--fs-s); color: var(--sub); margin-top: 4px; }
         .res-title { font-family: var(--font-serif); font-weight: 500; font-size: 1.375rem; margin: 14px 0 6px; line-height: 1.5; }
         .res-main { border-top: 1.5px solid var(--ink); padding-top: 10px; }
         .res-nw { font-size: 2rem; line-height: 1.25; }
         .res-nw .u { font-size: 1rem; margin-left: 2px; }
-        .res-nominal { font-size: var(--fs-xs); color: var(--sub); margin: 2px 0 8px; }
+        .res-nominal { font-size: var(--fs-s); color: var(--sub); margin: 2px 0 8px; }
         .res-table { width: 100%; border-collapse: collapse; font-size: var(--fs-s); margin-bottom: 12px; }
         .res-table th { text-align: left; font-weight: 400; color: var(--sub); width: 8.5em; white-space: nowrap; padding: 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
         .res-table td { padding: 7px 0; border-bottom: 1px solid var(--rule); }
         .res-section { padding: 6px 0 12px; }
-        .res-rival-why { font-size: var(--fs-xs); color: var(--sub); line-height: 1.7; white-space: pre-line; }
+        .res-rival-why { font-size: var(--fs-s); color: var(--sub); line-height: 1.7; white-space: pre-line; }
         .res-table tr.res-rival-why-row td { padding-top: 0; }
         .res-table tr:has(+ tr.res-rival-why-row) td, .res-table tr:has(+ tr.res-rival-why-row) th { border-bottom: none; }
         .res-table tr.res-rival-why-row:has(.res-rival-why.hidden) { display: none; }
@@ -168,18 +168,18 @@
         .year-card.enter .year-l2 { animation-delay: 0.55s; }
         @keyframes lineIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
         /* 判子（節目）*/
-        .stamp { position: absolute; width: 48px; height: 48px; border: 1.5px solid var(--red); border-radius: 50%; color: var(--red); font-family: var(--font-serif); font-size: 0.625rem; line-height: 1.2; display: flex; align-items: center; justify-content: center; text-align: center; transform: rotate(-10deg); background: rgba(242, 238, 229, 0.75); }
+        .stamp { position: absolute; width: 54px; height: 54px; border: 1.5px solid var(--red); border-radius: 50%; color: var(--red); font-family: var(--font-serif); font-size: var(--fs-xs); line-height: 1.15; display: flex; align-items: center; justify-content: center; text-align: center; transform: rotate(-10deg); background: rgba(242, 238, 229, 0.75); }
         .stamp.tr { right: -2px; top: 6px; } .stamp.br { right: -2px; bottom: 6px; transform: rotate(8deg); }
         .stamp.bl { left: -2px; bottom: 6px; transform: rotate(-6deg); } .stamp.tl { left: -2px; top: 6px; transform: rotate(12deg); }
         .stamp.press { animation: stampPress 0.42s cubic-bezier(.2,.9,.3,1.15) both; }
         @keyframes stampPress { 0% { opacity: 0; scale: 1.7; } 55% { opacity: 1; scale: 0.92; } 100% { opacity: 1; scale: 1; } }
-        .stamp.big { width: 104px; height: 104px; left: 50%; top: 50%; margin: -52px 0 0 -52px; font-size: 0.9375rem; border-width: 2px; background: rgba(242, 238, 229, 0.85); }
+        .stamp.big { width: 108px; height: 108px; left: 50%; top: 50%; margin: -54px 0 0 -54px; font-size: var(--fs-m); border-width: 2px; background: rgba(242, 238, 229, 0.85); }
         .stamp.fade { transition: opacity 0.7s ease; opacity: 0; }
         .hero-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; }
         .text-btn { background: none; border: none; color: var(--ink); font-size: var(--fs-s); min-height: 44px; display: inline-flex; align-items: center; gap: 6px; padding: 0 4px; cursor: pointer; }
         .text-btn:active { color: var(--sub); }
         #btn-hero-retire { color: var(--green); text-decoration: underline; text-underline-offset: 3px; }
-        .next-btn .next-sub { font-size: var(--fs-xs); opacity: 0.75; margin-left: 10px; letter-spacing: 0.02em; }
+        .next-btn .next-sub { font-size: var(--fs-xs); color: #C9D1C4; margin-left: 10px; letter-spacing: 0; }
         /* ===== 下から出るシート（資産を育てる・記録・学ぶ）===== */
         .sheet { position: fixed; inset: 0; z-index: 800; display: flex; flex-direction: column; justify-content: flex-end; }
         .sheet-backdrop { position: absolute; inset: 0; background: rgba(48, 42, 34, 0.35); }
@@ -189,7 +189,7 @@
         .sheet-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px 0 16px; }
         .sheet-title { font-family: var(--font-serif); font-size: 1.125rem; font-weight: 500; margin: 0; }
         .sheet-body { overflow-y: auto; padding: 4px 16px calc(24px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling: touch; }
-        .sheet-sub { font-size: var(--fs-xs); color: var(--sub); letter-spacing: 0.08em; margin: 14px 0 6px; }
+        .sheet-sub { font-size: var(--fs-xs); color: var(--sub); margin: 14px 0 6px; }
         .rec-market { display: flex; align-items: center; gap: 10px; font-size: var(--fs-s); padding: 6px 0; border-bottom: 1px solid var(--rule); }
         .rec-market .term-btn { margin-left: auto; }
         body.sheet-open { overflow: hidden; }
@@ -197,16 +197,16 @@
         body.sheet-open .toast-host { bottom: auto; top: calc(8px + env(safe-area-inset-top)); }
         /* 通帳の罫線の表 */
         .ledger { width: 100%; border-collapse: collapse; font-size: var(--fs-s); border-top: 1.5px solid var(--ink); }
-        .ledger th { font-size: 0.6875rem; color: var(--sub); font-weight: 400; text-align: left; padding: 5px 2px; border-bottom: 1px solid var(--rule); letter-spacing: 0.06em; }
+        .ledger th { font-size: var(--fs-xs); color: var(--sub); font-weight: 400; text-align: left; padding: 5px 2px; border-bottom: 1px solid var(--rule); }
         .ledger td { padding: 7px 2px; border-bottom: 1px solid var(--rule); vertical-align: top; }
         .ledger td:first-child { width: 36px; }
-        .ledger .num { text-align: right; white-space: nowrap; }
+        .ledger .num { text-align: right; white-space: nowrap; padding-left: 10px; }
         .ledger .minus { color: var(--red); }
         .ledger tr.now td { background: var(--paper-lo); }
         .ledger .memo { color: var(--ink); }
         /* 設定画面 */
         .select-short { font-size: var(--fs-s); color: var(--sub); }
-        .select-more { display: none; font-size: var(--fs-xs); color: var(--sub); margin-top: 4px; line-height: 1.7; }
+        .select-more { display: none; font-size: var(--fs-s); color: var(--sub); margin-top: 4px; line-height: 1.7; }
         .select-card.selected .select-more { display: block; }
         .select-card.selected .select-short { color: var(--ink); }
         .select-tag:empty { display: none; }
@@ -222,14 +222,14 @@
         .mkt-btn { background: transparent; border: none; border-right: 1px solid var(--rule); color: var(--sub); font-size: var(--fs-s); padding: 6px 2px; cursor: pointer; text-align: center; }
         .mkt-btn:last-child { border-right: none; }
         .mkt-btn.active { background: var(--green); color: var(--on-green); }
-        .mkt-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .mkt-btn:disabled { color: var(--sub); cursor: not-allowed; }
         .market-info-bar { padding: 4px 0; margin-bottom: 10px; font-size: var(--fs-xs); color: var(--sub); display: flex; justify-content: space-between; align-items: center; gap: 6px; }
         #market-bar-wrap.in-game { display: none; }
         .cycle-badge { font-size: var(--fs-xs); padding: 1px 0; color: var(--sub); }
         .cycle-badge.cycle-correction, .cycle-badge.cycle-recession { color: var(--red); }
         /* ===== 設定 ===== */
         .setup-box { padding: 4px 0; }
-        .setup-section-title { font-size: var(--fs-xs); letter-spacing: 0.12em; color: var(--sub); margin: 16px 0 6px; }
+        .setup-section-title { font-size: var(--fs-xs); color: var(--sub); margin: 16px 0 6px; }
         .select-card { background: transparent; border: 1px solid var(--rule); border-radius: var(--r-m); padding: 10px 12px; margin-bottom: 6px; cursor: pointer; }
         .select-card.selected { border-color: var(--green); box-shadow: inset 3px 0 0 var(--green); background: var(--paper-hi); }
         .select-card-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2px 6px; font-weight: 500; font-size: var(--fs-m); margin-bottom: 2px; }
@@ -239,7 +239,7 @@
         .challenge-chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
         .challenge-chip { background: transparent; border: 1px solid var(--rule); color: var(--ink); font-size: var(--fs-s); padding: 6px 10px; border-radius: 999px; cursor: pointer; }
         .challenge-chip.active { background: var(--green); color: var(--on-green); border-color: var(--green); }
-        .challenge-chip:disabled { opacity: 0.4; cursor: not-allowed; }
+        .challenge-chip:disabled { color: var(--sub); border-style: dashed; cursor: not-allowed; }
         .select-card.scenario-sub { padding: 8px 10px; }
         .select-card.scenario-sub.selected { border-color: var(--green); }
         .name-input { width: 100%; background: var(--paper-hi); border: 1px solid var(--rule-strong); color: var(--ink); padding: 10px; border-radius: var(--r-s); font-size: var(--fs-l); margin-bottom: 6px; outline: none; font-family: inherit; }
@@ -250,10 +250,10 @@
         .rank-strip { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; margin-bottom: 6px; font-size: var(--fs-s); border-bottom: 1px solid var(--rule); }
         .net-worth-label { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; font-size: var(--fs-s); color: var(--sub); }
         .fire-progress { margin: 8px 0 2px; }
-        .fire-progress-text { font-size: var(--fs-xs); color: var(--sub); margin-bottom: 4px; line-height: 1.6; }
+        .fire-progress-text { font-size: var(--fs-s); color: var(--sub); margin-bottom: 4px; line-height: 1.6; }
         .fire-progress-bar { height: 4px; background: var(--paper-lo); border-radius: 2px; overflow: hidden; }
         .fire-progress-fill { height: 100%; background: var(--wood); }
-        .nominal-line { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; font-size: var(--fs-xs); color: var(--sub); margin: 2px 0 8px; }
+        .nominal-line { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; font-size: var(--fs-s); color: var(--sub); margin: 2px 0 8px; }
         .net-worth-row { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px; }
         .net-worth-val { font-size: 1.5rem; font-weight: 500; margin: 2px 0 4px; }
         .growth-pill { font-size: var(--fs-s); color: var(--ink); }
@@ -284,6 +284,9 @@
         .lg-swatch { display: inline-block; width: 18px; height: 0; border-top: 2px solid var(--wood); vertical-align: middle; margin-right: 4px; }
         .lg-swatch.rival { border-top: 2px dashed var(--ash); }
         .chart-tip { position: absolute; top: 4px; pointer-events: none; background: var(--paper-hi); border: 1px solid var(--rule-strong); border-radius: var(--r-s); padding: 6px 8px; font-size: var(--fs-xs); color: var(--ink); white-space: nowrap; line-height: 1.5; }
+        .coach-box { padding: 8px 0 4px; border-top: 1px solid var(--rule); }
+        .coach-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: var(--fs-s); color: var(--sub); margin-bottom: 4px; }
+        .coach-body { font-size: var(--fs-m); line-height: 1.7; color: var(--ink); }
         .insight-panel { margin-bottom: 10px; }
         .insight-panel > summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: var(--fs-s); color: var(--sub); list-style: none; border-bottom: 1px solid var(--rule); }
         .insight-panel > summary::-webkit-details-marker { display: none; }
@@ -294,7 +297,7 @@
         .nav-guide-title { font-size: var(--fs-s); font-weight: 500; }
         .nav-skip-btn { background: transparent; border: none; color: var(--sub); font-size: var(--fs-xs); padding: 2px 6px; cursor: pointer; text-decoration: underline; }
         .nav-guide-desc { font-size: var(--fs-s); }
-        .news-strip { padding: 8px 0; margin-bottom: 8px; font-size: var(--fs-s); line-height: 1.75; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+        .news-strip { padding: 8px 0; margin-bottom: 8px; font-size: var(--fs-m); line-height: 1.75; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
         .title-toast { position: fixed; left: 50%; transform: translateX(-50%); top: calc(10px + env(safe-area-inset-top)); width: calc(100% - 120px); max-width: 360px; z-index: 600; text-align: left; font-family: inherit; background: var(--paper-hi); border: 1px solid var(--red); color: var(--ink); padding: 6px 12px; border-radius: 999px; font-size: var(--fs-s); display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; animation: toastIn 0.25s ease-out; }
         .title-toast-more { font-size: var(--fs-xs); color: var(--red); flex: none; }
         #title-toast-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -311,13 +314,13 @@
         .asset-card-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2px 6px; margin-bottom: 2px; }
         .asset-name { font-weight: 500; font-size: var(--fs-m); display: flex; align-items: center; gap: 6px; }
         .asset-holding-val { white-space: nowrap; font-size: var(--fs-m); }
-        .asset-sub-info { display: flex; justify-content: space-between; font-size: var(--fs-xs); color: var(--sub); margin-bottom: 8px; }
+        .asset-sub-info { display: flex; justify-content: space-between; font-size: var(--fs-s); color: var(--sub); margin-bottom: 8px; }
         .asset-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .asset-btn { background: transparent; border: 1px solid var(--rule-strong); color: var(--ink); font-size: var(--fs-s); padding: 6px 2px; border-radius: var(--r-s); cursor: pointer; text-align: center; }
         .asset-btn:active { background: var(--paper-lo); }
         .asset-btn.buy { border-color: var(--ink); }
         .asset-btn.sell { color: var(--red); border-color: var(--rule-strong); }
-        .asset-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .asset-btn:disabled { color: var(--sub); border-color: var(--rule-strong); border-style: dashed; cursor: not-allowed; }
         .acad-progress-row { margin-bottom: 8px; }
         .acad-progress-label { font-size: var(--fs-xs); color: var(--sub); margin-bottom: 3px; display: flex; justify-content: space-between; }
         .acad-progress-label strong { color: var(--ink); font-weight: 500; }
@@ -330,12 +333,12 @@
         .roadmap-toggle.collapsed { transform: rotate(180deg); }
         .roadmap-body { padding: 0 0 8px; }
         .roadmap-body.collapsed { display: none; }
-        .roadmap-item { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-top: 1px dashed var(--rule); font-size: var(--fs-xs); }
+        .roadmap-item { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-top: 1px dashed var(--rule); font-size: var(--fs-s); }
         .roadmap-item:first-child { border-top: none; }
-        .roadmap-check { flex: none; width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--rule-strong); display: flex; align-items: center; justify-content: center; font-size: 0.625rem; margin-top: 1px; }
+        .roadmap-check { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--rule-strong); display: flex; align-items: center; justify-content: center; font-size: var(--fs-xs); margin-top: 1px; }
         .roadmap-item.done .roadmap-check { border-color: var(--red); color: var(--red); }
         .roadmap-text { color: var(--sub); }
-        .roadmap-text strong { display: block; color: var(--ink); font-size: var(--fs-xs); font-weight: 500; margin-bottom: 1px; }
+        .roadmap-text strong { display: block; color: var(--ink); font-size: var(--fs-s); font-weight: 500; margin-bottom: 1px; }
         .best-record-banner { padding: 8px 0; margin-bottom: 10px; font-size: var(--fs-s); text-align: left; border-bottom: 1px solid var(--rule); }
         .best-record-banner.is-new-best { color: var(--ink); }
         .best-record-banner.not-best { color: var(--sub); }
@@ -352,7 +355,7 @@
         .turn-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; padding: 8px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--paper); border-top: 1px solid var(--rule); }
         .turn-bar-inner { max-width: 528px; margin: 0 auto; display: flex; gap: 8px; align-items: center; }
         .turn-bar-inner .next-btn { flex: 1 1 auto; min-width: 0; }
-        .turn-bar-inner .skip-btn { flex: 0 0 auto; width: auto; min-width: 0; background: transparent; color: var(--ink); border: 1px solid var(--rule-strong); font-size: var(--fs-s); letter-spacing: 0.04em; padding: 8px 12px; }
+        .turn-bar-inner .skip-btn { flex: 0 0 auto; width: auto; min-width: 0; background: transparent; color: var(--ink); border: 1px solid var(--rule-strong); font-size: var(--fs-s); letter-spacing: 0; padding: 8px 12px; }
         .turn-bar .next-btn { min-height: 56px; }
         .hedge-btn { background: transparent; border: 1px solid var(--rule-strong); color: var(--ink); width: 100%; padding: 8px 10px; font-size: var(--fs-s); border-radius: var(--r-s); cursor: pointer; margin: 4px 0 8px; text-align: left; }
         .hedge-btn.active { border-color: var(--green); box-shadow: inset 3px 0 0 var(--green); }
@@ -360,7 +363,7 @@
         .vol-row { margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid var(--rule); }
         .vol-top { display: flex; justify-content: space-between; align-items: center; font-size: var(--fs-m); margin-bottom: 2px; }
         input[type="range"].vol-slider { width: 100%; accent-color: var(--green); cursor: pointer; }
-        .tut-step-card { border-bottom: 1px solid var(--rule); padding: 8px 0; font-size: var(--fs-s); }
+        .tut-step-card { border-bottom: 1px solid var(--rule); padding: 8px 0; font-size: var(--fs-m); line-height: 1.7; }
         .tut-step-card strong { display: block; margin-bottom: 2px; font-size: var(--fs-m); font-weight: 500; }
         .title-grid { display: grid; grid-template-columns: 1fr; gap: 0; max-height: 52vh; overflow-y: auto; margin-bottom: 10px; border-top: 1px solid var(--rule); }
         .title-card { border-bottom: 1px solid var(--rule); padding: 10px 2px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; color: var(--sub); }
@@ -368,15 +371,15 @@
         .title-card.mythic.unlocked { box-shadow: inset 3px 0 0 var(--red); padding-left: 10px; }
         .title-badge-tag { font-size: var(--fs-xs); padding: 0 6px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--rule-strong); color: var(--sub); }
         .title-badge-tag.done { border-color: var(--red); color: var(--red); }
-        .mythic-pill { display: inline-block; font-size: 0.6875rem; letter-spacing: 0.08em; padding: 0 5px; border: 1px solid var(--ink); border-radius: var(--r-s); margin-right: 4px; vertical-align: middle; }
+        .mythic-pill { display: inline-block; font-size: var(--fs-xs); padding: 0 5px; border: 1px solid var(--ink); border-radius: var(--r-s); margin-right: 4px; vertical-align: middle; }
         /* ===== モーダル（紙の伝票のような一枚）===== */
         .modal-overlay { position: fixed; inset: 0; background: rgba(48, 42, 34, 0.42); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 1000; }
         .modal-card { background: var(--paper-hi); border-top: 3px solid var(--ink); border-radius: var(--r-s); padding: 20px 18px 16px; max-width: 440px; width: 100%; max-height: 86vh; overflow-y: auto; position: relative; color: var(--ink); text-align: left !important; }
         .modal-card:focus { outline: none; }
         .modal-title { font-family: var(--font-serif); font-size: 1.125rem; font-weight: 500; margin-bottom: 10px; color: var(--ink); line-height: 1.5; display: block; }
         .modal-desc { font-size: var(--fs-m); color: var(--ink); margin-bottom: 14px; line-height: 1.8; }
-        .modal-note { font-size: var(--fs-s); color: var(--sub); border-left: 2px solid var(--rule-strong); padding: 2px 0 2px 10px; margin: 0 0 14px; line-height: 1.7; white-space: pre-line; }
-        .choice-btn { display: block; width: 100%; text-align: left; background: transparent; border: 1px solid var(--rule-strong); color: var(--ink); padding: 10px 12px; border-radius: var(--r-s); margin-bottom: 8px; cursor: pointer; font-size: var(--fs-m); line-height: 1.6; }
+        .modal-note { font-size: var(--fs-m); color: var(--ink); border-left: 2px solid var(--rule-strong); padding: 2px 0 2px 10px; margin: 0 0 14px; line-height: 1.7; white-space: pre-line; }
+        .choice-btn { display: block; width: 100%; text-align: left; background: transparent; border: 1px solid var(--rule-strong); color: var(--ink); padding: 10px 12px; border-radius: var(--r-s); margin-bottom: 8px; cursor: pointer; font-size: var(--fs-m); line-height: 1.7; }
         .choice-btn:active { background: var(--paper-lo); }
         .choice-btn strong { display: none; }
         .event-result-banner { padding: 4px 0 4px 12px; margin-bottom: 16px; border-left: 2px solid var(--ink); text-align: left; }
@@ -386,7 +389,7 @@
         .confetti-piece { display: none; }
         /* ゲーム内トースト（短いお知らせ）と確認ダイアログ：ブラウザ標準の alert / confirm / prompt の代わり */
         .toast-host { position: fixed; left: 0; right: 0; bottom: calc(92px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0 16px; z-index: 1200; pointer-events: none; }
-        .toast { pointer-events: auto; max-width: 528px; width: 100%; background: var(--ink); color: var(--paper); border-radius: var(--r-s); padding: 10px 14px; font-size: var(--fs-s); line-height: 1.6; white-space: pre-line; cursor: pointer; animation: toastIn 0.2s ease-out; }
+        .toast { pointer-events: auto; max-width: 528px; width: 100%; background: var(--ink); color: var(--paper); border-radius: var(--r-s); padding: 10px 14px; font-size: var(--fs-m); line-height: 1.7; white-space: pre-line; cursor: pointer; animation: toastIn 0.2s ease-out; }
         .toast.warn { box-shadow: inset 3px 0 0 #E08A7E; }
         .toast.ok { box-shadow: inset 3px 0 0 #B7C4A8; }
         @keyframes toastIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -508,15 +511,15 @@
             <div class="setup-section-title" id="lbl-set-scenario" style="margin-top:4px;">どの危機を体験するか</div>
             <div class="select-card scenario-sub selected" id="scen-lehman" onclick="selectScenario('lehman')">
                 <div class="select-card-top"><span>🏦 2008年 世界金融危機</span><span class="select-tag">長期低迷からの回復</span></div>
-                <div style="font-size:0.75rem; color:var(--text-sub);">住宅バブル崩壊から連鎖する大暴落。長い冬を乗り越えられるか？</div>
+                <div style="font-size:0.875rem; color:var(--text-sub);">住宅バブル崩壊から連鎖する大暴落。長い冬を乗り越えられるか？</div>
             </div>
             <div class="select-card scenario-sub" id="scen-dotcom" onclick="selectScenario('dotcom')">
                 <div class="select-card-top"><span>💻 2000年 ITバブル崩壊</span><span class="select-tag">熱狂からの急落</span></div>
-                <div style="font-size:0.75rem; color:var(--text-sub);">根拠なき熱狂で急騰したハイテク株が、一気に崩れ落ちる。</div>
+                <div style="font-size:0.875rem; color:var(--text-sub);">根拠なき熱狂で急騰したハイテク株が、一気に崩れ落ちる。</div>
             </div>
             <div class="select-card scenario-sub" id="scen-corona" onclick="selectScenario('corona')">
                 <div class="select-card-top"><span>🦠 2020年 コロナショック</span><span class="select-tag">史上最速のV字回復</span></div>
-                <div style="font-size:0.75rem; color:var(--text-sub);">パンデミックで歴史的急落。だが回復は誰よりも早かった。</div>
+                <div style="font-size:0.875rem; color:var(--text-sub);">パンデミックで歴史的急落。だが回復は誰よりも早かった。</div>
             </div>
         </div>
         <details class="setup-more" id="setup-more">
@@ -542,7 +545,7 @@
                     <button type="button" class="challenge-chip" id="chal-real_estate_only" onclick="selectChallenge('real_estate_only')">🏠 不動産王一本勝負</button>
                     <button type="button" class="challenge-chip" id="chal-conservative_only" onclick="selectChallenge('conservative_only')">🛡️ 超保守型（株・金のみ）</button>
                 </div>
-                <div style="font-size:0.75rem; color:var(--text-sub); margin-top:4px;" id="lbl-challenge-desc">通常プレイ：すべての資産クラスを自由に活用できます。</div>
+                <div style="font-size:0.875rem; color:var(--text-sub); margin-top:4px;" id="lbl-challenge-desc">通常プレイ：すべての資産クラスを自由に活用できます。</div>
             </div>
         </details>
         <button type="button" class="start-game-btn" onclick="beginFromSetup()" id="lbl-start-btn">この設定ではじめる</button>
@@ -632,8 +635,8 @@
 
         <!-- タブ1: 王道投資 -->
         <div id="tab-portfolio" class="panel-box">
-            <div style="font-size:0.875rem; font-weight:500; margin-bottom:4px;">🌎 <span id="lbl-core-title">王道の資産運用</span> <button type="button" class="term-btn" onclick="openTermHelp('allocation')" id="btn-help-port">💡 ポートフォリオとは？</button></div>
-            <div style="font-size:0.75rem; color:var(--text-sub); margin-bottom:8px;" id="lbl-core-desc">ボタンを押して「インデックス株」と「金(ゴールド)」を購入しましょう！暴落や急な出費に備えて「金」と「手元現金」も残すのがコツです。</div>
+            <div style="font-size:1rem; font-weight:500; margin-bottom:4px;">🌎 <span id="lbl-core-title">王道の資産運用</span> <button type="button" class="term-btn" onclick="openTermHelp('allocation')" id="btn-help-port">💡 ポートフォリオとは？</button></div>
+            <div style="font-size:0.875rem; color:var(--text-sub); margin-bottom:8px;" id="lbl-core-desc">ボタンを押して「インデックス株」と「金(ゴールド)」を購入しましょう！暴落や急な出費に備えて「金」と「手元現金」も残すのがコツです。</div>
             <div class="asset-card">
                 <div class="asset-card-top"><span class="asset-name">📈 <span id="lbl-ind-name">全世界インデックス株</span> <button type="button" class="term-btn" onclick="openTermHelp('index')">?</button></span><span class="asset-holding-val" id="val-index-hold">保有: ¥0</span></div>
                 <div class="asset-sub-info"><span id="lbl-ind-sub">ゲーム内の想定: 値上がり＋配当（年ごとに上下します）</span><span id="lbl-ind-tag" class="hidden">王道の主力資産</span></div>
@@ -654,31 +657,31 @@
             </div>
             <div class="asset-note" id="lbl-asset-note">※ 上の数字はこのゲーム用の設定で、物価上昇分を除いた「実質」です（額面ではこれに物価上昇が加わります）。現実の将来の成績を示したり保証したりするものではありません。</div>
             <div class="sponsor-reward-bar hidden" id="sponsor-reward-bar">
-                <div style="font-size:0.75rem; font-weight:500; color:var(--amber);" id="lbl-sponsor-bar-txt">🎁 【1回限定】おすすめ投資コラム(PR)をチェックして臨時資金 +200 を受け取ろう！</div>
+                <div style="font-size:0.875rem; font-weight:500; color:var(--amber);" id="lbl-sponsor-bar-txt">🎁 【1回限定】おすすめ投資コラム(PR)をチェックして臨時資金 +200 を受け取ろう！</div>
                 <button type="button" class="sponsor-reward-btn" onclick="claimSponsorBonus()" id="btn-sponsor-claim">PRを見て +200 獲得</button>
             </div>
         </div>
 
         <!-- タブ2: 個別株・IPO -->
         <div id="tab-stocks" class="panel-box hidden">
-            <div style="font-size:0.875rem; font-weight:500; margin-bottom:6px;">🚀 <span id="lbl-stock-title">ハイテク個別株 & リアルIPO抽選</span> <button type="button" class="term-btn" onclick="openTermHelp('ipo')">?</button></div>
+            <div style="font-size:1rem; font-weight:500; margin-bottom:6px;">🚀 <span id="lbl-stock-title">ハイテク個別株 & リアルIPO抽選</span> <button type="button" class="term-btn" onclick="openTermHelp('ipo')">?</button></div>
             <div id="stocks-container"></div>
             <div style="border-top:1px solid var(--rule); padding:10px 0 0; margin-top:8px;">
-                <div style="font-size:0.875rem; font-weight:500; color:var(--accent-purple);" id="lbl-ipo-head">🌟 IPO（新規公開株）ブックビルディング抽選（年1回・当選率 8%）</div>
-                <div style="font-size:0.75rem; color:var(--text-sub); margin-bottom:6px; line-height:1.45;" id="lbl-ipo-sub">【現実のIPOルールを再現】抽選参加自体は無料（外れてもお金は減りません）ですが、申込には<strong>「買付余力（手元現金 300以上）」</strong>が必要です。当選時は80%で初値高騰（+150〜+350）、20%で<strong>公募割れ（-40〜-80の損失）</strong>となります！</div>
+                <div style="font-size:1rem; font-weight:500; color:var(--accent-purple);" id="lbl-ipo-head">🌟 IPO（新規公開株）ブックビルディング抽選（年1回・当選率 8%）</div>
+                <div style="font-size:0.875rem; color:var(--text-sub); margin-bottom:6px; line-height:1.7;" id="lbl-ipo-sub">【現実のIPOルールを再現】抽選参加自体は無料（外れてもお金は減りません）ですが、申込には<strong>「買付余力（手元現金 300以上）」</strong>が必要です。当選時は80%で初値高騰（+150〜+350）、20%で<strong>公募割れ（-40〜-80の損失）</strong>となります！</div>
                 <button type="button" class="asset-btn buy" style="width:100%; padding:8px; font-weight:500;" onclick="tryIPO()" id="lbl-ipo-btn">IPOブックビルディングに申し込む（要買付余力: 現金300）</button>
             </div>
         </div>
 
         <!-- タブ3: 仮想通貨 -->
         <div id="tab-crypto" class="panel-box hidden">
-            <div style="font-size:0.875rem; font-weight:500; margin-bottom:6px;">🔥 <span id="lbl-crypto-title">仮想通貨ドリーム投資</span> <button type="button" class="term-btn" onclick="openTermHelp('crypto')">?</button></div>
+            <div style="font-size:1rem; font-weight:500; margin-bottom:6px;">🔥 <span id="lbl-crypto-title">仮想通貨ドリーム投資</span> <button type="button" class="term-btn" onclick="openTermHelp('crypto')">?</button></div>
             <div id="crypto-container"></div>
         </div>
 
         <!-- タブ4: 不動産 -->
         <div id="tab-realestate" class="panel-box hidden">
-            <div style="font-size:0.875rem; font-weight:500; margin-bottom:6px;">🏢 <span id="lbl-re-title">収益不動産オーナー投資</span> <button type="button" class="term-btn" onclick="openTermHelp('leverage')" id="btn-help-lev">💡 レバレッジとは？</button></div>
+            <div style="font-size:1rem; font-weight:500; margin-bottom:6px;">🏢 <span id="lbl-re-title">収益不動産オーナー投資</span> <button type="button" class="term-btn" onclick="openTermHelp('leverage')" id="btn-help-lev">💡 レバレッジとは？</button></div>
             <div style="font-size:0.875rem; font-weight:500; color:var(--accent-blue); margin-bottom:4px;" id="lbl-re-owned">▼ 保有中の物件</div>
             <div id="owned-prop-container" style="margin-bottom:8px;"></div>
             <div style="font-size:0.875rem; font-weight:500; color:var(--accent-green); margin-bottom:4px;" id="lbl-re-mkt">▼ 購入可能な物件 (頭金20%＋銀行融資80%)</div>
@@ -687,7 +690,7 @@
 
         <!-- タブ5: キャリア・法人 -->
         <div id="tab-career" class="panel-box hidden">
-            <div style="font-size:0.875rem; font-weight:500; margin-bottom:6px;">💼 <span id="lbl-car-head">本業キャリア昇進 ＆ 法人化</span> <button type="button" class="term-btn" onclick="openTermHelp('corp')">?</button></div>
+            <div style="font-size:1rem; font-weight:500; margin-bottom:6px;">💼 <span id="lbl-car-head">本業キャリア昇進 ＆ 法人化</span> <button type="button" class="term-btn" onclick="openTermHelp('corp')">?</button></div>
             <div style="padding:4px 0 8px; margin-bottom:8px; font-size:0.875rem; border-bottom:1px solid var(--rule);">
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span id="lbl-car-pos">現在の役職:</span><strong id="career-title" style="color:var(--accent-blue);">新入社員 (Lv.1 / MAX Lv.6)</strong></div>
                 <div style="display:flex; justify-content:space-between;"><span id="lbl-car-sal">年間給与貯蓄額 (+12%/回):</span><strong id="career-salary" style="color:var(--accent-green);">+¥160万/年</strong></div>
@@ -699,7 +702,7 @@
             </div>
             <div style="border-top:1px solid var(--border); padding-top:8px; margin-top:8px;">
                 <div style="font-size:0.875rem; font-weight:500; color:var(--accent-green); margin-bottom:4px;">🏖️ リタイア（仕事を辞めて資産で暮らす） <button type="button" class="term-btn" onclick="openTermHelp('retire')">?</button></div>
-                <div style="font-size:0.75rem; color:var(--text-sub); margin-bottom:6px; line-height:1.5;" id="retire-status">リタイアすると給与は止まり、生活費を配当・家賃・年金と資産の取り崩しでまかないます。</div>
+                <div style="font-size:0.875rem; color:var(--text-sub); margin-bottom:6px; line-height:1.7;" id="retire-status">リタイアすると給与は止まり、生活費を配当・家賃・年金と資産の取り崩しでまかないます。</div>
                 <button type="button" class="next-btn" id="retire-btn" style="background:transparent; color:var(--ink); border:1px solid var(--rule-strong); min-height:44px; font-size:0.875rem; letter-spacing:0;" onclick="requestRetire()">🏖️ リタイアする（仕事を辞める）</button>
             </div>
         </div>
@@ -726,7 +729,7 @@
                     <span id="lbl-networth">いまの内訳</span>
                     <span id="corp-status-pill" class="fire-badge hidden" style="margin-left:4px;">🏢 法人化済</span>
                 </div>
-                <div style="font-size:0.75rem;">
+                <div style="font-size:0.875rem;">
                     💵 <span id="lbl-free-cash">手元現金</span>: <strong id="disp-cash-top" style="color:var(--accent-blue);">¥600万</strong>
                 </div>
             </div>
@@ -798,8 +801,8 @@
                 <div class="sheet-body">
         <!-- タブ6: 無料投資アカデミー -->
         <div id="tab-academy" class="panel-box hidden">
-            <div style="font-size:0.875rem; font-weight:500; margin-bottom:4px;" id="lbl-acad-head">💡 投資アカデミー (完全無料・全24講座)</div>
-            <div style="font-size:0.75rem; color:var(--text-sub); margin-bottom:8px;" id="lbl-acad-sub">お金は一切かかりません！初級からFIRE・プロ編まで、タップして現実世界でも役立つ知恵を学ぼう！初めて読む講座には現金ボーナスも付きます🎁</div>
+            <div style="font-size:1rem; font-weight:500; margin-bottom:4px;" id="lbl-acad-head">💡 投資アカデミー (完全無料・全24講座)</div>
+            <div style="font-size:0.875rem; color:var(--text-sub); margin-bottom:8px;" id="lbl-acad-sub">お金は一切かかりません！初級からFIRE・プロ編まで、タップして現実世界でも役立つ知恵を学ぼう！初めて読む講座には現金ボーナスも付きます🎁</div>
             <div class="acad-progress-row">
                 <div class="acad-progress-label"><span id="lbl-acad-progress">📖 学習進捗</span>: <strong id="acad-progress-count">0 / 24</strong></div>
                 <div class="acad-progress-bar"><div class="acad-progress-fill" id="acad-progress-fill" style="width:0%;"></div></div>
@@ -870,7 +873,7 @@
             <div class="sheet-sub" id="lbl-ranking-submit-title">みんなのランキングに登録する</div>
             <input type="text" id="ranking-name-input" class="name-input" maxlength="20" placeholder="表示名（ニックネーム）">
             <button type="button" class="asset-btn buy" style="width:100%;" onclick="submitScoreToLeaderboard()" id="btn-ranking-submit">ランキングに登録する</button>
-            <div id="ranking-submit-status" style="font-size:0.8125rem; margin-top:6px; color:var(--sub);"></div>
+            <div id="ranking-submit-status" style="font-size:0.875rem; margin-top:6px; color:var(--sub);"></div>
         </div>
         <div class="res-section res-share">
             <button type="button" class="asset-btn" onclick="shareToX()" id="lbl-share-btn">𝕏 でシェア</button>
@@ -909,7 +912,7 @@
 <div class="modal-overlay hidden" id="quiz-modal" role="dialog" aria-modal="true" aria-labelledby="quiz-title">
     <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="quiz-title">🎓 実践マネーリテラシー検定</div>
-        <div style="font-size:0.75rem; color:var(--accent-blue); font-weight:500; margin-bottom:6px;" id="quiz-bonus-note">正解すると知識ボーナス（現金 +80）を獲得！</div>
+        <div style="font-size:0.875rem; color:var(--accent-blue); font-weight:500; margin-bottom:6px;" id="quiz-bonus-note">正解すると知識ボーナス（現金 +80）を獲得！</div>
         <div class="modal-desc" id="quiz-question" style="white-space:pre-line;">問題文</div>
         <div id="quiz-choices"></div>
     </div>
@@ -997,11 +1000,11 @@
 <div class="modal-overlay hidden" id="rankup-modal" role="dialog" aria-modal="true" aria-labelledby="lbl-rankup-head">
     <div tabindex="-1" class="modal-card rankup-card">
         <div class="rankup-crown">👑</div>
-        <div style="font-size:0.875rem; font-weight:500; color:var(--amber); letter-spacing:1px; margin-bottom:4px;" id="lbl-rankup-head">資産家ランクが上がりました</div>
+        <div style="font-size:0.875rem; font-weight:500; color:var(--amber); margin-bottom:4px;" id="lbl-rankup-head">資産家ランクが上がりました</div>
         <div class="modal-title" style="justify-content:center; font-size:1.25rem;" id="rankup-new-title">💎 憧れの億り人</div>
         <div class="event-result-banner">
-            <div style="font-size:0.875rem; color:var(--ink); font-weight:500; line-height:1.5;" id="rankup-desc">昇格しました！</div>
-            <div style="margin-top:8px; font-size:0.88rem; font-weight:500; color:var(--accent-green);" id="rankup-bonus">🎁 ボーナス獲得！</div>
+            <div style="font-size:1rem; color:var(--ink); line-height:1.7;" id="rankup-desc">昇格しました！</div>
+            <div style="margin-top:8px; font-size:1rem; font-weight:500; color:var(--accent-green);" id="rankup-bonus">🎁 ボーナス獲得！</div>
         </div>
         <button type="button" class="start-game-btn" onclick="closeRankUpModal()" id="btn-rankup-ok">閉じる</button>
     </div>
@@ -1025,7 +1028,7 @@
         <div class="modal-title" style="justify-content:center;" id="ev-res-title">イベント結果発表！</div>
         <div class="event-result-banner" id="ev-res-banner-box">
             <div style="font-size:1rem; font-weight:500; color:var(--accent-gold); margin-bottom:4px;" id="ev-res-subtitle">大成功！</div>
-            <div style="font-size:0.875rem; color:var(--ink);  line-height:1.5; white-space:pre-line;" id="ev-res-desc">詳細</div>
+            <div style="font-size:1rem; color:var(--ink); line-height:1.7; white-space:pre-line;" id="ev-res-desc">詳細</div>
         </div>
         <button type="button" class="next-btn" onclick="closeEventResultModal()" id="btn-ev-res-ok">確認して進む →</button>
     </div>
@@ -1037,7 +1040,7 @@
         <div class="modal-title" id="acad-modal-title">用語・講座解説</div>
         <div class="modal-desc" id="acad-modal-desc" style="white-space: pre-line; margin-bottom:10px;">解説文</div>
         <div class="aff-elem hidden" style="border-top:1px solid var(--rule); padding:9px 0; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
-            <span style="font-size:0.75rem; font-weight:500; color:var(--sub);" id="lbl-modal-aff-tip">💡 現実でも非課税NISAやインデックス投資を始めるならこちら(PR)</span>
+            <span style="font-size:0.875rem; font-weight:500; color:var(--sub);" id="lbl-modal-aff-tip">💡 現実でも非課税NISAやインデックス投資を始めるならこちら(PR)</span>
             <button type="button" class="promo-link-btn" style="padding:6px 10px; white-space:nowrap;" onclick="openMonetizeLink('broker')" id="btn-modal-aff-go">詳細を見る &gt;</button>
         </div>
         <button type="button" class="next-btn" onclick="closeAcademyModal()" id="btn-acad-close">なるほど！（閉じる）</button>
@@ -1834,8 +1837,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             listEl.innerHTML +=
                 '<div class="title-card ' + (t.mythic ? 'mythic ' : '') + (isUnlocked ? 'unlocked' : '') + '">' +
                     '<div>' +
-                        '<div style="font-size:0.875rem; font-weight:500; color:' + (isUnlocked ? 'var(--ink)' : 'var(--sub)') + ';">' + mythicBadge + t.icon + ' ' + name + '</div>' +
-                        '<div style="font-size:0.75rem; color:var(--text-sub); margin-top:2px;">' + desc + '</div>' +
+                        '<div style="font-size:1rem; font-weight:500; color:' + (isUnlocked ? 'var(--ink)' : 'var(--sub)') + ';">' + mythicBadge + t.icon + ' ' + name + '</div>' +
+                        '<div style="font-size:0.875rem; color:var(--text-sub); margin-top:2px;">' + desc + '</div>' +
                     '</div>' +
                     '<span class="title-badge-tag ' + (isUnlocked ? 'done' : 'lock') + '">' + statusText + '</span>' +
                 '</div>';
@@ -2833,7 +2836,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const listEl = document.getElementById('tutorial-steps-list');
         listEl.innerHTML = '';
         HOWTO_BASICS.concat(FEATURE_GATES.map(function(f) { return { title: f.title, desc: f.desc }; })).forEach(function(c) {
-            listEl.innerHTML += '<div class="tut-step-card"><strong>' + c.title + '</strong><div style="color:var(--sub); white-space:pre-line;">' + c.desc + '</div></div>';
+            listEl.innerHTML += '<div class="tut-step-card"><strong>' + c.title + '</strong><div style="color:var(--ink); white-space:pre-line;">' + c.desc + '</div></div>';
         });
         const openAll = document.getElementById('btn-open-all');
         if (openAll) openAll.classList.toggle('hidden', !gatingActive());
@@ -4803,15 +4806,15 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             if (p.isHome) {
                 owned.innerHTML +=
                     '<div class="asset-card" style="display:flex; justify-content:space-between; align-items:center;">' +
-                        '<div><strong>🏡 ' + dispName + '</strong><br><span style="font-size:0.75rem; color:var(--text-sub);">' +
+                        '<div><strong>🏡 ' + dispName + '</strong><br><span style="font-size:0.875rem; color:var(--text-sub);">' +
                         ('評価額 ' + fmtShort(p.price) + ' / 残債 ' + fmtShort(p.debt) + ' / 年間ローン利息: ') + '-' + fmtShort(Math.abs(cf)) + '</span></div>' +
-                        '<span style="font-size:0.75rem; color:var(--text-sub); white-space:nowrap;">' + ('自宅（売却不可）') + '</span>' +
+                        '<span style="font-size:0.875rem; color:var(--text-sub); white-space:nowrap;">' + ('自宅（売却不可）') + '</span>' +
                     '</div>';
                 return;
             }
             owned.innerHTML +=
                 '<div class="asset-card" style="display:flex; justify-content:space-between; align-items:center;">' +
-                    '<div><strong>🏢 ' + dispName + '</strong><br><span style="font-size:0.75rem; color:var(--accent-green);">' + d.rentCfLbl + fmtShort(cf) + '</span></div>' +
+                    '<div><strong>🏢 ' + dispName + '</strong><br><span style="font-size:0.875rem; color:var(--accent-green);">' + d.rentCfLbl + fmtShort(cf) + '</span></div>' +
                     '<button type="button" class="asset-btn sell" onclick="sellProp(' + idx + ')">' + d.btnSellProp + '</button>' +
                 '</div>';
         });
@@ -4986,7 +4989,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 '<div class="ac-card' + (isRead ? ' read' : '') + '" onclick="openAcademyDetail(' + ac.id + ')">' +
                     '<div style="display:flex; justify-content:space-between; align-items:center;">' +
                         '<div><span class="ac-level ' + ac.level + '">' + badgeLabel + '</span><strong>' + ac.title + '</strong></div>' +
-                        '<span style="color:var(--accent-blue); font-size:0.75rem; font-weight:500; white-space:nowrap;">' + rightLabel + '</span>' +
+                        '<span style="color:var(--accent-blue); font-size:0.8125rem; font-weight:500; white-space:nowrap;">' + rightLabel + '</span>' +
                     '</div>' +
                 '</div>';
         });
@@ -5122,7 +5125,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         maxV = Math.ceil(maxV / step) * step;
         minV = Math.floor(minV / step) * step;
 
-        ctx.font = '600 12px -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif';
+        ctx.font = '500 13px -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif';
         let labelW = 0;
         for (let v = minV; v <= maxV + step / 2; v += step) labelW = Math.max(labelW, ctx.measureText(fmtAxis(v)).width);
         const pad = { l: Math.ceil(labelW) + 8, r: 10, t: 8, b: 22 };
@@ -5250,7 +5253,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             + '<button type="button" class="ac-filter-btn" id="rank-tab-fire" onclick="switchRankingTab(\'fire\')">🔥 FIRE成功者</button>'
             + '<button type="button" class="ac-filter-btn" id="rank-tab-all" onclick="switchRankingTab(\'all\')">🌐 全体（純資産順）</button>'
             + '</div>'
-            + '<div id="ranking-note" style="font-size:0.75rem; color:var(--text-sub); margin-bottom:6px; white-space:normal;"></div>'
+            + '<div id="ranking-note" style="font-size:0.875rem; color:var(--text-sub); margin-bottom:6px; white-space:normal;"></div>'
             + '<div id="ranking-list"></div>'
             + '<div style="margin-top:10px; font-size:0.875rem; color:var(--text-sub);">現在のあなたの資産: ' + fmtShort(getNetWorth()) + '</div>';
         switchRankingTab(rankingTab);
@@ -5299,7 +5302,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 current.forEach(function(r, i) { html += rankingRowHtml(r, medals[i] || (i + 1) + '.'); });
                 if (!current.length) html += '<div style="padding:8px 2px; color:var(--text-sub); font-size:0.875rem;">新しいルールでのFIRE成功者はまだいません。</div>';
                 if (legacy.length) {
-                    html += '<div style="margin-top:10px; padding:4px 2px; font-size:0.75rem; font-weight:500; color:var(--text-sub);">▼ ルール変更前の記録（インフレ・取り崩しなし）</div>';
+                    html += '<div style="margin-top:10px; padding:4px 2px; font-size:0.8125rem; font-weight:500; color:var(--text-sub);">▼ ルール変更前の記録（インフレ・取り崩しなし）</div>';
                     legacy.forEach(function(r, i) { html += rankingRowHtml(r, (i + 1) + '.'); });
                 }
             } else {
