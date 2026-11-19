@@ -188,6 +188,8 @@
         .rec-market { display: flex; align-items: center; gap: 10px; font-size: var(--fs-s); padding: 6px 0; border-bottom: 1px solid var(--rule); }
         .rec-market .term-btn { margin-left: auto; }
         body.sheet-open { overflow: hidden; }
+        /* シートを開いている間は、お知らせを上に出してシートのボタンを隠さない */
+        body.sheet-open .toast-host { bottom: auto; top: calc(8px + env(safe-area-inset-top)); }
         /* 通帳の罫線の表 */
         .ledger { width: 100%; border-collapse: collapse; font-size: var(--fs-s); border-top: 1.5px solid var(--ink); }
         .ledger th { font-size: 0.6875rem; color: var(--sub); font-weight: 400; text-align: left; padding: 5px 2px; border-bottom: 1px solid var(--rule); letter-spacing: 0.06em; }
