@@ -2585,7 +2585,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         if (el && el.dataset.full) document.getElementById('acad-modal-desc').innerText += '\n\n【このゲームでの想定】\n' + el.dataset.full;
     }
     function openRivalHelp() {
-        showInfo('ライバル投資家（放置インデックス）', '何もせず「放置インデックス」を続けた場合の目安です。\n600万円から全額をインデックス株で持ち、配当を再投資し、毎年' + fmtShort(RIVAL_ANNUAL_DEPOSIT) + 'を足し続けます。売ることも、取り崩すこともしません。');
+        showInfo('ライバル投資家（放置インデックス）', '何もせず「放置インデックス」を続けた場合の目安です。\n' + fmtShort(600) + 'から全額をインデックス株で持ち、配当を再投資し、毎年' + fmtShort(RIVAL_ANNUAL_DEPOSIT) + 'を足し続けます。売ることも、取り崩すこともしません。');
     }
     // 大きな金額は「¥1億」「¥1.25億」のように短く書く（日本市場のとき）
     function fmtCompact(v) {
