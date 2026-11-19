@@ -711,13 +711,13 @@
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span id="lbl-car-pos">現在の役職:</span><strong id="career-title" style="color:var(--accent-blue);">新入社員 (Lv.1 / MAX Lv.6)</strong></div>
                 <div style="display:flex; justify-content:space-between;"><span id="lbl-car-sal">年間給与貯蓄額 (+12%/回):</span><strong id="career-salary" style="color:var(--accent-green);">+¥160万/年</strong></div>
             </div>
-            <button type="button" class="asset-btn buy" id="career-up-btn" style="width:100%; padding:10px; font-weight:500; margin-bottom:8px;" onclick="upgradeCareer()">✨ <span id="lbl-car-btn">スキルアップ自己投資で昇進する (+12%)</span> (<span id="lbl-car-cost-prefix">費用</span>: <span id="career-cost">¥50万</span>)</button>
+            <button type="button" class="asset-btn buy" id="career-up-btn" style="width:100%; padding:10px; font-weight:500; margin-bottom:8px;" onclick="upgradeCareer()">自己投資で昇進（給与+12%）・¥50万</button>
             <div style="border-top:1px solid var(--border); padding-top:8px;">
-                <div style="font-size:0.875rem; font-weight:500; color:var(--accent-gold); margin-bottom:4px;" id="lbl-corp-head">🏢 資産管理法人（配当・家賃の税率 18%→10%／設立費150・維持費30/年）</div>
+                <div style="font-size:0.875rem; font-weight:500; color:var(--accent-gold); margin-bottom:4px;" id="lbl-corp-head">資産管理法人 <button type="button" class="term-btn" onclick="showInfo('資産管理法人', CORP_HEAD_FULL)" aria-label="資産管理法人の条件">?</button></div>
                 <button type="button" class="next-btn" id="corp-setup-btn" style="background:transparent; color:var(--ink); border:1px solid var(--rule-strong); min-height:44px; font-size:0.875rem; letter-spacing:0;" onclick="setupCorporation()" disabled>法人を設立する（純資産 5,000 以上で解放）</button>
             </div>
             <div style="border-top:1px solid var(--border); padding-top:8px; margin-top:8px;">
-                <div style="font-size:0.875rem; font-weight:500; color:var(--accent-green); margin-bottom:4px;">🏖️ リタイア（仕事を辞めて資産で暮らす） <button type="button" class="term-btn" onclick="openTermHelp('retire')">?</button></div>
+                <div style="font-size:0.875rem; font-weight:500; color:var(--accent-green); margin-bottom:4px;">🏖️ リタイア（仕事を辞めて資産で暮らす） <button type="button" class="term-btn" onclick="openRetireHelp()" aria-label="リタイアの説明といまの見込み">?</button></div>
                 <div style="font-size:0.875rem; color:var(--text-sub); margin-bottom:6px; line-height:1.7;" id="retire-status">リタイアすると給与は止まり、生活費を配当・家賃・年金と資産の取り崩しでまかないます。</div>
                 <button type="button" class="next-btn" id="retire-btn" style="background:transparent; color:var(--ink); border:1px solid var(--rule-strong); min-height:44px; font-size:0.875rem; letter-spacing:0;" onclick="requestRetire()">🏖️ リタイアする（仕事を辞める）</button>
             </div>
@@ -2596,6 +2596,12 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         return '¥' + parseFloat((v / 10000).toFixed(2)) + '億';
     }
     const RESULT_NOTE_FULL = 'この結果はゲーム内の設定によるもので、現実の将来の運用成果を示すものではありません。';
+    const CORP_HEAD_FULL = '資産管理法人（配当・家賃の税率 18%→10%／設立費150・維持費30/年）';
+    function openRetireHelp() {
+        openTermHelp('retire');
+        const st = document.getElementById('retire-status');
+        if (st && st.dataset.full) document.getElementById('acad-modal-desc').innerText += '\n\n【いまの見込み】\n' + st.dataset.full;
+    }
     function openHedgeHelp() {
         const btn = document.getElementById('btn-hedge');
         showInfo('暴落保険', (btn && btn.dataset.full) || '');
@@ -4964,9 +4970,18 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             const isScen = gameMode === 'scenario';
             retireBtn.classList.toggle('hidden', isScen || g.retired);
             retireBtn.disabled = !canRetireNow();
-            if (isScen) retireStatus.innerText = 'ヒストリカル・シナリオではリタイアはありません。';
-            else if (g.retired) retireStatus.innerText = '🏖️ ' + g.retireAge + '歳からリタイア中。生活費 ' + fmtShort(getLivingCost()) + '／年。' + (g.pensionStartAge ? '年金は' + g.pensionStartAge + '歳から 年' + fmtShort(getPensionAnnual(g.pensionStartAge)) + '。' : '年金の見込み：' + ECON.pension.baseAge + '歳から 年' + fmtShort(getPensionAnnual(ECON.pension.baseAge)) + '。');
-            else retireStatus.innerText = (isFireTargetReached() ? '✅ FIRE目標に到達しています。' : 'FIRE目標（生活費の' + ECON.retire.fireMultiple + '倍の資産など）にはまだ届いていません。') + ' 退職金の見込み：' + fmtShort(getSeveranceEstimate()) + '。リタイアすると給与は止まり、生活費を配当・家賃・年金と資産の取り崩しでまかないます。';
+            let full, short;
+            if (isScen) { full = short = 'ヒストリカル・シナリオではリタイアはありません。'; }
+            else if (g.retired) {
+                full = '🏖️ ' + g.retireAge + '歳からリタイア中。生活費 ' + fmtShort(getLivingCost()) + '／年。' + (g.pensionStartAge ? '年金は' + g.pensionStartAge + '歳から 年' + fmtShort(getPensionAnnual(g.pensionStartAge)) + '。' : '年金の見込み：' + ECON.pension.baseAge + '歳から 年' + fmtShort(getPensionAnnual(ECON.pension.baseAge)) + '。');
+                short = g.retireAge + '歳からリタイア中。';
+            } else {
+                const reached = isFireTargetReached();
+                full = (reached ? '✅ FIRE目標に到達しています。' : 'FIRE目標（生活費の' + ECON.retire.fireMultiple + '倍の資産など）にはまだ届いていません。') + ' 退職金の見込み：' + fmtShort(getSeveranceEstimate()) + '。リタイアすると給与は止まり、生活費を配当・家賃・年金と資産の取り崩しでまかないます。';
+                short = reached ? 'FIRE目標に到達しています。' : 'FIRE目標にはまだ届いていません。';
+            }
+            retireStatus.dataset.full = full;
+            retireStatus.innerText = short;
         }
         if (g.retired) {
             document.getElementById('career-salary').innerText = 'リタイア中（給与なし）';
@@ -4978,7 +4993,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         } else {
             const nextCost = careerUpgradeCosts[g.careerLevel] || 1000;
             upBtn.removeAttribute('disabled');
-            upBtn.innerHTML = '✨ <span id="lbl-car-btn">' + d.carBtn + '</span> (<span id="lbl-car-cost-prefix">' + d.costPrefix + '</span>: <span id="career-cost">' + fmtShort(nextCost) + '</span>)';
+            // 「スキルアップ自己投資で昇進する (+12%)（費用: ¥50万）」を1行に短くする
+            upBtn.innerText = '自己投資で昇進（給与+12%）・' + fmtShort(nextCost);
         }
         applyStrictLock();
     }
