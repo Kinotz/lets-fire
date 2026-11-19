@@ -127,6 +127,37 @@
         .year-l1, .year-l2 { font-size: var(--fs-m); line-height: 1.7; }
         .year-l2 { color: var(--sub); }
         .year-l1 .minus, .year-l2 .minus { color: var(--red); }
+        /* 結果画面 */
+        #result-view { padding: 4px 0 8px; }
+        .res-ring-wrap { display: flex; justify-content: center; margin-top: 4px; }
+        .res-span { text-align: center; font-size: var(--fs-xs); color: var(--sub); margin-top: 4px; }
+        .res-title { font-family: var(--font-serif); font-weight: 500; font-size: 1.375rem; margin: 14px 0 6px; line-height: 1.5; }
+        .res-main { border-top: 1.5px solid var(--ink); padding-top: 10px; }
+        .res-nw { font-size: 2rem; line-height: 1.25; }
+        .res-nw .u { font-size: 1rem; margin-left: 2px; }
+        .res-nominal { font-size: var(--fs-xs); color: var(--sub); margin: 2px 0 8px; }
+        .res-table { width: 100%; border-collapse: collapse; font-size: var(--fs-s); margin-bottom: 12px; }
+        .res-table th { text-align: left; font-weight: 400; color: var(--sub); width: 7.5em; padding: 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+        .res-table td { padding: 7px 0; border-bottom: 1px solid var(--rule); }
+        .res-section { padding: 6px 0 12px; }
+        .res-share { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+        /* 一年の演出 */
+        .life-ring.ring-grew { animation: ringGrew 0.7s ease-out; }
+        .life-ring.ring-shrank-year { animation: ringShrank 0.9s ease-in-out; }
+        @keyframes ringGrew { 0% { transform: scale(0.985); } 60% { transform: scale(1.012); } 100% { transform: scale(1); } }
+        @keyframes ringShrank { 0% { transform: scale(1); } 35% { transform: scale(0.97); } 100% { transform: scale(1); } }
+        .year-card.enter .year-k, .year-card.enter .year-l1, .year-card.enter .year-l2 { animation: lineIn 0.45s ease-out both; }
+        .year-card.enter .year-l1 { animation-delay: 0.15s; }
+        .year-card.enter .year-l2 { animation-delay: 0.55s; }
+        @keyframes lineIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+        /* 判子（節目）*/
+        .stamp { position: absolute; width: 48px; height: 48px; border: 1.5px solid var(--red); border-radius: 50%; color: var(--red); font-family: var(--font-serif); font-size: 0.625rem; line-height: 1.2; display: flex; align-items: center; justify-content: center; text-align: center; transform: rotate(-10deg); background: rgba(242, 238, 229, 0.75); }
+        .stamp.tr { right: -2px; top: 6px; } .stamp.br { right: -2px; bottom: 6px; transform: rotate(8deg); }
+        .stamp.bl { left: -2px; bottom: 6px; transform: rotate(-6deg); } .stamp.tl { left: -2px; top: 6px; transform: rotate(12deg); }
+        .stamp.press { animation: stampPress 0.42s cubic-bezier(.2,.9,.3,1.15) both; }
+        @keyframes stampPress { 0% { opacity: 0; scale: 1.7; } 55% { opacity: 1; scale: 0.92; } 100% { opacity: 1; scale: 1; } }
+        .stamp.big { width: 104px; height: 104px; left: 50%; top: 50%; margin: -52px 0 0 -52px; font-size: 0.9375rem; border-width: 2px; background: rgba(242, 238, 229, 0.85); }
+        .stamp.fade { transition: opacity 0.7s ease; opacity: 0; }
         .hero-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; }
         .text-btn { background: none; border: none; color: var(--ink); font-size: var(--fs-s); min-height: 44px; display: inline-flex; align-items: center; gap: 6px; padding: 0 4px; cursor: pointer; }
         .text-btn:active { color: var(--sub); }
@@ -245,7 +276,9 @@
         .nav-skip-btn { background: transparent; border: none; color: var(--sub); font-size: var(--fs-xs); padding: 2px 6px; cursor: pointer; text-decoration: underline; }
         .nav-guide-desc { font-size: var(--fs-s); }
         .news-strip { padding: 8px 0; margin-bottom: 8px; font-size: var(--fs-s); line-height: 1.75; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-        .title-toast { width: 100%; text-align: left; font-family: inherit; background: var(--paper-hi); border: 1px solid var(--rule-strong); color: var(--ink); padding: 6px 12px; border-radius: var(--r-s); margin-bottom: 8px; font-size: var(--fs-s); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .title-toast { position: fixed; left: 50%; transform: translateX(-50%); top: calc(10px + env(safe-area-inset-top)); width: calc(100% - 120px); max-width: 360px; z-index: 600; text-align: left; font-family: inherit; background: var(--paper-hi); border: 1px solid var(--red); color: var(--ink); padding: 6px 12px; border-radius: 999px; font-size: var(--fs-s); display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; animation: toastIn 0.25s ease-out; }
+        .title-toast-more { font-size: var(--fs-xs); color: var(--red); flex: none; }
+        #title-toast-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .main-tabs { display: flex; gap: 0; margin-bottom: 10px; border-bottom: 1px solid var(--rule); overflow-x: auto; scrollbar-width: none; }
         .main-tabs::-webkit-scrollbar { display: none; }
         .main-tabs.easy-grid { }
@@ -500,7 +533,7 @@
     <div id="game-view" class="hidden">
         <button type="button" class="title-toast hidden" id="title-toast" data-nav-free onclick="this.classList.add('hidden'); openTitlesModal()">
             <span id="title-toast-text">🎖️ 新称号を獲得しました！</span>
-            <span style="font-size:0.75rem; text-decoration:underline;">一覧を見る &gt;</span>
+            <span class="title-toast-more">一覧</span>
         </button>
 
         <!-- 主画面：年輪・純資産・FIREまでの進み具合・今年の一言・主ボタンだけ -->
@@ -773,47 +806,50 @@
     </div>
 
     <!-- 3. ゲームリザルト画面 -->
-    <div id="result-view" class="hidden" style="text-align:center; padding:10px 0;">
-        <div style="font-size:3.5rem; margin-bottom:6px;">👑</div>
-        <div style="font-size:1.25rem; font-weight:500; color:var(--accent-gold); margin-bottom:6px;" id="lbl-res-title">🎉 66年間の人生シミュレーション大完走！</div>
+    <div id="result-view" class="hidden">
+        <div class="res-ring-wrap"><svg id="res-ring" class="life-ring" width="240" height="240" viewBox="0 0 240 240" role="img" aria-label="一生の年輪"></svg></div>
+        <div class="res-span" id="res-span">25歳 ─ 90歳</div>
+        <h2 class="res-title" id="lbl-res-title">66年の記帳を終えました</h2>
         <div class="ending-flavor-text" id="ending-flavor-text" style="display:none;"></div>
-        <div class="event-result-banner" style="text-align:left;">
-            <div style="font-size:0.875rem; color:var(--text-sub); font-weight:500;" id="lbl-res-nw">最終純資産（今の価値＝25歳時点の物価）</div>
-            <div id="res-networth" style="color:var(--accent-green); font-size:1.9rem; font-weight:500; margin:6px 0 2px;">¥0</div>
-            <div id="res-nominal" style="font-size:0.75rem; color:var(--text-sub); margin-bottom:6px;"></div>
-            <div style="font-size:0.875rem; margin-top:6px;"><span id="lbl-res-rank-label">最終資産家ランク</span>: <strong id="res-title" style="color:var(--accent-gold);">👑</strong></div>
-            <div style="font-size:0.875rem; margin-top:4px;"><span id="lbl-res-fire-label">FIRE</span>: <strong id="res-fire" style="color:var(--accent-blue);">-</strong></div>
-            <div style="font-size:0.875rem; margin-top:4px;" id="res-retire"></div>
-            <div style="font-size:0.875rem; margin-top:4px;">🎖️ 獲得済み称号数: <strong id="res-titles-count" style="color:var(--accent-purple);">0 / 43</strong></div>
-            <div style="font-size:0.875rem; margin-top:4px;"><span id="lbl-res-rival-label">🤖 ライバル投資家(放置インデックス)</span>: <strong id="res-rival">¥0</strong> <strong id="res-rival-result"></strong></div>
+        <div class="res-main">
+            <div class="hero-lbl" id="lbl-res-nw">最終純資産（今の価値＝25歳時点の物価）</div>
+            <div class="res-nw" id="res-networth">¥0</div>
+            <div class="res-nominal" id="res-nominal"></div>
         </div>
+        <table class="res-table">
+            <tr><th id="lbl-res-fire-label">FIRE</th><td id="res-fire">-</td></tr>
+            <tr><th>リタイア</th><td id="res-retire"></td></tr>
+            <tr><th id="lbl-res-rank-label">資産家ランク</th><td id="res-title"></td></tr>
+            <tr><th>称号</th><td id="res-titles-count">0 / 43</td></tr>
+            <tr><th id="lbl-res-rival-label">放置インデックス</th><td><span id="res-rival">¥0</span> <span id="res-rival-result"></span></td></tr>
+        </table>
         <div class="best-record-banner" id="best-record-banner" style="display:none;">
-            <div id="best-record-text">📊 自己ベスト: ¥0</div>
+            <div id="best-record-text">自己ベスト: ¥0</div>
         </div>
-        <div style="text-align:left; margin-bottom:12px; padding:10px 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);" id="ranking-submit-box">
-            <div style="font-size:0.875rem; font-weight:500; margin-bottom:6px;" id="lbl-ranking-submit-title">🌐 みんなの資産ランキングに登録する</div>
-            <input type="text" id="ranking-name-input" maxlength="20" placeholder="表示名（ニックネーム）" style="width:100%; box-sizing:border-box; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--panel-bg); color:var(--text-main); font-size:0.875rem; margin-bottom:6px;">
-            <button type="button" class="asset-btn buy" style="width:100%; padding:9px; font-weight:500;" onclick="submitScoreToLeaderboard()" id="btn-ranking-submit">🏆 ランキングに登録する</button>
-            <div id="ranking-submit-status" style="font-size:0.875rem; margin-top:6px; color:var(--text-sub);"></div>
+        <div class="res-section" id="ranking-submit-box">
+            <div class="sheet-sub" id="lbl-ranking-submit-title">みんなのランキングに登録する</div>
+            <input type="text" id="ranking-name-input" class="name-input" maxlength="20" placeholder="表示名（ニックネーム）">
+            <button type="button" class="asset-btn buy" style="width:100%;" onclick="submitScoreToLeaderboard()" id="btn-ranking-submit">ランキングに登録する</button>
+            <div id="ranking-submit-status" style="font-size:0.8125rem; margin-top:6px; color:var(--sub);"></div>
         </div>
-        <div style="display:flex; gap:6px; margin-bottom:8px;">
-            <button type="button" class="start-game-btn" style="flex:2; margin-top:0; font-size:0.9375rem;" onclick="shareToX()" id="lbl-share-btn">𝕏 結果とURLをシェア</button>
-            <button type="button" class="asset-btn buy" style="flex:1; padding:12px; font-size:0.875rem; font-weight:500;" onclick="copyShareText()" id="btn-copy-share">📋 コピー</button>
+        <div class="res-section res-share">
+            <button type="button" class="asset-btn" onclick="shareToX()" id="lbl-share-btn">𝕏 でシェア</button>
+            <button type="button" class="asset-btn" onclick="copyShareText()" id="btn-copy-share">文章をコピー</button>
+            <button type="button" class="asset-btn" onclick="generateShareCard()" id="btn-gen-share-card">画像にする</button>
         </div>
-        <button type="button" class="asset-btn buy" style="width:100%; padding:10px; font-weight:500; margin-bottom:8px;" onclick="generateShareCard()" id="btn-gen-share-card">🖼️ 結果シェアカードを画像で作成</button>
-        <button type="button" class="asset-btn buy" style="width:100%; padding:10px; font-weight:500; margin-bottom:10px;" onclick="openTitlesModal()">🎖️ 獲得した称号コレクションを見る</button>
+        <button type="button" class="text-btn" onclick="openTitlesModal()" id="btn-res-titles"><svg class="ico s"><use href="#i-seal"/></svg>称号の一覧を見る</button>
         <div class="promo-box aff-elem hidden" style="margin-bottom:12px;">
-            <span class="promo-badge">REAL WEALTH / PR</span>
-            <div class="promo-title" id="lbl-res-promo-title">🚀 次は「現実のあなた」が億り人になる番です！</div>
-            <div class="promo-desc" id="lbl-res-promo-desc">66年間のシミュレーションお疲れ様でした！現実の資産形成に役立つおすすめ証券口座・名著はこちら。</div>
+            <span class="promo-badge">PR</span>
+            <div class="promo-title" id="lbl-res-promo-title">次は、現実の資産形成へ</div>
+            <div class="promo-desc" id="lbl-res-promo-desc">ゲームで試した積み立てや分散は、現実でも少額から始められます。</div>
             <div class="promo-btn-grid">
-                <button type="button" class="promo-link-btn" onclick="openMonetizeLink('broker')" id="btn-res-aff-broker">🏦 無料でNISA・証券口座を開く</button>
-                <button type="button" class="promo-link-btn secondary" onclick="openMonetizeLink('book')" id="btn-res-aff-book">📚 億り人への必読書を見る</button>
+                <button type="button" class="promo-link-btn" onclick="openMonetizeLink('broker')" id="btn-res-aff-broker">NISA・証券口座を見る</button>
+                <button type="button" class="promo-link-btn secondary" onclick="openMonetizeLink('book')" id="btn-res-aff-book">入門書を見る</button>
             </div>
         </div>
-        <button type="button" class="promo-link-btn donate-btn donate-elem hidden" style="width:100%; margin-bottom:12px;" onclick="openMonetizeLink('donate')" id="btn-res-donate">☕ このゲームが面白かったら開発者を応援する（投げ銭・サポート）</button>
-        <div class="res-disclaimer-note">※ この結果はゲーム内の設定によるもので、現実の将来の運用成果を示すものではありません。 <button type="button" class="term-btn" onclick="openDisclaimerModal()" id="btn-res-disclaimer">📄 免責事項</button></div>
-        <button type="button" class="next-btn" onclick="location.reload()" id="lbl-retry-btn">もう一度オープニングから遊ぶ</button>
+        <button type="button" class="promo-link-btn donate-btn donate-elem hidden" style="margin-bottom:12px;" onclick="openMonetizeLink('donate')" id="btn-res-donate">面白かったら、開発者を応援する</button>
+        <div class="res-disclaimer-note">この結果はゲーム内の設定によるもので、現実の将来の運用成果を示すものではありません。 <button type="button" class="footer-link" style="min-height:0;padding:0" onclick="openDisclaimerModal()" id="btn-res-disclaimer">免責事項</button></div>
+        <button type="button" class="next-btn" style="margin-top:16px;" onclick="location.reload()" id="lbl-retry-btn">もう一度はじめる</button>
     </div>
 
     <div id="ad-banner-slot" class="ad-banner-slot hidden">
@@ -909,7 +945,7 @@
 <div class="modal-overlay hidden" id="rankup-modal" role="dialog" aria-modal="true" aria-labelledby="lbl-rankup-head">
     <div tabindex="-1" class="modal-card rankup-card">
         <div class="rankup-crown">👑</div>
-        <div style="font-size:0.875rem; font-weight:500; color:var(--amber); letter-spacing:1px; margin-bottom:4px;" id="lbl-rankup-head">✨ おめでとうございます！資産家ランク昇格！ ✨</div>
+        <div style="font-size:0.875rem; font-weight:500; color:var(--amber); letter-spacing:1px; margin-bottom:4px;" id="lbl-rankup-head">資産家ランクが上がりました</div>
         <div class="modal-title" style="justify-content:center; font-size:1.25rem;" id="rankup-new-title">💎 憧れの億り人</div>
         <div class="event-result-banner">
             <div style="font-size:0.875rem; color:var(--ink); font-weight:500; line-height:1.5;" id="rankup-desc">昇格しました！</div>
@@ -1601,6 +1637,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             btn.className = 'choice-btn';
             btn.innerHTML = '<strong>選択肢 ' + (pos + 1) + '</strong>' + optText;
             btn.onclick = function() {
+                quizResultShowing = true;
                 document.getElementById('quiz-modal').classList.add('hidden');
                 pendingFlow = null;
                 if (idx === qObj.ans) {
@@ -1708,12 +1745,15 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const toastTxt = document.getElementById('title-toast-text');
         const dispName = tObj.nameJa;
         if (toast && toastTxt) {
-            toastTxt.innerText = '🎖️ 新称号獲得：【' + tObj.icon + ' ' + dispName + '】！';
+            toastTxt.innerText = '称号「' + stripEmoji(dispName).trim() + '」';
             toast.classList.remove('hidden');
+            clearTimeout(titleToastTimer);
+            titleToastTimer = setTimeout(function() { toast.classList.add('hidden'); }, 4200);
         }
         playSound('rankup');
     }
 
+    let titleToastTimer = null;
     function openTitlesModal() {
         const listEl = document.getElementById('titles-list-container');
         listEl.innerHTML = '';
@@ -1889,7 +1929,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             buyPropBtn: function(d) { return "頭金 " + d + " で購入（融資80%）"; }, carBtn: "スキルアップ自己投資で昇進する (+12%)", carMaxBtn: "🌟 キャリア最高峰達成 (MAX Lv.6)", costPrefix: "費用",
             careerTitles: ["新入社員 (Lv.1 / MAX6)", "リーダー (Lv.2 / MAX6)", "マネージャー (Lv.3 / MAX6)", "本部長 (Lv.4 / MAX6)", "執行役員 (Lv.5 / MAX6)", "伝説の経営者 (MAX Lv.6)"], corpBtnDone: "🏢 法人設立済み（節税適用中！）",
             badgeBasic: "基礎", badgeAdv: "応用", badgePro: "プロ", readMore: "📖 無料で読む >",
-            resTitle: "🎉 66年間の人生シミュレーション大完走！", copyDoneAlert: "結果テキストをコピーしました！SNSやLINEに貼り付けてシェアできます！",
+            resTitle: "66年の記帳を終えました", copyDoneAlert: "結果テキストをコピーしました！SNSやLINEに貼り付けてシェアできます！",
             evSelectPrefix: "▶ この行動を選ぶ",
             noCashAlert: "手元の現金が足りません！",
             rankTitleModal: "🏆 世界投資家ランキング",
@@ -2523,6 +2563,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     function resumeSavedGame() {
         const data = loadSavedGameData();
         if (!data) { refreshContinueButton(); return; }
+        resetHeroState();
         const academy = g.academy;
         Object.assign(g, data.g);
         g.academy = academy;
@@ -2597,6 +2638,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     }
 
     function startInitialSimulation() {
+        resetHeroState();
         const nameInput = document.getElementById('player-name-input').value.trim();
         if (nameInput) g.name = nameInput;
 
@@ -2769,6 +2811,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             isForcedTutorialActive = false;
             document.getElementById('btn-skip-tut').classList.add('hidden');
             document.getElementById('btn-nav-skip-modal').classList.add('hidden');
+            closeSheet();
         } else {
             document.getElementById('btn-nav-skip-modal').classList.remove('hidden');
         }
@@ -3841,6 +3884,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     function renderEventModalNow(ev) {
         const d = i18n.ja;
         document.getElementById('ev-title').innerText = ev.title;
+        if (g.history && g.history.nw) yearNotes[g.history.nw.length - 1] = shortTitle(ev.title);
         document.getElementById('ev-desc').innerText = ev.desc;
         document.getElementById('ev-beginner-tip').innerText = ev.beginnerTip;
         const cBox = document.getElementById('ev-choices');
@@ -3922,9 +3966,11 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         renderEventModal(ev);
     }
 
+    let quizResultShowing = false;
     function showEventResult(subtitle, desc, isBad) {
+        if (!quizResultShowing) yearEventResult = { turn: g.turn, subtitle: stripEmoji(subtitle || '').trim(), isBad: !!isBad };
+        quizResultShowing = false;
         openModalQueued('event-result-modal', function() {
-            document.getElementById('ev-res-icon').innerText = isBad ? '⚠️' : '🎊';
             const bannerBox = document.getElementById('ev-res-banner-box');
             if (bannerBox) bannerBox.className = isBad ? 'event-result-banner bad' : 'event-result-banner';
             document.getElementById('ev-res-subtitle').innerText = subtitle;
@@ -4038,6 +4084,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 if (wasHidden !== r.target.classList.contains('hidden')) onModalVisibilityChange(r.target, wasHidden);
             });
             showNextQueuedModal();
+            if (yearAnim.pending && !isAnyModalOpen()) setTimeout(requestYearAnimation, 160);
         });
         document.querySelectorAll('.modal-overlay').forEach(function(el) {
             obs.observe(el, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
@@ -4309,6 +4356,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             syncDebt();
         }
 
+        const idxBefore = g.indexAsset, goldBefore = g.goldAsset;
         g.indexAsset = Math.round(g.indexAsset * (1 + indRate));
         g.goldAsset = Math.round(g.goldAsset * (1 + goldRate));
 
@@ -4450,6 +4498,9 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         g.history.net.push(getTotalAssets());
         g.history.nw.push(getNetWorth());
         g.history.rival.push(g.rivalNetWorth);
+        noteYearResult({ indRate: indRate, goldRate: goldRate, idxBefore: idxBefore, goldBefore: goldBefore, idxGain: g.indexAsset - idxBefore, goldGain: g.goldAsset - goldBefore,
+            netInflow: netInflow, inflationCashLoss: inflationCashLoss, hedgePayout: hedgePayout, stockShockNames: stockShockNames, cryptoBigMove: cryptoBigMove, hotPopInfo: hotPopInfo,
+            livingPaid: livingPaid, pensionIncome: pensionIncome, shortfall: withdraw ? withdraw.shortfall : 0, working: working, scenario: isScenario });
 
         const d = i18n.ja;
         const snipList = d.mktSnippets[g.cycleId] || d.mktSnippets.boom;
@@ -4534,7 +4585,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         }
 
         updateUI();
-        playSound('action');
+        requestYearAnimation();
         if (!eventFiredThisTurn && pendingLesson) {
             showOnePointLesson(pendingLesson);
         }
@@ -5278,12 +5329,12 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const rankStatusEl = document.getElementById('ranking-submit-status');
         if (rankStatusEl) rankStatusEl.innerText = '';
         const rankBtnEl = document.getElementById('btn-ranking-submit');
-        if (rankBtnEl) { rankBtnEl.disabled = false; rankBtnEl.innerText = '🏆 ランキングに登録する'; }
+        if (rankBtnEl) { rankBtnEl.disabled = false; rankBtnEl.innerText = 'ランキングに登録する'; }
         const titleEl = document.getElementById('lbl-res-title');
         if (titleEl) {
             if (gameMode === 'scenario') {
                 const scen = historicalScenarios[selectedScenarioId];
-                titleEl.innerText = '🎉 ' + scen.nameJa + ' を乗り越えた！';
+                titleEl.innerText = scen.nameJa + ' を記帳し終えました';
             } else {
                 titleEl.innerText = i18n.ja.resTitle;
             }
@@ -5296,7 +5347,23 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             flavorEl.innerText = getEndingFlavor(nw, fireAchieved);
             flavorEl.style.display = 'block';
         }
-        document.getElementById('res-networth').innerText = fmtMoney(nw);
+        document.getElementById('res-networth').innerHTML = heroMoneyHTML(nw);
+        const resRing = document.getElementById('res-ring');
+        if (resRing) {
+            const last = drawRings(resRing, g.history.nw.slice(), { size: 240, target: 0, color: '#7B5E41', crash: '#A49E93', seed: 11 });
+            const spanEl = document.getElementById('res-span');
+            if (spanEl) spanEl.innerText = '25歳 ─ ' + g.age + '歳　輪 ' + g.history.nw.length + '本（灰色は減った年）';
+            const reduceM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!reduceM) [...resRing.querySelectorAll('path.ring')].forEach(function(p, i) {
+                let len = 0; try { len = p.getTotalLength(); } catch (e) {}
+                if (!len) return;
+                p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+                p.getBoundingClientRect();
+                p.style.transition = 'stroke-dashoffset 0.5s ease-out ' + (i * 0.035).toFixed(2) + 's';
+                p.style.strokeDashoffset = '0';
+            });
+            void last;
+        }
         const resNominal = document.getElementById('res-nominal');
         if (resNominal) resNominal.innerText = gameMode === 'scenario' ? '' : ('額面（' + g.age + '歳時点の金額）では ' + fmtShort(nw * (g.priceIndex || 1)) + '。物価は25歳のときの ' + (g.priceIndex || 1).toFixed(2) + '倍になりました。');
         // FIREの結果：成功／途中で資産が尽きた／FIREではないリタイア／リタイアせず
@@ -5309,24 +5376,24 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             else if (g.retireAge) fireText = '未達成（' + (g.retireAge > FIRE_DEADLINE_AGE ? FIRE_DEADLINE_AGE + '歳を過ぎてからの引退' : 'FIRE目標に届く前にリタイア') + '）';
             else fireText = '未達成（リタイアせず働き続けた）';
             resFireEl.innerText = fireText;
-            resFireEl.style.color = fireAchieved ? 'var(--accent-green)' : 'var(--text-sub)';
+            resFireEl.style.color = fireAchieved ? 'var(--green)' : 'var(--sub)';
         }
         const resRetireEl = document.getElementById('res-retire');
         if (resRetireEl) {
             resRetireEl.innerText = gameMode === 'scenario' ? '' : (g.retireAge || g.freeYears
-                ? 'リタイア：' + (g.retireAge ? g.retireAge + '歳' : '-') + '／自由に過ごせた年数：' + (g.freeYears || 0) + '年' + (g.depletedEver ? '（途中で資産が尽きたことあり）' : '')
-                : 'リタイア：せず（最後まで働いた）／自由に過ごせた年数：0年');
+                ? (g.retireAge ? g.retireAge + '歳' : '-') + '／自由に過ごせた年数：' + (g.freeYears || 0) + '年' + (g.depletedEver ? '（途中で資産が尽きたことあり）' : '')
+                : 'せず（最後まで働いた）／自由に過ごせた年数：0年');
         }
         document.getElementById('res-title').innerText = getRankTitle(rObj.lv);
         document.getElementById('res-rival').innerText = fmtShort(g.rivalNetWorth);
         const rivalResultEl = document.getElementById('res-rival-result');
         if (rivalResultEl) {
             if (nw >= g.rivalNetWorth) {
-                rivalResultEl.innerText = '🏆 ライバルに勝利！';
-                rivalResultEl.style.color = 'var(--accent-green)';
+                rivalResultEl.innerText = '（上回った）';
+                rivalResultEl.style.color = 'var(--ink)';
             } else {
-                rivalResultEl.innerText = '😢 ライバルに敗北…';
-                rivalResultEl.style.color = 'var(--accent-red)';
+                rivalResultEl.innerText = '（届かなかった）';
+                rivalResultEl.style.color = 'var(--red)';
             }
         }
         updateTitlesHeaderBadge();
@@ -5382,73 +5449,68 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             ? historicalScenarios[selectedScenarioId].nameJa
             : (gameMode === 'easy' ? 'ビギナーモード' : (gameMode === 'normal' ? 'スタンダードモード' : 'ハードコアモード'));
 
-        const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-        bgGrad.addColorStop(0, '#0b1120');
-        bgGrad.addColorStop(1, '#030712');
-        ctx.fillStyle = bgGrad;
-        ctx.fillRect(0, 0, W, H);
-
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 6;
-        ctx.strokeRect(20, 20, W - 40, H - 40);
-
-        ctx.textAlign = 'center';
-
-        ctx.font = '120px sans-serif';
-        ctx.fillText('👑', W / 2, 180);
-
-        ctx.fillStyle = '#f8fafc';
-        ctx.font = '900 42px sans-serif';
-        ctx.fillText("Let's FIRE！", W / 2, 250);
-
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '700 26px sans-serif';
-        ctx.fillText(modeLabel, W / 2, 295);
-
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = '700 28px sans-serif';
-        ctx.fillText(g.name, W / 2, 345);
-
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '700 24px sans-serif';
-        ctx.fillText('最終純資産総額', W / 2, 420);
-
-        ctx.fillStyle = '#10b981';
-        ctx.font = '900 64px sans-serif';
-        ctx.fillText(fmtMoney(nw), W / 2, 495);
-
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = '700 32px sans-serif';
-        ctx.fillText(getRankTitle(rObj.lv), W / 2, 560);
-
-        ctx.strokeStyle = '#283652';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(100, 610);
-        ctx.lineTo(W - 100, 610);
-        ctx.stroke();
-
-        ctx.fillStyle = '#c084fc';
-        ctx.font = '700 30px sans-serif';
-        ctx.fillText('🎖️ 獲得称号: ' + titleCount + ' / ' + TITLE_TOTAL, W / 2, 670);
-
+        // 紙の地に、一生の年輪と最終の数字を記す
+        const serif = '"Hiragino Mincho ProN", "Noto Serif JP", "Noto Serif CJK JP", "Yu Mincho", serif';
+        const sans = '-apple-system, "Hiragino Sans", "Noto Sans JP", "Noto Sans CJK JP", sans-serif';
+        ctx.fillStyle = '#F2EEE5'; ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = '#3A332B'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(60, 60); ctx.lineTo(W - 60, 60); ctx.stroke();
+        ctx.fillStyle = '#665F55'; ctx.font = '400 22px ' + sans; ctx.textAlign = 'left';
+        ctx.fillText("LET'S FIRE  年輪の通帳", 60, 100);
+        ctx.textAlign = 'right'; ctx.fillText(modeLabel, W - 60, 100);
+        // 年輪
+        const vals = (g.history && g.history.nw) ? g.history.nw.slice() : [nw];
+        const cx = W / 2, cy = 360, maxR = 220;
+        const top = vals.reduce(function(a, b) { return Math.max(a, b); }, 1);
+        const sc = maxR / Math.sqrt(Math.max(1, top));
+        const rnd = seededRand(11), wob = [rnd() * 6.28, rnd() * 6.28, rnd() * 6.28];
+        vals.forEach(function(v, i) {
+            const r = Math.sqrt(Math.max(1, v)) * sc;
+            const shrank = i > 0 && v < vals[i - 1];
+            const amp = 0.006 + Math.min(i, 66) * 0.0004;
+            ctx.beginPath();
+            for (let k = 0; k <= 72; k++) {
+                const a = k / 72 * Math.PI * 2;
+                const rr = r * (1 + amp * (Math.sin(a * 3 + wob[0]) * 0.5 + Math.sin(a * 5 + wob[1]) * 0.3 + Math.sin(a * 2 + wob[2]) * 0.2));
+                const x = cx + rr * Math.cos(a), y = cy + rr * Math.sin(a);
+                if (k) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = shrank ? '#A49E93' : '#7B5E41';
+            ctx.globalAlpha = i === vals.length - 1 ? 1 : 0.5 + 0.45 * i / vals.length;
+            ctx.lineWidth = shrank ? 4 : (i === vals.length - 1 ? 3 : 1.6);
+            ctx.stroke();
+        });
+        ctx.globalAlpha = 1;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#665F55'; ctx.font = '400 22px ' + sans;
+        ctx.fillText(g.name + '　25歳 ─ ' + g.age + '歳　輪 ' + vals.length + '本', 60, 640);
+        ctx.strokeStyle = '#3A332B'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(60, 662); ctx.lineTo(W - 60, 662); ctx.stroke();
+        ctx.fillStyle = '#665F55'; ctx.font = '400 22px ' + sans;
+        ctx.fillText('最終純資産（今の価値）', 60, 704);
+        ctx.fillStyle = '#3A332B'; ctx.font = '400 68px ' + sans;
+        ctx.fillText(stripEmoji(fmtMoney(nw)).replace(/ \(.*\)$/, ''), 60, 778);
         const fireAchieved = getFinalFireAchieved();
-        let nextY = 730;
+        const rows = [
+            ['FIRE', isScenario ? '対象外' : (fireAchieved ? g.fireAchievedAge + '歳でFIREし、90歳まで保った' : '未達成')],
+            ['資産家ランク', stripEmoji(getRankTitle(rObj.lv)).trim()],
+            ['称号', titleCount + ' / ' + TITLE_TOTAL + (g.bestNetWorthBeaten ? '　自己ベスト更新' : '')]
+        ];
+        ctx.font = '400 24px ' + sans;
+        rows.forEach(function(r, i) {
+            const y = 832 + i * 44;
+            ctx.fillStyle = '#665F55'; ctx.fillText(r[0], 60, y);
+            ctx.fillStyle = r[0] === 'FIRE' && fireAchieved ? '#3B4A40' : '#3A332B'; ctx.fillText(r[1], 230, y);
+            ctx.strokeStyle = '#D8CFBF'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(60, y + 14); ctx.lineTo(W - 60, y + 14); ctx.stroke();
+        });
         if (fireAchieved) {
-            ctx.fillStyle = '#f43f5e';
-            ctx.font = '900 34px sans-serif';
-            ctx.fillText('🔥 ' + g.fireAchievedAge + '歳でFIRE、90歳まで資産を保った！', W / 2, nextY);
-            nextY += 60;
+            ctx.save(); ctx.translate(W - 130, 740); ctx.rotate(-0.17);
+            ctx.strokeStyle = '#B03A2E'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 54, 0, Math.PI * 2); ctx.stroke();
+            ctx.fillStyle = '#B03A2E'; ctx.font = '500 24px ' + serif; ctx.textAlign = 'center';
+            ctx.fillText('FIRE', 0, -4); ctx.fillText('達成', 0, 26);
+            ctx.restore();
         }
-        if (g.bestNetWorthBeaten) {
-            ctx.fillStyle = '#fbbf24';
-            ctx.font = '700 26px sans-serif';
-            ctx.fillText('🏆 自己ベスト更新！', W / 2, nextY);
-        }
-
-        ctx.fillStyle = '#64748b';
-        ctx.font = '600 20px sans-serif';
-        ctx.fillText('#LetsFIRE 資産形成シミュレーションゲーム', W / 2, H - 60);
+        ctx.textAlign = 'left'; ctx.fillStyle = '#665F55'; ctx.font = '400 18px ' + sans;
+        ctx.fillText('#LetsFIRE　資産形成シミュレーション（教育用ゲーム）', 60, H - 40);
 
         const dataUrl = canvas.toDataURL('image/png');
         document.getElementById('share-card-img').src = dataUrl;
@@ -5564,12 +5626,191 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const nw = getNetWorth();
         return drawRings(svg, vals, { size: 256, target: getRingTarget(nw), color: '#7B5E41', crash: '#A49E93', targetColor: '#B9853F', seed: 11 });
     }
+    // ===== 一年の結果：「今年の出来事」と「自分の判断の結果」を短く =====
+    let lastYear = null;            // 直近の一年の結果（画面のためだけ。セーブには入れない）
+    let yearEventResult = null;     // その年に起きたイベントの結果
+    let yearMilestoneText = '';     // その年に届いた節目
+    const yearAnim = { pending: false, from: null, rings: 0, scheduled: false };
+    function shortTitle(t) {
+        let x = stripEmoji(t || '').replace(/[「」『』]/g, '').trim();
+        x = x.split(/[！!（(：:]/)[0].trim();
+        return x.length > 14 ? x.slice(0, 13) + '…' : x;
+    }
+    function pctStr(r) { return (r >= 0 ? '＋' : '−') + Math.abs(r * 100).toFixed(1) + '%'; }
+    function cycleName(id) {
+        const n = (i18n.ja.cycleNames && i18n.ja.cycleNames[id]) || '';
+        return stripEmoji(n).trim();
+    }
+    function noteYearResult(r) {
+        const idx = g.history.nw.length - 1;
+        r.turn = g.turn; r.idx = idx; r.cycleId = g.cycleId;
+        r.prevDropHeld = !!(lastYear && lastYear.indRate < 0 && lastYear.idxBefore > 0 && g.indexAsset > 0);
+        lastYear = r;
+        yearMilestoneText = '';
+        // 通帳の摘要（短い一行）
+        let memo;
+        if (r.retired || (!r.working && !r.scenario)) memo = '取り崩し・株価' + pctStr(r.indRate).replace('.0', '').replace(/\.\d/, '');
+        else memo = '株価 ' + pctStr(r.indRate).replace(/\.\d/, '');
+        if (r.indRate < 0 && r.idxBefore > 0) memo += '・売らず';
+        if (r.prevDropHeld && r.indRate > 0) memo += '・回復';
+        yearNotes[idx] = memo;
+        if (!yearAnim.pending) { yearAnim.from = g.prevNetWorth; yearAnim.rings = 0; }
+        yearAnim.pending = true;
+        yearAnim.rings++;
+    }
     function getYearSummaryLines() {
-        // 手順3で「出来事」と「判断の結果」に作り直す。ここではニュースの最初の一文を短く出す
-        const raw = (document.getElementById('news-strip') || {}).innerText || '';
-        const body = raw.replace(/^[\s\S]*?】\s*/, '').trim();
-        const first = (body.split(/(?<=[。！])/)[0] || '').trim();
-        return [first, ''];
+        const y = lastYear;
+        if (!y || y.turn !== g.turn) {
+            if (g.turn <= 1) return ['初めの残高は' + fmtShort(g.history && g.history.nw ? g.history.nw[0] : 600) + '。', '「一年を記す」で一年が進みます。'];
+            const raw = (document.getElementById('news-strip') || {}).innerText || '';
+            const body = stripEmoji(raw.replace(/^[\s\S]*?】\s*/, '')).trim();
+            return [(body.split(/(?<=[。！])/)[0] || '').trim(), ''];
+        }
+        // 1行目：今年の出来事（市場）
+        let l1 = y.scenario ? ('株価 ' + pctStr(y.indRate) + '。') : ('株価 ' + pctStr(y.indRate) + '、' + cycleName(y.cycleId) + '。');
+        const heldStock = function(name) { return g.stocks.some(function(st) { return st.nameJa === name && st.shares > 0; }); };
+        const heldCrypto = g.cryptos.some(function(c) { return c.holdings > 0; });
+        const shock = (y.stockShockNames || []).filter(heldStock)[0];
+        if (shock) l1 += shock + 'が急落。';
+        else if (y.cryptoBigMove === 'crash' && heldCrypto) l1 += '暗号資産が大暴落。';
+        else if (y.cryptoBigMove === 'moon' && heldCrypto) l1 += '暗号資産が急騰。';
+        else if (y.hotPopInfo && heldStock(y.hotPopInfo.name)) l1 += y.hotPopInfo.name + 'が反落。';
+        // 2行目：自分の判断の結果
+        let l2 = '';
+        if (yearMilestoneText) l2 = yearMilestoneText;
+        else if (yearEventResult && yearEventResult.turn === g.turn) l2 = yearEventResult.subtitle;
+        else if (y.shortfall > 0) l2 = '生活費が足りず、資産が尽きた。';
+        else if (!y.working && !y.scenario && y.livingPaid > 0) l2 = '生活費 −' + fmtShort(y.livingPaid) + (y.pensionIncome > 0 ? '、年金 ＋' + fmtShort(y.pensionIncome) : '') + '。';
+        else if (y.hedgePayout > 0) l2 = '暴落保険から ＋' + fmtShort(y.hedgePayout) + '。';
+        else if (y.idxBefore > 0 && y.indRate < 0) l2 = '売らずに持ち続けた（' + fmtDelta(y.idxGain) + '）。';
+        else if (y.idxBefore > 0 && y.prevDropHeld) l2 = '去年売らなかった株が戻った（' + fmtDelta(y.idxGain) + '）。';
+        else if (y.idxBefore > 0) l2 = '持っている株が ' + fmtDelta(y.idxGain) + '。';
+        else if (y.goldBefore > 0) l2 = '持っている金が ' + fmtDelta(y.goldGain) + '。';
+        else if (y.inflationCashLoss > 0) l2 = '現金のまま。物価で ' + fmtShort(y.inflationCashLoss) + ' 目減りした。';
+        else if (y.netInflow > 0) l2 = '給与から ＋' + fmtShort(y.netInflow) + ' を貯めた。';
+        return [l1, l2];
+    }
+
+    // ===== 一年の演出：数字が動き、輪が一本増える。減った年は灰色の輪がゆっくり =====
+    let heroCountRaf = null;
+    let fireStampMax = null;   // この画面で押した判子（FIRE目標の25%刻み）
+    let nwStampMax = null;     // 純資産の節目
+    const NW_MILESTONES = [1000, 3000, 5000, 10000, 30000];
+    function nwMilestoneLabel(v) {
+        if (market !== 'jp') return fmtShort(v);
+        return v >= 10000 ? (v / 10000) + '億円' : (v / 1000) + '千万円';
+    }
+    function requestYearAnimation() {
+        if (!yearAnim.pending || yearAnim.scheduled) return;
+        if (isAnyModalOpen()) return;
+        yearAnim.scheduled = true;
+        requestAnimationFrame(function() { yearAnim.scheduled = false; if (!isAnyModalOpen()) runYearAnimation(); });
+    }
+    function runYearAnimation() {
+        if (!yearAnim.pending) return;
+        yearAnim.pending = false;
+        const from = yearAnim.from, rings = Math.max(1, Math.min(5, yearAnim.rings));
+        const to = getNetWorth();
+        const bad = from !== null && to < from;
+        checkMilestones(from, to);
+        renderHero();
+        const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // 輪：外側の数本を、内側から順に描く
+        const svg = document.getElementById('life-ring');
+        if (svg && !reduce) {
+            const paths = [...svg.querySelectorAll('path.ring')].slice(-rings);
+            paths.forEach(function(p, i) {
+                let len = 0;
+                try { len = p.getTotalLength(); } catch (e) {}
+                if (!len) return;
+                const dur = (p.classList.contains('ring-shrank') ? 1.15 : 0.8);
+                p.style.strokeDasharray = len;
+                p.style.strokeDashoffset = len;
+                p.getBoundingClientRect();
+                p.style.transition = 'stroke-dashoffset ' + dur + 's cubic-bezier(.3,.6,.2,1) ' + (i * 0.22) + 's';
+                p.style.strokeDashoffset = '0';
+            });
+            svg.classList.remove('ring-grew', 'ring-shrank-year');
+            void svg.getBoundingClientRect();
+            svg.classList.add(bad ? 'ring-shrank-year' : 'ring-grew');
+        }
+        // 数字：前の年の値から数え上げる
+        const el = document.getElementById('hero-nw');
+        if (el && from !== null && !reduce && Math.round(from) !== Math.round(to)) {
+            if (heroCountRaf) cancelAnimationFrame(heroCountRaf);
+            const t0 = performance.now(), dur = bad ? 900 : 700;
+            const step = function(now) {
+                const k = Math.min(1, (now - t0) / dur);
+                const e = 1 - Math.pow(1 - k, 3);
+                el.innerHTML = heroMoneyHTML(from + (to - from) * e);
+                if (k < 1) heroCountRaf = requestAnimationFrame(step); else { heroCountRaf = null; el.innerHTML = heroMoneyHTML(to); }
+            };
+            heroCountRaf = requestAnimationFrame(step);
+        }
+        // 今年の一言：1行目、少し遅れて2行目
+        const card = document.getElementById('year-card');
+        if (card && !reduce) {
+            card.classList.remove('enter');
+            void card.offsetWidth;
+            card.classList.add('enter');
+        }
+        playSound(bad ? 'year-bad' : 'year-good');
+    }
+    function placeFireStamps(animateLevel) {
+        const box = document.getElementById('ring-stamps');
+        if (!box) return;
+        box.querySelectorAll('.stamp.fire').forEach(function(n) { n.remove(); });
+        if (gameMode === 'scenario' || fireStampMax === null) return;
+        const pos = { 25: 'tr', 50: 'br', 75: 'bl', 100: 'tl' };
+        [25, 50, 75, 100].forEach(function(lv) {
+            if (fireStampMax < lv) return;
+            const st = document.createElement('div');
+            st.className = 'stamp fire ' + pos[lv] + (animateLevel === lv ? ' press' : '');
+            st.innerHTML = lv === 100 ? 'FIRE<br>目標' : '目標<br>' + lv + '%';
+            box.appendChild(st);
+        });
+    }
+    function pressBigStamp(text) {
+        const box = document.getElementById('ring-stamps');
+        if (!box) return;
+        const st = document.createElement('div');
+        st.className = 'stamp big press';
+        st.innerText = text;
+        box.appendChild(st);
+        setTimeout(function() { st.classList.add('fade'); }, 1500);
+        setTimeout(function() { st.remove(); }, 2300);
+    }
+    function initStampsFromState() {
+        fireStampMax = Math.floor((lastFirePct || 0) / 25) * 25;
+        const nw = getNetWorth();
+        nwStampMax = NW_MILESTONES.filter(function(t) { return nw >= t; }).pop() || 0;
+        placeFireStamps(null);
+    }
+    function checkMilestones(from, to) {
+        if (fireStampMax === null || nwStampMax === null) initStampsFromState();
+        const texts = [];
+        let newFire = null;
+        if (gameMode !== 'scenario' && !g.retired) {
+            const lv = Math.floor((lastFirePct || 0) / 25) * 25;
+            if (lv > fireStampMax) { fireStampMax = lv; newFire = lv; texts.push(lv >= 100 ? 'FIRE目標に届いた。' : 'FIRE目標の' + lv + '%に届いた。'); }
+        }
+        const crossed = NW_MILESTONES.filter(function(t) { return to >= t && t > nwStampMax; });
+        if (crossed.length) {
+            const t = crossed[crossed.length - 1];
+            nwStampMax = t;
+            texts.push('純資産が' + nwMilestoneLabel(t) + 'を超えた。');
+            setTimeout(function() { pressBigStamp(nwMilestoneLabel(t)); playSound('stamp'); }, 420);
+        }
+        if (newFire !== null) setTimeout(function() { placeFireStamps(newFire); playSound('stamp'); }, crossed.length ? 1100 : 500);
+        if (texts.length) yearMilestoneText = texts.join('');
+    }
+    function resetHeroState() {
+        lastYear = null; yearEventResult = null; yearMilestoneText = '';
+        fireStampMax = null; nwStampMax = null;
+        yearAnim.pending = false; yearAnim.from = null; yearAnim.rings = 0;
+        Object.keys(yearNotes).forEach(function(k) { delete yearNotes[k]; });
+        const box = document.getElementById('ring-stamps');
+        if (box) box.innerHTML = '';
     }
     function renderHero() {
         const hero = document.getElementById('hero');
@@ -5589,6 +5830,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         document.getElementById('hero-pct').innerText = g.retired ? (g.retireAge + '歳から') : (lastFirePct + '%');
         document.getElementById('ring-legend').classList.toggle('hidden', gameMode === 'scenario');
         drawLifeRing();
+        if (fireStampMax === null) initStampsFromState();
         const retireBtn = document.getElementById('btn-hero-retire');
         if (retireBtn) retireBtn.classList.toggle('hidden', !(gameMode !== 'scenario' && !g.retired && isFireTargetReached() && isFinalNavStep()));
         const k = document.getElementById('year-k');
