@@ -23,256 +23,262 @@
     <meta name="twitter:description" content="25歳から90歳まで、株・不動産・暗号資産に挑みFIRE（経済的自立）を目指す無料シミュレーションゲーム。">
     <meta name="twitter:image" content="https://kinotz.github.io/lets-fire/ogp.png">
     <style>
+        /* ===== 年輪の通帳：色・文字・余白のトークン ===== */
         :root {
-            --bg-color: #030712; --panel-bg: #0b1120; --card-bg: #151f32; --border: #283652;
-            --text-main: #f8fafc; --text-sub: #94a3b8; --accent-blue: #38bdf8; --accent-green: #10b981;
-            --accent-gold: #fbbf24; --accent-red: #f43f5e; --accent-purple: #c084fc; --accent-crypto: #ec4899;
+            --paper: #F2EEE5; --paper-hi: #F8F5EF; --paper-lo: #E8E2D5;
+            --rule: #D8CFBF; --rule-strong: #B9AF9D;
+            --ink: #3A332B; --sub: #665F55;
+            --wood: #7B5E41; --ash: #A49E93; --red: #B03A2E;
+            --green: #3B4A40; --green-press: #2C382F; --on-green: #F2EEE5;
+            --amber: #8A6326; --amber-line: #B9853F; --slate: #3F5560; --rose: #8C5A6A;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic", "YuGothic", sans-serif;
+            --font-serif: "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Noto Serif JP", "Noto Serif CJK JP", "Yu Mincho", "YuMincho", serif;
+            --fs-xs: 0.75rem; --fs-s: 0.8125rem; --fs-m: 0.875rem; --fs-l: 1rem;
+            --r-s: 3px; --r-m: 6px;
+            /* 旧い変数名は新しい色へつなぐ（JSやインラインの style が参照している） */
+            --bg-color: var(--paper); --panel-bg: var(--paper-hi); --card-bg: var(--paper-hi); --border: var(--rule);
+            --text-main: var(--ink); --text-sub: var(--sub);
+            --accent-blue: var(--slate); --accent-green: #46613F; --accent-gold: var(--amber);
+            --accent-red: var(--red); --accent-purple: var(--wood); --accent-crypto: var(--rose);
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         /* ピンチ拡大は許可しつつ、ボタン連打時のダブルタップ拡大だけを防ぐ */
         button, select, input, .select-card, .legend-item { touch-action: manipulation; }
-        body { background-color: var(--bg-color); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; margin: 0; padding: 8px 8px calc(100px + env(safe-area-inset-bottom)) 8px; display: flex; justify-content: center; line-height: 1.5; }
-        .container { width: 100%; max-width: 580px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 12px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); position: relative; overflow: hidden; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; gap: 6px; }
-        .app-title { font-size: 1.05rem; font-weight: 900; background: linear-gradient(90deg, #fde047, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; cursor: pointer; }
-        .header-right { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
-        .app-title { background-color: transparent; border: none; padding: 0; min-height: 44px; font-family: inherit; text-align: left; }
-        .header-icon { width: 44px; height: 44px; padding: 0; font-size: 1.2rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; }
+        html { background: var(--paper); }
+        body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 400; margin: 0; padding: 0 0 calc(100px + env(safe-area-inset-bottom)); display: flex; justify-content: center; line-height: 1.6; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+        button { font-family: inherit; }
+        strong, b { font-weight: 600; }
+        .serif { font-family: var(--font-serif); }
+        .header:has(#header-age-badge:not(.hidden)) .app-title { display: none; }
+        .age-badge .age-num { font-size: 1.5rem; color: var(--ink); font-weight: 500; letter-spacing: 0.01em; }
+        .age-badge .age-unit { font-size: var(--fs-m); color: var(--ink); margin: 0 10px 0 2px; }
+        .container { width: 100%; max-width: 560px; padding: 8px 16px 12px; position: relative; }
+        .header { display: flex; justify-content: space-between; align-items: center; min-height: 56px; margin-bottom: 4px; gap: 6px; }
+        .app-title { font-size: var(--fs-s); font-weight: 500; letter-spacing: 0.18em; color: var(--sub); background: transparent; border: none; padding: 0; min-height: 44px; text-align: left; cursor: pointer; text-transform: uppercase; }
+        .header-right { display: flex; align-items: center; gap: 0; justify-content: flex-end; }
+        .icon-btn { font-size: var(--fs-m); padding: 4px 8px; border-radius: var(--r-s); background: transparent; color: var(--ink); border: 1px solid var(--rule); cursor: pointer; white-space: nowrap; }
+        .header-icon { width: 44px; height: 44px; padding: 0; border: none; display: inline-flex; align-items: center; justify-content: center; }
+        .ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+        .ico.s { width: 16px; height: 16px; }
         .menu-wrap { position: relative; }
-        .header-menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 210px; background: #0f172a; border: 1px solid var(--border); border-radius: 12px; padding: 6px; box-shadow: 0 16px 40px rgba(0,0,0,0.7); z-index: 900; display: flex; flex-direction: column; gap: 4px; }
-        .menu-item { min-height: 48px; text-align: left; padding: 10px 14px; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); border-radius: 10px; font-size: 0.95rem; font-weight: 800; cursor: pointer; font-family: inherit; }
-        .menu-item:active { background: #1e2d4a; }
-        .icon-btn { font-size: 0.875rem; font-weight: 700; padding: 4px 6px; border-radius: 8px; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); cursor: pointer; white-space: nowrap; }
-        .term-btn { font-family: inherit; cursor: pointer;  display: inline-flex; align-items: center; gap: 2px; background: rgba(56, 189, 248, 0.14); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; padding: 1px 5px; font-size: 0.75rem; font-weight: 800; cursor: pointer; vertical-align: middle; }
-        .fire-badge { font-size: 0.75rem; font-weight: 900; padding: 2px 6px; border-radius: 10px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(16, 185, 129, 0.1)); color: var(--accent-green); border: 1px solid var(--accent-green); animation: pulseGlow 1.5s infinite alternate; }
-        @keyframes pulseGlow { from { opacity: 0.8; transform: scale(1); } to { opacity: 1; transform: scale(1.05); } }
-        .age-badge { font-size: 0.75rem; font-weight: 800; background: var(--card-bg); padding: 3px 7px; border-radius: 12px; border: 1px solid var(--border); white-space: nowrap; color: var(--accent-gold); }
-        .opening-box { text-align: center; padding: 20px 14px 16px 14px; background: radial-gradient(circle at 50% 15%, rgba(56, 189, 248, 0.18), rgba(192, 132, 252, 0.08) 45%, rgba(11, 17, 32, 0.98) 80%); border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 16px; position: relative; overflow: hidden; }
-        .op-emblem { font-size: 3.4rem; margin-bottom: 4px; display: inline-block; filter: drop-shadow(0 0 18px rgba(251, 191, 36, 0.65)); animation: floatEmblem 2.2s infinite ease-in-out alternate; }
-        @keyframes floatEmblem { from { transform: translateY(0); } to { transform: translateY(-7px); } }
-        .op-sub-pill { display: inline-block; font-size: 0.75rem; font-weight: 900; letter-spacing: 1.5px; padding: 3px 12px; border-radius: 20px; margin-bottom: 6px; background: rgba(251, 191, 36, 0.18); color: var(--accent-gold); border: 1px solid rgba(251, 191, 36, 0.5); }
-        .op-main-title { font-size: 1.95rem; font-weight: 900; margin: 0 0 6px 0; background: linear-gradient(90deg, #fde047, #38bdf8, #c084fc, #fde047); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shineText 4s linear infinite; }
-        @keyframes shineText { to { background-position: 200% center; } }
-        .op-catch { font-size: 0.875rem; font-weight: 800; color: #e2e8f0; margin-bottom: 12px; }
-        .op-story-card { background: rgba(5, 8, 17, 0.85); border: 1px solid var(--border); border-left: 3px solid var(--accent-gold); border-radius: 12px; padding: 12px; text-align: left; font-size: 0.875rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 12px; white-space: pre-line; font-weight: 600; }
-        .op-feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
-        .op-feat-item { background: rgba(21, 31, 50, 0.85); border: 1px solid var(--border); border-radius: 10px; padding: 8px 4px; font-size: 0.75rem; font-weight: 800; color: #f8fafc; }
-        .op-feat-item span { display: block; font-size: 1.1rem; margin-bottom: 2px; }
-        .op-start-btn { background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706); color: #030712; border: none; width: 100%; padding: 14px; font-size: 1rem; font-weight: 900; border-radius: 14px; cursor: pointer; box-shadow: 0 8px 25px rgba(251, 191, 36, 0.5); }
-        .op-sub-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-        .op-sub-btn { flex: 1; background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); padding: 8px 6px; border-radius: 10px; font-size: 0.875rem; font-weight: 800; cursor: pointer; white-space: nowrap; }
-        .op-sub-btn.reset { border-color: rgba(244, 63, 94, 0.5); color: #fda4af; background: rgba(244, 63, 94, 0.08); }
-        .op-sub-btn.donate { border-color: rgba(236, 72, 153, 0.6); color: #f472b6; background: rgba(236, 72, 153, 0.1); }
-        .coach-box { background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(56, 189, 248, 0.1)); border: 1px solid rgba(16, 185, 129, 0.45); border-left: 4px solid var(--accent-green); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; font-size: 0.875rem; line-height: 1.45; }
-        .coach-head { display: flex; justify-content: space-between; align-items: center; font-weight: 900; color: var(--accent-green); margin-bottom: 2px; font-size: 0.875rem; }
-        .coach-body { color: #e2e8f0; font-weight: 600; }
-        .promo-box { background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(56, 189, 248, 0.12)); border: 1px solid rgba(16, 185, 129, 0.5); border-radius: 12px; padding: 11px 12px; margin-top: 10px; text-align: left; }
-        .promo-badge { display: inline-block; font-size: 0.75rem; font-weight: 900; padding: 1px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.25); color: var(--accent-green); margin-bottom: 4px; }
-        .promo-title { font-size: 0.875rem; font-weight: 900; color: #f8fafc; margin-bottom: 3px; }
-        .promo-desc { font-size: 0.875rem; color: #cbd5e1; margin-bottom: 8px; line-height: 1.45; }
-        .promo-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .promo-link-btn { display: flex; align-items: center; justify-content: center; gap: 4px; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; font-size: 0.875rem; font-weight: 900; padding: 8px 6px; border-radius: 8px; border: none; cursor: pointer; text-align: center; }
-        .promo-link-btn.secondary { background: linear-gradient(135deg, #38bdf8, #0284c7); color: #030712; }
-        .promo-link-btn.donate-btn { background: linear-gradient(135deg, #ec4899, #db2777); color: #ffffff; width: 100%; margin-top: 6px; padding: 9px; }
-        .sponsor-reward-bar { background: linear-gradient(90deg, rgba(251, 191, 36, 0.2), rgba(192, 132, 252, 0.15)); border: 1px dashed var(--accent-gold); border-radius: 10px; padding: 8px 10px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-        .sponsor-reward-btn { background: var(--accent-gold); color: #030712; border: none; border-radius: 8px; padding: 6px 10px; font-size: 0.875rem; font-weight: 900; cursor: pointer; white-space: nowrap; }
-        .ad-banner-slot {
-    margin-top: 12px;
-    padding: 10px;
-    background: #050811;
-    border: 1px dashed var(--border);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    max-width: 100%;
-}
-
-        .rank-legacy-tag { font-size: 0.75rem; font-weight: 800; color: var(--text-sub); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; white-space: nowrap; }
-        .site-footer { display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 12px; font-size: 0.75rem; color: var(--text-sub); }
-        .footer-link { background: none; border: none; color: var(--text-sub); font: inherit; font-size: 0.75rem; text-decoration: underline; padding: 12px 8px; min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; }
-        .op-disclaimer-note { font-size: 0.75rem; color: var(--text-sub); margin: 10px 0 0; line-height: 1.45; }
-        .res-disclaimer-note { font-size: 0.75rem; color: var(--text-sub); text-align: left; line-height: 1.5; margin: 0 0 10px; }
-        .asset-note { font-size: 0.75rem; color: var(--text-sub); line-height: 1.45; margin: 2px 2px 6px; }
-        .market-switcher { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; background: #050811; padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
-        .mkt-btn { background: transparent; border: 1px solid transparent; color: var(--text-sub); font-size: 0.875rem; font-weight: 800; padding: 6px 2px; border-radius: 6px; cursor: pointer; text-align: center; }
-        .mkt-btn.active { background: var(--card-bg); color: var(--accent-blue); border-color: var(--accent-blue); }
-        .mkt-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .market-info-bar { background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 6px 8px; margin-bottom: 10px; font-size: 0.75rem; color: #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-        #market-bar-wrap.in-game { display: flex; gap: 6px; align-items: stretch; margin-bottom: 8px; }
-        #market-bar-wrap.in-game .market-switcher { display: none; }
-        #market-bar-wrap.in-game .market-info-bar { flex: 1; margin-bottom: 0; }
-        #market-bar-wrap.in-game .cycle-badge { margin-bottom: 0; display: flex; align-items: center; justify-content: center; white-space: nowrap; }
-        .cycle-badge { text-align: center; font-size: 0.75rem; font-weight: 900; padding: 4px 6px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); background: var(--panel-bg); color: var(--text-sub); transition: background 0.3s, color 0.3s, border-color 0.3s; }
-        .cycle-badge.cycle-boom { background: rgba(16, 185, 129, 0.16); color: var(--accent-green); border-color: var(--accent-green); }
-        .cycle-badge.cycle-bubble { background: rgba(251, 191, 36, 0.2); color: var(--accent-gold); border-color: var(--accent-gold); }
-        .cycle-badge.cycle-correction { background: rgba(244, 63, 94, 0.18); color: var(--accent-red); border-color: var(--accent-red); }
-        .cycle-badge.cycle-recession { background: rgba(56, 189, 248, 0.12); color: var(--accent-blue); border-color: var(--accent-blue); }
+        .header-menu { position: absolute; right: 0; top: calc(100% + 4px); min-width: 220px; background: var(--paper-hi); border: 1px solid var(--rule-strong); border-radius: var(--r-m); padding: 4px 0; z-index: 900; display: flex; flex-direction: column; }
+        .menu-item { min-height: 48px; text-align: left; padding: 10px 16px; background: transparent; color: var(--ink); border: none; border-bottom: 1px solid var(--rule); font-size: var(--fs-m); cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item:active { background: var(--paper-lo); }
+        .term-btn { font-family: inherit; display: inline-flex; align-items: center; gap: 2px; background: transparent; color: var(--sub); border: 1px solid var(--rule-strong); border-radius: 999px; padding: 0 7px; font-size: var(--fs-xs); font-weight: 400; cursor: pointer; vertical-align: middle; line-height: 1.6; }
+        .fire-badge { font-size: var(--fs-xs); padding: 1px 6px; border-radius: var(--r-s); color: var(--green); border: 1px solid var(--green); }
+        .age-badge { font-size: var(--fs-s); color: var(--sub); white-space: nowrap; }
+        /* ===== タイトル（通帳の表紙）===== */
+        .opening-box { padding: 4px 0 8px; position: relative; }
+        .op-cover { background: #34433D; color: #D8CFB8; border-radius: 4px; position: relative; overflow: hidden; padding: 26px 22px 24px; min-height: 360px; margin: 4px 4px 0; }
+        .op-cover::before { content: ''; position: absolute; inset: 9px; border: 1px solid rgba(216,207,184,0.35); border-radius: 2px; z-index: 2; pointer-events: none; }
+        .op-cover-rings { position: absolute; right: -180px; top: -150px; opacity: 0.3; z-index: 1; }
+        .op-sub-pill { position: relative; z-index: 3; font-size: 0.6875rem; letter-spacing: 0.3em; opacity: 0.85; }
+        .op-main-title { position: relative; z-index: 3; font-family: var(--font-serif); font-weight: 500; font-size: 2.25rem; letter-spacing: 0.12em; margin: 52px 0 4px; color: #E4DCC6; line-height: 1.3; }
+        .op-catch { position: relative; z-index: 3; font-size: var(--fs-m); letter-spacing: 0.18em; opacity: 0.85; }
+        .op-cover-foot { position: absolute; z-index: 3; left: 22px; right: 22px; bottom: 26px; font-size: var(--fs-s); letter-spacing: 0.12em; border-bottom: 1px solid rgba(216,207,184,0.45); padding-bottom: 6px; display: flex; justify-content: space-between; }
+        .op-story-card { margin: 20px 4px 0; font-size: var(--fs-m); line-height: 1.85; white-space: pre-line; }
+        .op-start-btn, .start-game-btn, .next-btn { background: var(--green); color: var(--on-green); border: none; width: 100%; min-height: 54px; padding: 12px; font-size: var(--fs-l); font-weight: 500; letter-spacing: 0.1em; border-radius: var(--r-s); cursor: pointer; }
+        .op-start-btn:active, .start-game-btn:active, .next-btn:active { background: var(--green-press); }
+        .op-start-btn { margin-top: 16px; }
+        .op-start-btn.secondary-start { background: transparent; color: var(--ink); border: 1px solid var(--rule-strong); }
+        .op-sub-actions { display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 6px; }
+        .op-sub-btn { background: transparent; border: none; color: var(--sub); padding: 8px 4px; font-size: var(--fs-s); cursor: pointer; white-space: nowrap; }
+        .op-sub-btn.reset { color: var(--red); }
+        .op-disclaimer-note, .res-disclaimer-note { font-size: var(--fs-xs); color: var(--sub); margin: 14px 4px 0; line-height: 1.6; }
+        .op-feature-grid, .op-emblem { display: none; }
+        /* ===== 広告・プロモ・寄付（目立たせない）===== */
+        .promo-box { border-top: 1px solid var(--rule); padding: 12px 0 0; margin-top: 12px; text-align: left; }
+        .promo-badge { display: inline-block; font-size: 0.6875rem; letter-spacing: 0.1em; color: var(--sub); margin-bottom: 2px; }
+        .promo-title { font-size: var(--fs-m); font-weight: 500; margin-bottom: 2px; }
+        .promo-desc { font-size: var(--fs-s); color: var(--sub); margin-bottom: 8px; line-height: 1.6; }
+        .promo-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .promo-link-btn { display: flex; align-items: center; justify-content: center; gap: 4px; background: transparent; color: var(--ink); font-size: var(--fs-s); padding: 8px 6px; border-radius: var(--r-s); border: 1px solid var(--rule-strong); cursor: pointer; text-align: center; }
+        .promo-link-btn.donate-btn { width: 100%; margin-top: 6px; }
+        .sponsor-reward-bar { border: 1px dashed var(--rule-strong); border-radius: var(--r-s); padding: 8px 10px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .sponsor-reward-btn { background: transparent; color: var(--ink); border: 1px solid var(--rule-strong); border-radius: var(--r-s); padding: 6px 10px; font-size: var(--fs-s); cursor: pointer; white-space: nowrap; }
+        .ad-banner-slot { margin-top: 16px; padding: 8px 0; display: flex; justify-content: center; align-items: center; overflow: hidden; max-width: 100%; border-top: 1px solid var(--rule); }
+        .rank-legacy-tag { font-size: var(--fs-xs); color: var(--sub); border: 1px solid var(--rule); border-radius: var(--r-s); padding: 0 4px; white-space: nowrap; }
+        .site-footer { display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 12px; font-size: var(--fs-xs); color: var(--sub); }
+        .footer-link { background: none; border: none; color: var(--sub); font: inherit; font-size: var(--fs-xs); text-decoration: underline; text-underline-offset: 3px; padding: 12px 8px; min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; }
+        .asset-note { font-size: var(--fs-xs); color: var(--sub); line-height: 1.6; margin: 4px 0 8px; }
+        /* ===== 市場・景気 ===== */
+        .market-switcher { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-bottom: 6px; border: 1px solid var(--rule-strong); border-radius: var(--r-s); overflow: hidden; }
+        .mkt-btn { background: transparent; border: none; border-right: 1px solid var(--rule); color: var(--sub); font-size: var(--fs-s); padding: 6px 2px; cursor: pointer; text-align: center; }
+        .mkt-btn:last-child { border-right: none; }
+        .mkt-btn.active { background: var(--green); color: var(--on-green); }
+        .mkt-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .market-info-bar { padding: 4px 0; margin-bottom: 10px; font-size: var(--fs-xs); color: var(--sub); display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        #market-bar-wrap.in-game { display: none; }
+        .cycle-badge { font-size: var(--fs-xs); padding: 1px 0; color: var(--sub); }
+        .cycle-badge.cycle-correction, .cycle-badge.cycle-recession { color: var(--red); }
+        /* ===== 設定 ===== */
         .setup-box { padding: 4px 0; }
-        .setup-section-title { font-size: 0.875rem; font-weight: 900; margin: 10px 0 4px 0; color: var(--accent-blue); }
-        .select-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; margin-bottom: 6px; cursor: pointer; }
-        .select-card.selected { border-color: var(--accent-blue); background: linear-gradient(145deg, #1e2d4a, #151f32); }
-        .select-card-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2px 6px; font-weight: 900; font-size: 0.875rem; margin-bottom: 2px; }
-        .select-tag { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); font-weight: 800; }
-        .scenario-pick-row { margin-bottom: 6px; padding: 8px 10px 2px; border: 1px dashed var(--border); border-radius: 12px; background: rgba(192,132,252,0.06); }
-        .challenge-pick-row { margin: 10px 0 6px; padding: 8px 10px; border: 1px dashed var(--border); border-radius: 12px; background: rgba(56,189,248,0.05); }
-        .challenge-chip-row { display: flex; gap: 5px; flex-wrap: wrap; }
-        .challenge-chip { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-sub); font-size: 0.875rem; font-weight: 800; padding: 6px 9px; border-radius: 10px; cursor: pointer; }
-        .challenge-chip.active { background: var(--accent-blue); color: #030712; border-color: var(--accent-blue); }
+        .setup-section-title { font-size: var(--fs-xs); letter-spacing: 0.12em; color: var(--sub); margin: 16px 0 6px; }
+        .select-card { background: transparent; border: 1px solid var(--rule); border-radius: var(--r-m); padding: 10px 12px; margin-bottom: 6px; cursor: pointer; }
+        .select-card.selected { border-color: var(--green); box-shadow: inset 3px 0 0 var(--green); background: var(--paper-hi); }
+        .select-card-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2px 6px; font-weight: 500; font-size: var(--fs-m); margin-bottom: 2px; }
+        .select-tag { font-size: var(--fs-xs); color: var(--sub); }
+        .scenario-pick-row { margin-bottom: 6px; padding: 4px 0 2px 10px; border-left: 1px solid var(--rule-strong); }
+        .challenge-pick-row { margin: 10px 0 6px; }
+        .challenge-chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+        .challenge-chip { background: transparent; border: 1px solid var(--rule); color: var(--ink); font-size: var(--fs-s); padding: 6px 10px; border-radius: 999px; cursor: pointer; }
+        .challenge-chip.active { background: var(--green); color: var(--on-green); border-color: var(--green); }
         .challenge-chip:disabled { opacity: 0.4; cursor: not-allowed; }
         .select-card.scenario-sub { padding: 8px 10px; }
-        .select-card.scenario-sub .select-card-top { font-size: 0.875rem; }
-        .select-card.scenario-sub.selected { border-color: var(--accent-purple); background: linear-gradient(145deg, #2a1e4a, #1f1530); }
-        .name-input { width: 100%; background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); padding: 10px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 6px; outline: none; }
-        .start-game-btn { background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; border: none; width: 100%; padding: 14px; font-size: 1rem; font-weight: 900; border-radius: 12px; cursor: pointer; margin-top: 10px; }
-        .summary-card { background: linear-gradient(145deg, #172338, #0b1120); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 10px; }
-        .rank-strip { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, rgba(251, 191, 36, 0.18), rgba(192, 132, 252, 0.12)); border: 1px solid rgba(251, 191, 36, 0.45); padding: 4px 8px; border-radius: 8px; margin-bottom: 6px; font-size: 0.75rem; font-weight: 800; }
-        .net-worth-label { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 0.875rem; color: var(--text-sub); font-weight: 800; }
-        .fire-progress { margin: 6px 0 2px; }
-        .fire-progress-text { font-size: 0.75rem; color: var(--text-sub); margin-bottom: 3px; line-height: 1.4; }
-        .fire-progress-bar { height: 6px; background: #050811; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-        .fire-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-green), var(--accent-gold)); }
-        .nominal-line { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 0.75rem; color: var(--text-sub); margin: 2px 0 6px; }
+        .select-card.scenario-sub.selected { border-color: var(--green); }
+        .name-input { width: 100%; background: var(--paper-hi); border: 1px solid var(--rule-strong); color: var(--ink); padding: 10px; border-radius: var(--r-s); font-size: var(--fs-l); margin-bottom: 6px; outline: none; font-family: inherit; }
+        .name-input:focus { border-color: var(--green); }
+        .start-game-btn { margin-top: 14px; }
+        /* ===== ゲーム画面の数字（記録シート内）===== */
+        .summary-card { padding: 4px 0 8px; margin-bottom: 8px; }
+        .rank-strip { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; margin-bottom: 6px; font-size: var(--fs-s); border-bottom: 1px solid var(--rule); }
+        .net-worth-label { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; font-size: var(--fs-s); color: var(--sub); }
+        .fire-progress { margin: 8px 0 2px; }
+        .fire-progress-text { font-size: var(--fs-xs); color: var(--sub); margin-bottom: 4px; line-height: 1.6; }
+        .fire-progress-bar { height: 4px; background: var(--paper-lo); border-radius: 2px; overflow: hidden; }
+        .fire-progress-fill { height: 100%; background: var(--wood); }
+        .nominal-line { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; font-size: var(--fs-xs); color: var(--sub); margin: 2px 0 8px; }
         .net-worth-row { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px; }
-        .net-worth-val { font-size: 1.6rem; font-weight: 900; font-variant-numeric: tabular-nums; margin: 2px 0 4px 0; color: #f8fafc; }
-        .growth-pill { font-size: 0.75rem; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
-        .growth-pill.minus { background: rgba(244, 63, 94, 0.2); color: var(--accent-red); }
-        .breakdown-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #030712; margin-bottom: 6px; border: 1px solid var(--border); }
+        .net-worth-val { font-size: 1.5rem; font-weight: 500; margin: 2px 0 4px; }
+        .growth-pill { font-size: var(--fs-s); color: var(--ink); }
+        .growth-pill.minus { color: var(--red); }
+        .breakdown-bar { display: flex; height: 8px; border-radius: 1px; overflow: hidden; background: var(--paper-lo); margin-bottom: 6px; }
         .bar-seg { height: 100%; transition: width 0.4s ease; }
-        .legend-row { display: flex; flex-wrap: wrap; gap: 0 10px; font-size: 0.75rem; color: var(--text-sub); margin-bottom: 8px; font-weight: 800; }
-        .legend-item { display: flex; align-items: center; gap: 3px; cursor: pointer; background: none; border: none; padding: 0; color: inherit; font: inherit; }
-        .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
-        .cf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; border-top: 1px solid var(--border); padding-top: 8px; text-align: center; }
-        .cf-cell { background: rgba(5,8,17,0.5); border: 1px solid var(--border); border-radius: 8px; padding: 6px 2px; color: inherit; font-family: inherit; cursor: pointer; min-height: 48px; }
-        .cf-cell span { display: block; font-size: 0.75rem; color: var(--text-sub); font-weight: 700; margin-bottom: 1px; }
-        .cf-cell strong { font-size: 0.875rem; font-weight: 900; font-variant-numeric: tabular-nums; }
-        .rival-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px; font-size: 0.75rem; font-weight: 800; color: var(--text-sub); }
-        .rival-diff-badge { font-size: 0.75rem; font-weight: 900; padding: 2px 6px; border-radius: 10px; }
-        .rival-diff-badge.ahead { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
-        .rival-diff-badge.behind { background: rgba(244, 63, 94, 0.2); color: var(--accent-red); }
-        .chart-section { background: #050811; border: 1px solid var(--border); border-radius: 10px; padding: 8px; margin-bottom: 8px; }
-        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 0.75rem; font-weight: 800; color: var(--text-sub); }
+        .legend-row { display: flex; flex-wrap: wrap; gap: 0 12px; font-size: var(--fs-xs); color: var(--sub); margin-bottom: 8px; }
+        .legend-item { display: flex; align-items: center; gap: 4px; cursor: pointer; background: none; border: none; padding: 0; color: inherit; font: inherit; }
+        .dot { width: 8px; height: 8px; border-radius: 1px; display: inline-block; }
+        .cf-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; border-top: 1px solid var(--rule); text-align: left; }
+        .cf-cell { background: transparent; border: none; border-bottom: 1px solid var(--rule); padding: 8px 2px; color: inherit; font-family: inherit; cursor: pointer; min-height: 48px; display: flex; flex-direction: column; text-align: left; }
+        .cf-cell:nth-child(odd) { border-right: 1px solid var(--rule); padding-right: 10px; }
+        .cf-cell:nth-child(even) { padding-left: 10px; }
+        .cf-cell span { display: block; font-size: var(--fs-xs); color: var(--sub); }
+        .cf-cell strong { font-size: var(--fs-m); font-weight: 500; }
+        .rival-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; border-top: 1px solid var(--rule); margin-top: 8px; padding-top: 8px; font-size: var(--fs-s); color: var(--sub); }
+        .rival-diff-badge { font-size: var(--fs-xs); }
+        .rival-diff-badge.ahead { color: var(--ink); }
+        .rival-diff-badge.behind { color: var(--red); }
+        .chart-section { padding: 4px 0 8px; margin-bottom: 8px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: var(--fs-xs); color: var(--sub); }
         canvas { width: 100%; height: 80px; display: block; }
         #simChart { height: 170px; touch-action: pan-y; }
         .chart-canvas-wrap { position: relative; }
-        .chart-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.75rem; color: var(--text-sub); font-weight: 700; margin-bottom: 4px; }
-        .chart-legend strong { color: var(--text-main); }
-        .lg-swatch { display: inline-block; width: 18px; height: 0; border-top: 3px solid #c98500; vertical-align: middle; margin-right: 4px; }
-        .lg-swatch.rival { border-top: 3px dashed #3987e5; }
-        .chart-tip { position: absolute; top: 4px; pointer-events: none; background: rgba(15,23,42,0.95); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font-size: 0.75rem; font-weight: 700; color: var(--text-main); white-space: nowrap; line-height: 1.5; }
-        .insight-panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 0 10px; margin-bottom: 10px; }
-        .insight-panel > summary { min-height: 48px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-weight: 900; font-size: 0.9rem; list-style: none; }
+        .chart-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--fs-xs); color: var(--sub); margin-bottom: 4px; }
+        .chart-legend strong { color: var(--ink); font-weight: 500; }
+        .lg-swatch { display: inline-block; width: 18px; height: 0; border-top: 2px solid var(--wood); vertical-align: middle; margin-right: 4px; }
+        .lg-swatch.rival { border-top: 2px dashed var(--ash); }
+        .chart-tip { position: absolute; top: 4px; pointer-events: none; background: var(--paper-hi); border: 1px solid var(--rule-strong); border-radius: var(--r-s); padding: 6px 8px; font-size: var(--fs-xs); color: var(--ink); white-space: nowrap; line-height: 1.5; }
+        .insight-panel { margin-bottom: 10px; }
+        .insight-panel > summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: var(--fs-s); color: var(--sub); list-style: none; border-bottom: 1px solid var(--rule); }
         .insight-panel > summary::-webkit-details-marker { display: none; }
-        .insight-panel > summary::after { content: '▼ 閉じる'; font-size: 0.75rem; color: var(--text-sub); font-weight: 800; }
-        .insight-panel:not([open]) > summary::after { content: '▶ 開く'; }
-        .insight-panel[open] { padding-bottom: 10px; }
-        .nav-guide-banner { background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(56, 189, 248, 0.2)); border: 2px solid var(--accent-gold); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; }
+        .insight-panel > summary::after { content: '閉じる'; font-size: var(--fs-xs); color: var(--sub); }
+        .insight-panel:not([open]) > summary::after { content: '開く'; }
+        .nav-guide-banner { border-left: 2px solid var(--green); padding: 6px 10px; margin-bottom: 8px; }
         .nav-guide-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
-        .nav-guide-title { font-size: 0.875rem; font-weight: 900; color: var(--accent-gold); }
-        .nav-skip-btn { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--accent-gold); color: var(--accent-gold); font-size: 0.75rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; cursor: pointer; }
-        .nav-guide-desc { font-size: 0.875rem; color: #ffffff; font-weight: 700; }
-        .news-strip { background: rgba(56, 189, 248, 0.1); border-left: 3px solid var(--accent-blue); padding: 7px 9px; border-radius: 0 6px 6px 0; margin-bottom: 8px; font-size: 0.875rem; font-weight: 700; }
-        .title-toast { width: 100%; text-align: left; font-family: inherit;  background: linear-gradient(90deg, rgba(251, 191, 36, 0.25), rgba(16, 185, 129, 0.2)); border: 1px solid var(--accent-gold); color: #fde047; padding: 6px 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.875rem; font-weight: 900; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .main-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-bottom: 8px; }
-        .main-tabs.easy-grid { grid-template-columns: repeat(2, 1fr); }
-        .m-tab { background: var(--card-bg); color: var(--text-sub); border: 1px solid var(--border); padding: 6px 1px; border-radius: 6px; font-size: 0.875rem; font-weight: 800; cursor: pointer; text-align: center; }
-        .m-tab.active { background: var(--text-main); color: var(--bg-color); border-color: var(--text-main); }
-        .nav-locked { opacity: 0.22 !important; pointer-events: none !important; filter: grayscale(100%) !important; }
-        .nav-highlight { border: 2px solid var(--accent-gold) !important; box-shadow: 0 0 20px rgba(251, 191, 36, 0.95) !important; animation: targetPulse 0.7s infinite alternate !important; position: relative; z-index: 60 !important; opacity: 1 !important; pointer-events: auto !important; filter: none !important; }
-        @keyframes targetPulse { from { transform: scale(1); } to { transform: scale(1.04); } }
-        .panel-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-bottom: 10px; }
-        .asset-card { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 10px; padding: 9px 10px; margin-bottom: 6px; }
-        .asset-card-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2px 6px; margin-bottom: 3px; }
-        .asset-name { font-weight: 900; font-size: 0.875rem; display: flex; align-items: center; gap: 4px; }
-        .asset-holding-val { white-space: nowrap; font-size: 0.9rem; font-weight: 900; color: var(--accent-blue); }
-        .asset-sub-info { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-sub); margin-bottom: 6px; font-weight: 700; }
-        .asset-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-        .asset-btn { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); font-size: 0.875rem; font-weight: 800; padding: 6px 2px; border-radius: 6px; cursor: pointer; text-align: center; }
-        .asset-btn.buy { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(56,189,248,0.1); }
-        .asset-btn.sell { border-color: var(--accent-red); color: var(--accent-red); }
-        .asset-btn:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--border); color: var(--text-sub); background: var(--panel-bg); }
+        .nav-guide-title { font-size: var(--fs-s); font-weight: 500; }
+        .nav-skip-btn { background: transparent; border: none; color: var(--sub); font-size: var(--fs-xs); padding: 2px 6px; cursor: pointer; text-decoration: underline; }
+        .nav-guide-desc { font-size: var(--fs-s); }
+        .news-strip { padding: 8px 0; margin-bottom: 8px; font-size: var(--fs-s); line-height: 1.75; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+        .title-toast { width: 100%; text-align: left; font-family: inherit; background: var(--paper-hi); border: 1px solid var(--rule-strong); color: var(--ink); padding: 6px 12px; border-radius: var(--r-s); margin-bottom: 8px; font-size: var(--fs-s); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .main-tabs { display: flex; gap: 0; margin-bottom: 10px; border-bottom: 1px solid var(--rule); overflow-x: auto; scrollbar-width: none; }
+        .main-tabs::-webkit-scrollbar { display: none; }
+        .main-tabs.easy-grid { }
+        .m-tab { background: transparent; color: var(--sub); border: none; border-bottom: 2px solid transparent; padding: 6px 10px; font-size: var(--fs-s); cursor: pointer; text-align: center; white-space: nowrap; flex: none; }
+        .m-tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+        .nav-locked { opacity: 0.35 !important; pointer-events: none !important; }
+        .nav-highlight { outline: 2px solid var(--red) !important; outline-offset: 2px; position: relative; z-index: 60 !important; opacity: 1 !important; pointer-events: auto !important; }
+        .panel-box { padding: 2px 0 8px; margin-bottom: 8px; }
+        .asset-card { border-bottom: 1px solid var(--rule); padding: 10px 0; }
+        .asset-card:first-of-type { border-top: 1px solid var(--rule); }
+        .asset-card-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2px 6px; margin-bottom: 2px; }
+        .asset-name { font-weight: 500; font-size: var(--fs-m); display: flex; align-items: center; gap: 6px; }
+        .asset-holding-val { white-space: nowrap; font-size: var(--fs-m); }
+        .asset-sub-info { display: flex; justify-content: space-between; font-size: var(--fs-xs); color: var(--sub); margin-bottom: 8px; }
+        .asset-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .asset-btn { background: transparent; border: 1px solid var(--rule-strong); color: var(--ink); font-size: var(--fs-s); padding: 6px 2px; border-radius: var(--r-s); cursor: pointer; text-align: center; }
+        .asset-btn:active { background: var(--paper-lo); }
+        .asset-btn.buy { border-color: var(--ink); }
+        .asset-btn.sell { color: var(--red); border-color: var(--rule-strong); }
+        .asset-btn:disabled { opacity: 0.45; cursor: not-allowed; }
         .acad-progress-row { margin-bottom: 8px; }
-        .acad-progress-label { font-size: 0.75rem; font-weight: 800; color: var(--text-sub); margin-bottom: 3px; display: flex; justify-content: space-between; }
-        .acad-progress-label strong { color: var(--accent-gold); }
-        .acad-progress-bar { height: 7px; border-radius: 4px; overflow: hidden; background: #050811; border: 1px solid var(--border); }
-        .acad-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-gold)); transition: width 0.4s ease; }
-        .ac-card.read { opacity: 0.68; }
-        .roadmap-card { border: 1px solid var(--border); border-radius: 10px; background: var(--panel-bg); margin-bottom: 10px; overflow: hidden; }
-        .roadmap-head { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; font-size: 0.75rem; font-weight: 900; cursor: pointer; }
-        .roadmap-toggle { font-size: 0.75rem; color: var(--text-sub); transition: transform 0.2s ease; }
+        .acad-progress-label { font-size: var(--fs-xs); color: var(--sub); margin-bottom: 3px; display: flex; justify-content: space-between; }
+        .acad-progress-label strong { color: var(--ink); font-weight: 500; }
+        .acad-progress-bar { height: 4px; border-radius: 2px; overflow: hidden; background: var(--paper-lo); }
+        .acad-progress-fill { height: 100%; background: var(--wood); transition: width 0.4s ease; }
+        .ac-card.read { color: var(--sub); }
+        .roadmap-card { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-bottom: 10px; }
+        .roadmap-head { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: var(--fs-s); cursor: pointer; }
+        .roadmap-toggle { font-size: var(--fs-xs); color: var(--sub); transition: transform 0.2s ease; }
         .roadmap-toggle.collapsed { transform: rotate(180deg); }
-        .roadmap-body { padding: 0 10px 8px; }
+        .roadmap-body { padding: 0 0 8px; }
         .roadmap-body.collapsed { display: none; }
-        .roadmap-item { display: flex; align-items: flex-start; gap: 6px; padding: 5px 0; border-top: 1px dashed var(--border); font-size: 0.75rem; }
+        .roadmap-item { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-top: 1px dashed var(--rule); font-size: var(--fs-xs); }
         .roadmap-item:first-child { border-top: none; }
-        .roadmap-check { flex: none; width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; margin-top: 1px; }
-        .roadmap-item.done .roadmap-check { background: var(--accent-gold); border-color: var(--accent-gold); color: #030712; }
-        .roadmap-item.done .roadmap-text strong { color: var(--accent-gold); }
-        .roadmap-text { color: var(--text-sub); }
-        .roadmap-text strong { display: block; color: var(--text-main); font-size: 0.75rem; margin-bottom: 1px; }
-        .best-record-banner { border-radius: 10px; padding: 9px 12px; margin-bottom: 10px; font-size: 0.875rem; font-weight: 800; text-align: left; }
-        .best-record-banner.is-new-best { background: rgba(251,191,36,0.14); border: 1px solid rgba(251,191,36,0.5); color: var(--accent-gold); }
-        .best-record-banner.not-best { background: rgba(148,163,184,0.1); border: 1px solid var(--border); color: var(--text-sub); }
-        .ending-flavor-text { font-size: 0.875rem; line-height: 1.6; color: var(--text-sub); background: rgba(192,132,252,0.08); border: 1px solid rgba(192,132,252,0.3); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; text-align: left; white-space: pre-line; }
+        .roadmap-check { flex: none; width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--rule-strong); display: flex; align-items: center; justify-content: center; font-size: 0.625rem; margin-top: 1px; }
+        .roadmap-item.done .roadmap-check { border-color: var(--red); color: var(--red); }
+        .roadmap-text { color: var(--sub); }
+        .roadmap-text strong { display: block; color: var(--ink); font-size: var(--fs-xs); font-weight: 500; margin-bottom: 1px; }
+        .best-record-banner { padding: 8px 0; margin-bottom: 10px; font-size: var(--fs-s); text-align: left; border-bottom: 1px solid var(--rule); }
+        .best-record-banner.is-new-best { color: var(--ink); }
+        .best-record-banner.not-best { color: var(--sub); }
+        .ending-flavor-text { font-family: var(--font-serif); font-size: var(--fs-l); line-height: 1.9; color: var(--ink); padding: 4px 0 12px; margin-bottom: 8px; text-align: left; white-space: pre-line; }
         .share-card-preview-wrap { text-align: center; }
-        .share-card-preview-wrap img { max-width: 100%; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; }
-        .share-card-dl-btn { display: block; width: 100%; text-align: center; background: var(--accent-blue); color: #030712; font-weight: 900; padding: 11px; border-radius: 10px; text-decoration: none; font-size: 0.875rem; margin-bottom: 8px; }
-        .ac-filter-row { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
-        .ac-filter-btn { background: var(--panel-bg); border: 1px solid var(--border); color: var(--text-sub); font-size: 0.875rem; font-weight: 800; padding: 3px 8px; border-radius: 10px; cursor: pointer; }
-        .ac-filter-btn.active { background: var(--accent-blue); color: #030712; border-color: var(--accent-blue); }
-        .ac-card { background: var(--panel-bg); border: 1px solid var(--border); padding: 8px 10px; border-radius: 8px; margin-bottom: 5px; font-size: 0.875rem; cursor: pointer; }
-        .ac-level { font-size: 0.75rem; font-weight: 900; padding: 1px 4px; border-radius: 3px; margin-right: 4px; }
-        .ac-level.basic { background: rgba(16, 185, 129, 0.25); color: var(--accent-green); }
-        .ac-level.adv { background: rgba(192, 132, 252, 0.25); color: var(--accent-purple); }
-        .ac-level.pro { background: rgba(251, 191, 36, 0.25); color: var(--accent-gold); }
-        .next-btn { background: linear-gradient(135deg, #38bdf8, #0284c7); color: #030712; border: none; width: 100%; padding: 13px; font-size: 0.95rem; font-weight: 900; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4); }
-        .turn-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: linear-gradient(to top, rgba(3,7,18,0.98) 70%, rgba(3,7,18,0)); }
-        .turn-bar-inner { max-width: 580px; margin: 0 auto; display: flex; gap: 8px; }
-        .turn-bar-inner .next-btn { flex: 2 1 0; min-width: 0; }
-        .turn-bar-inner .skip-btn { flex: 1 1 0; min-width: 0; background: var(--panel-bg); color: var(--accent-blue); border: 1px solid var(--accent-blue); box-shadow: none; font-size: 0.875rem; padding: 8px; }
-        .turn-bar .next-btn { min-height: 56px; font-size: 1.05rem; }
-        .hedge-btn { background: var(--panel-bg); border: 1px solid var(--accent-purple); color: var(--accent-purple); width: 100%; padding: 8px; font-size: 0.875rem; font-weight: 800; border-radius: 10px; cursor: pointer; margin-bottom: 8px; }
-        .hedge-btn.active { background: rgba(192, 132, 252, 0.22); box-shadow: 0 0 0 1px var(--accent-purple) inset; }
-        .hot-flame-tag { font-size: 0.75rem; font-weight: 900; padding: 1px 5px; border-radius: 8px; background: rgba(251, 146, 60, 0.22); color: #fb923c; border: 1px solid #fb923c; margin-left: 3px; animation: pulseGlow 1.5s infinite alternate; }
-        .vol-row { margin-bottom: 10px; background: #050811; padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
-        .vol-top { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; font-weight: 800; margin-bottom: 4px; }
-        input[type="range"].vol-slider { width: 100%; accent-color: var(--accent-blue); height: 5px; cursor: pointer; }
-        .tut-step-card { background: #050811; border: 1px solid var(--border); border-left: 4px solid var(--accent-gold); padding: 8px 10px; border-radius: 0 8px 8px 0; margin-bottom: 6px; font-size: 0.875rem; }
-        .tut-step-card strong { color: var(--accent-gold); display: block; margin-bottom: 2px; font-size: 0.875rem; }
-        .title-grid { display: grid; grid-template-columns: 1fr; gap: 6px; max-height: 52vh; overflow-y: auto; margin-bottom: 10px; }
-        .title-card { background: #050811; border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; opacity: 0.45; }
-        .title-card.mythic { border-color: rgba(236, 72, 153, 0.45); background: linear-gradient(135deg, rgba(88, 28, 135, 0.25), rgba(5, 8, 17, 0.95)); }
-        .title-card.unlocked { opacity: 1; border-color: var(--accent-gold); background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(15, 23, 42, 0.95)); }
-        .title-card.mythic.unlocked { border-color: #ec4899; background: linear-gradient(135deg, rgba(236, 72, 153, 0.28), rgba(192, 132, 252, 0.2), rgba(15, 23, 42, 0.95)); }
-        .title-badge-tag { font-size: 0.75rem; font-weight: 900; padding: 2px 6px; border-radius: 6px; white-space: nowrap; }
-        .title-badge-tag.done { background: rgba(251, 191, 36, 0.25); color: var(--accent-gold); border: 1px solid var(--accent-gold); }
-        .title-badge-tag.lock { background: var(--card-bg); color: var(--text-sub); }
-        .mythic-pill { display: inline-block; font-size: 0.75rem; font-weight: 900; padding: 1px 5px; border-radius: 4px; background: linear-gradient(90deg, #ec4899, #8b5cf6); color: #ffffff; margin-right: 4px; vertical-align: middle; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(2, 4, 10, 0.92); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 12px; z-index: 1000; }
-        .modal-card { background: linear-gradient(145deg, #151f32, #0b1120); border: 2px solid var(--accent-gold); border-radius: 16px; padding: 18px; max-width: 440px; width: 100%; max-height: 86vh; overflow-y: auto; position: relative; }
+        .share-card-preview-wrap img { max-width: 100%; border-radius: var(--r-s); border: 1px solid var(--rule); margin-bottom: 10px; }
+        .share-card-dl-btn { display: block; width: 100%; text-align: center; background: transparent; color: var(--ink); border: 1px solid var(--rule-strong); padding: 11px; border-radius: var(--r-s); text-decoration: none; font-size: var(--fs-m); margin-bottom: 8px; }
+        .ac-filter-row { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+        .ac-filter-btn { background: transparent; border: 1px solid var(--rule); color: var(--sub); font-size: var(--fs-s); padding: 3px 10px; border-radius: 999px; cursor: pointer; }
+        .ac-filter-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+        .ac-card { background: transparent; border: none; border-bottom: 1px solid var(--rule); padding: 10px 0; font-size: var(--fs-m); cursor: pointer; text-align: left; width: 100%; color: inherit; }
+        .ac-level { font-size: var(--fs-xs); color: var(--sub); margin-right: 6px; }
+        .ac-level.basic, .ac-level.adv, .ac-level.pro { color: var(--sub); }
+        .turn-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; padding: 8px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--paper); border-top: 1px solid var(--rule); }
+        .turn-bar-inner { max-width: 528px; margin: 0 auto; display: flex; gap: 8px; align-items: center; }
+        .turn-bar-inner .next-btn { flex: 1 1 auto; min-width: 0; }
+        .turn-bar-inner .skip-btn { flex: 0 0 auto; width: auto; min-width: 0; background: transparent; color: var(--ink); border: 1px solid var(--rule-strong); font-size: var(--fs-s); letter-spacing: 0.04em; padding: 8px 12px; }
+        .turn-bar .next-btn { min-height: 56px; }
+        .hedge-btn { background: transparent; border: 1px solid var(--rule-strong); color: var(--ink); width: 100%; padding: 8px 10px; font-size: var(--fs-s); border-radius: var(--r-s); cursor: pointer; margin: 4px 0 8px; text-align: left; }
+        .hedge-btn.active { border-color: var(--green); box-shadow: inset 3px 0 0 var(--green); }
+        .hot-flame-tag { font-size: var(--fs-xs); padding: 0 5px; border-radius: var(--r-s); color: var(--red); border: 1px solid var(--red); margin-left: 4px; }
+        .vol-row { margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+        .vol-top { display: flex; justify-content: space-between; align-items: center; font-size: var(--fs-m); margin-bottom: 2px; }
+        input[type="range"].vol-slider { width: 100%; accent-color: var(--green); cursor: pointer; }
+        .tut-step-card { border-bottom: 1px solid var(--rule); padding: 8px 0; font-size: var(--fs-s); }
+        .tut-step-card strong { display: block; margin-bottom: 2px; font-size: var(--fs-m); font-weight: 500; }
+        .title-grid { display: grid; grid-template-columns: 1fr; gap: 0; max-height: 52vh; overflow-y: auto; margin-bottom: 10px; border-top: 1px solid var(--rule); }
+        .title-card { border-bottom: 1px solid var(--rule); padding: 10px 2px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; color: var(--sub); }
+        .title-card.unlocked { color: var(--ink); }
+        .title-card.mythic.unlocked { box-shadow: inset 3px 0 0 var(--red); padding-left: 10px; }
+        .title-badge-tag { font-size: var(--fs-xs); padding: 0 6px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--rule-strong); color: var(--sub); }
+        .title-badge-tag.done { border-color: var(--red); color: var(--red); }
+        .mythic-pill { display: inline-block; font-size: 0.6875rem; letter-spacing: 0.08em; padding: 0 5px; border: 1px solid var(--ink); border-radius: var(--r-s); margin-right: 4px; vertical-align: middle; }
+        /* ===== モーダル（紙の伝票のような一枚）===== */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(48, 42, 34, 0.42); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 1000; }
+        .modal-card { background: var(--paper-hi); border-top: 3px solid var(--ink); border-radius: var(--r-s); padding: 20px 18px 16px; max-width: 440px; width: 100%; max-height: 86vh; overflow-y: auto; position: relative; color: var(--ink); text-align: left !important; }
         .modal-card:focus { outline: none; }
-        .modal-title { font-size: 1.05rem; font-weight: 900; margin-bottom: 8px; color: var(--accent-gold); }
-        .modal-desc { font-size: 0.875rem; color: #e2e8f0; margin-bottom: 14px; line-height: 1.5; font-weight: 600; }
-        .choice-btn { display: block; width: 100%; text-align: left; background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); padding: 10px 12px; border-radius: 10px; margin-bottom: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 700; }
-        .choice-btn strong { display: block; color: var(--accent-blue); margin-bottom: 2px; font-size: 0.875rem; }
-        .event-result-banner { background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(16, 185, 129, 0.2)); border: 2px solid var(--accent-gold); border-radius: 12px; padding: 14px; margin-bottom: 14px; text-align: center; }
-        .event-result-banner.bad { background: linear-gradient(135deg, rgba(244, 63, 94, 0.28), rgba(15, 23, 42, 0.95)); border-color: var(--accent-red); }
-        .rankup-card { background: radial-gradient(circle at top, #2e1f05 0%, #0b1120 75%); border: 3px solid #fbbf24; text-align: center; }
-        .rankup-crown { font-size: 3.2rem; margin-bottom: 4px; display: inline-block; }
-        .confetti-piece { position: fixed; width: 8px; height: 12px; top: -20px; z-index: 2000; pointer-events: none; animation: confettiFall 2.4s linear forwards; }
-        @keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+        .modal-title { font-family: var(--font-serif); font-size: 1.125rem; font-weight: 500; margin-bottom: 10px; color: var(--ink); line-height: 1.5; display: block; }
+        .modal-desc { font-size: var(--fs-m); color: var(--ink); margin-bottom: 14px; line-height: 1.8; }
+        .modal-note { font-size: var(--fs-s); color: var(--sub); border-left: 2px solid var(--rule-strong); padding: 2px 0 2px 10px; margin: 0 0 14px; line-height: 1.7; white-space: pre-line; }
+        .choice-btn { display: block; width: 100%; text-align: left; background: transparent; border: 1px solid var(--rule-strong); color: var(--ink); padding: 10px 12px; border-radius: var(--r-s); margin-bottom: 8px; cursor: pointer; font-size: var(--fs-m); line-height: 1.6; }
+        .choice-btn:active { background: var(--paper-lo); }
+        .choice-btn strong { display: none; }
+        .event-result-banner { padding: 4px 0 4px 12px; margin-bottom: 16px; border-left: 2px solid var(--ink); text-align: left; }
+        .event-result-banner.bad { border-left-color: var(--red); }
+        .rankup-card { text-align: left; }
+        .rankup-crown { display: none; }
+        .confetti-piece { display: none; }
         /* ゲーム内トースト（短いお知らせ）と確認ダイアログ：ブラウザ標準の alert / confirm / prompt の代わり */
-        .toast-host { position: fixed; left: 0; right: 0; bottom: calc(96px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0 16px; z-index: 1200; pointer-events: none; }
-        .toast { pointer-events: auto; max-width: 520px; width: 100%; background: #0f172a; color: var(--text-main); border: 1px solid var(--accent-blue); border-left-width: 5px; border-radius: 12px; padding: 12px 14px; font-size: 0.875rem; font-weight: 700; line-height: 1.5; white-space: pre-line; box-shadow: 0 10px 30px rgba(0,0,0,0.6); cursor: pointer; animation: toastIn 0.2s ease-out; }
-        .toast.warn { border-color: var(--accent-red); }
-        .toast.ok { border-color: var(--accent-green); }
-        @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .toast-host { position: fixed; left: 0; right: 0; bottom: calc(92px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0 16px; z-index: 1200; pointer-events: none; }
+        .toast { pointer-events: auto; max-width: 528px; width: 100%; background: var(--ink); color: var(--paper); border-radius: var(--r-s); padding: 10px 14px; font-size: var(--fs-s); line-height: 1.6; white-space: pre-line; cursor: pointer; animation: toastIn 0.2s ease-out; }
+        .toast.warn { box-shadow: inset 3px 0 0 #E08A7E; }
+        .toast.ok { box-shadow: inset 3px 0 0 #B7C4A8; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .dialog-overlay { z-index: 1100; }
         .dialog-actions { display: flex; gap: 8px; }
-        .dialog-actions button { flex: 1; min-height: 48px; font-size: 0.95rem; font-weight: 900; }
-        .dialog-copy-text { width: 100%; min-height: 120px; background: #050811; color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; padding: 8px; font-size: 0.875rem; margin-bottom: 12px; resize: vertical; font-family: inherit; }
+        .dialog-actions button { flex: 1; min-height: 48px; font-size: var(--fs-m); }
+        .dialog-actions .asset-btn { border-color: var(--rule-strong); }
+        .dialog-copy-text { width: 100%; min-height: 120px; background: var(--paper); color: var(--ink); border: 1px solid var(--rule-strong); border-radius: var(--r-s); padding: 8px; font-size: var(--fs-s); margin-bottom: 12px; resize: vertical; font-family: inherit; }
         /* タップ領域：指で押しやすいよう、ボタン類は高さ44px以上にする */
-        .op-sub-btn, .mkt-btn, .m-tab, .asset-btn, .hedge-btn, .ac-filter-btn, .challenge-chip, .nav-skip-btn, .icon-btn, .sponsor-reward-btn, .promo-link-btn, .next-btn, .choice-btn, .share-card-dl-btn, .roadmap-head, .title-toast { min-height: 44px; }
+        .op-sub-btn, .mkt-btn, .m-tab, .asset-btn, .hedge-btn, .ac-filter-btn, .challenge-chip, .nav-skip-btn, .icon-btn, .sponsor-reward-btn, .promo-link-btn, .next-btn, .choice-btn, .share-card-dl-btn, .roadmap-head, .title-toast, .ac-card { min-height: 44px; }
         .m-tab, .asset-btn, .mkt-btn, .ac-filter-btn, .challenge-chip, .nav-skip-btn { display: inline-flex; align-items: center; justify-content: center; text-align: center; }
         .share-card-dl-btn { display: flex; align-items: center; justify-content: center; }
         .asset-btn { min-width: 56px; padding-left: 8px; padding-right: 8px; }
@@ -284,7 +290,7 @@
         .legend-item { min-height: 32px; }
         .legend-item::after { content: ''; position: absolute; left: 0; right: 0; top: -6px; bottom: -6px; }
         .hidden { display: none !important; }
-        /* 「視差効果を減らす」設定の端末では、点滅・浮遊などのループアニメーションと画面遷移の動きを止める */
+        /* 「視差効果を減らす」設定の端末では、動きを止める */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
         }
@@ -292,54 +298,66 @@
 </head>
 <body>
 
+<!-- 自作の線アイコン（20×20、線の太さ1.4、線端は丸）。<use href="#i-名前"> で使う -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-sound" viewBox="0 0 20 20"><path d="M3 8h3l4-4v12l-4-4H3z"/><path d="M13 7.2c1.3 1.6 1.3 4 0 5.6"/><path d="M15.4 5.2c2.3 2.7 2.3 6.9 0 9.6"/></symbol>
+    <symbol id="i-sound-off" viewBox="0 0 20 20"><path d="M3 8h3l4-4v12l-4-4H3z"/><path d="M13.5 8l4 4M17.5 8l-4 4"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 20 20"><path d="M3 5.5h14M3 10h14M3 14.5h14"/></symbol>
+    <symbol id="i-ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5"/><circle cx="10" cy="10" r="4.5"/><circle cx="10" cy="10" r="1.5"/></symbol>
+    <symbol id="i-sprout" viewBox="0 0 20 20"><path d="M10 17.5V9"/><path d="M10 11c0-3.5-2.5-5.5-6-5.5 0 3.5 2.5 5.5 6 5.5z"/><path d="M10 9c0-3 2-5 5.5-5 0 3-2 5-5.5 5z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 20 20"><path d="M4 3.5h9.5a2 2 0 0 1 2 2v11H6a2 2 0 0 1-2-2z"/><path d="M4 14.5a2 2 0 0 1 2-2h9.5"/><path d="M7.5 6.5h5"/></symbol>
+    <symbol id="i-seal" viewBox="0 0 20 20"><circle cx="10" cy="8" r="5"/><path d="M7 12.2 6 18l4-2 4 2-1-5.8"/></symbol>
+    <symbol id="i-rows" viewBox="0 0 20 20"><path d="M3 5h14M3 10h14M3 15h14"/><path d="M7 3v14"/></symbol>
+    <symbol id="i-help" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5"/><path d="M8 8a2 2 0 1 1 3 1.7c-.7.4-1 .9-1 1.6"/><path d="M10 14v.01"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 20 20"><path d="M5 2.5h7l3 3v12H5z"/><path d="M12 2.5v3h3M7.5 9.5h5M7.5 12.5h5"/></symbol>
+    <symbol id="i-key" viewBox="0 0 20 20"><circle cx="7" cy="10" r="3.5"/><path d="M10.5 10h7M15 10v3M17.5 10v2"/></symbol>
+    <symbol id="i-close" viewBox="0 0 20 20"><path d="M5 5l10 10M15 5 5 15"/></symbol>
+    <symbol id="i-forward" viewBox="0 0 20 20"><path d="M3 5l6 5-6 5zM10 5l6 5-6 5z"/></symbol>
+    <symbol id="i-open" viewBox="0 0 20 20"><path d="M10 3v14M3 10h14"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 20 20"><path d="M3 16.5h14"/><path d="M4 13l4-4 3 2.5 5-6"/></symbol>
+</svg>
+
 <div class="container" id="main-container">
     <div class="header">
-        <button type="button" class="app-title" id="lbl-app-title" onclick="backToOpening()">Let's FIRE！</button>
+        <button type="button" class="app-title" id="lbl-app-title" onclick="backToOpening()">Let's FIRE</button>
+        <div class="age-badge hidden" id="header-age-badge"><span class="age-num" id="age-disp">25</span><span class="age-unit" id="lbl-age-unit">歳</span><span class="age-turn"><span id="turn-disp">1</span> / <span id="maxturn-disp">66</span><span id="lbl-yr-unit">年</span></span></div>
         <div class="header-right">
-            <div class="age-badge hidden" id="header-age-badge"><span id="turn-disp">1</span>/<span id="maxturn-disp">66</span><span id="lbl-yr-unit">年</span> (<span id="age-disp">25</span><span id="lbl-age-unit">歳</span>)</div>
-            <button type="button" class="icon-btn header-icon" onclick="toggleMute()" id="btn-mute" aria-pressed="false" aria-label="音を消す（ミュート）">🔊</button>
+            <button type="button" class="icon-btn header-icon" onclick="toggleMute()" id="btn-mute" aria-pressed="false" aria-label="音を消す（ミュート）"><svg class="ico"><use href="#i-sound"/></svg></button>
             <div class="menu-wrap">
-                <button type="button" class="icon-btn header-icon" id="btn-menu" onclick="toggleHeaderMenu()" aria-haspopup="true" aria-expanded="false" aria-controls="header-menu" aria-label="メニュー">☰</button>
+                <button type="button" class="icon-btn header-icon" id="btn-menu" onclick="toggleHeaderMenu()" aria-haspopup="true" aria-expanded="false" aria-controls="header-menu" aria-label="メニュー"><svg class="ico"><use href="#i-menu"/></svg></button>
                 <div class="header-menu hidden" id="header-menu" role="menu" aria-label="メニュー">
-                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openTutorialCornerModal)" id="btn-tutorial">🎓 チュートリアル</button>
-                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openTitlesModal)" id="btn-titles">🎖️ 称号(0/43)</button>
-                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openRankingModal)" id="btn-ranking">🏆 ランキング</button>
-                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openSoundModal)" id="btn-sound">🔊 音量設定</button>
-                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openDisclaimerModal)" id="btn-disclaimer">📄 免責事項</button>
-                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openPrivacyPolicy)" id="btn-privacy">🔒 プライバシーポリシー</button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openTutorialCornerModal)" id="btn-tutorial"><svg class="ico s"><use href="#i-help"/></svg>遊び方・チュートリアル</button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openTitlesModal)"><svg class="ico s"><use href="#i-seal"/></svg><span id="btn-titles">称号(0/43)</span></button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openRankingModal)" id="btn-ranking"><svg class="ico s"><use href="#i-rows"/></svg>ランキング</button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openSoundModal)" id="btn-sound"><svg class="ico s"><use href="#i-sound"/></svg>音量</button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openDisclaimerModal)" id="btn-disclaimer"><svg class="ico s"><use href="#i-doc"/></svg>免責事項</button>
+                    <button type="button" class="menu-item" role="menuitem" onclick="runMenuAction(openPrivacyPolicy)" id="btn-privacy"><svg class="ico s"><use href="#i-key"/></svg>プライバシーポリシー</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 🎬 0. オープニング画面 -->
+    <!-- 0. オープニング画面（通帳の表紙）-->
     <div id="opening-view" class="opening-box">
-        <div class="op-emblem">👑📈🔥</div><br>
-        <div class="op-sub-pill" id="lbl-op-pill">100-YEAR LIFE FINANCIAL RPG</div>
-        <h1 class="op-main-title" id="lbl-op-title">Let's FIRE！</h1>
-        <div class="op-catch" id="lbl-op-catch">〜 25歳から90歳まで、66年間の資産帝国育成ゲーム 〜</div>
-        <button type="button" class="op-start-btn hidden" onclick="resumeSavedGame()" id="btn-op-continue" style="margin-bottom:8px; background:linear-gradient(135deg, #38bdf8, #0ea5e9);">▶ 続きから</button>
-        <button type="button" class="op-start-btn" onclick="enterSetupFromOpening()" id="lbl-op-start-btn">✨ 資産形成の旅を始める (GAME START)</button>
-        <div style="height:12px;"></div>
-        <div class="op-story-card" id="lbl-op-story">【PROLOGUE】
-25歳、社会人のスタートライン。あなたの手元には初期資金「600万円」がある。
-ここから90歳までの66年間、どのように働き、どの市場に投資し、どう危機を乗り越えるかはすべてあなた次第。
-
-複利の魔法、不動産レバレッジ、キャリア昇進、そして数々の経済ショック——。
-生きた金融知識を武器に『FIRE（経済的自立）』と『達成不可能級の神話称号』へ挑め！</div>
-        <div class="op-feature-grid">
-            <div class="op-feat-item"><span>🌍</span><div id="lbl-op-f1">日・米・世界<br>3大市場対応</div></div>
-            <div class="op-feat-item"><span>🎓</span><div id="lbl-op-f2">全24講座＆<br>実践クイズ</div></div>
-            <div class="op-feat-item"><span>🎖️</span><div id="lbl-op-f3">神話級を含む<br>全43種の称号</div></div>
+        <div class="op-cover">
+            <svg class="op-cover-rings" id="op-cover-rings" width="380" height="380" viewBox="0 0 380 380" aria-hidden="true"></svg>
+            <div class="op-sub-pill" id="lbl-op-pill">LIFE PASSBOOK</div>
+            <h1 class="op-main-title" id="lbl-op-title">年輪の通帳</h1>
+            <div class="op-catch" id="lbl-op-catch">Let's FIRE！</div>
+            <div class="op-cover-foot"><span>25歳 ─ 90歳</span><span>66年</span></div>
         </div>
-        <div class="op-disclaimer-note">※ 金融の仕組みを学ぶための教育用ゲームです。投資の勧誘や助言ではありません。</div>
+        <p class="op-story-card" id="lbl-op-story">初めの残高は600万円。
+一年ごとに記帳し、輪がひとつ増える。</p>
+        <button type="button" class="op-start-btn hidden" onclick="resumeSavedGame()" id="btn-op-continue">続きから</button>
+        <button type="button" class="op-start-btn" onclick="enterSetupFromOpening()" id="lbl-op-start-btn">はじめる</button>
         <div class="op-sub-actions">
-            <button type="button" class="op-sub-btn" onclick="openTitlesModal()" id="lbl-op-titles-btn">🎖️ 獲得称号 (0/43)</button>
-            <button type="button" class="op-sub-btn" onclick="openSoundModal()" id="lbl-op-sound-btn">🔊 音量設定</button>
-            <button type="button" class="op-sub-btn reset" onclick="resetAllSavedData()" id="lbl-op-reset-btn">🗑️ データ初期化</button>
-            <button type="button" class="op-sub-btn" onclick="openDisclaimerModal()" id="lbl-op-disclaimer-btn">📄 免責事項</button>
-            <button type="button" class="op-sub-btn donate donate-elem hidden" onclick="openMonetizeLink('donate')" id="lbl-op-donate-btn">☕ 開発者を応援</button>
+            <button type="button" class="op-sub-btn" onclick="openTitlesModal()" id="lbl-op-titles-btn">称号 (0/43)</button>
+            <button type="button" class="op-sub-btn" onclick="openRankingModal()" id="lbl-op-ranking-btn">ランキング</button>
+            <button type="button" class="op-sub-btn" onclick="openTutorialCornerModal()" id="lbl-op-howto-btn">遊び方</button>
+            <button type="button" class="op-sub-btn" onclick="openSoundModal()" id="lbl-op-sound-btn">音量</button>
+            <button type="button" class="op-sub-btn donate-elem hidden" onclick="openMonetizeLink('donate')" id="lbl-op-donate-btn">開発者を応援</button>
         </div>
+        <div class="op-disclaimer-note">金融の仕組みを学ぶ教育用ゲームです。投資の勧誘や助言ではありません。 <button type="button" class="footer-link" style="min-height:0;padding:0" onclick="openDisclaimerModal()" id="lbl-op-disclaimer-btn">免責事項</button> ／ <button type="button" class="footer-link" style="min-height:0;padding:0" onclick="resetAllSavedData()" id="lbl-op-reset-btn">データ初期化</button></div>
     </div>
 
     <!-- 市場切り替えバー -->
@@ -480,7 +498,7 @@
 
         <!-- タブ1: 王道投資 -->
         <div id="tab-portfolio" class="panel-box">
-            <div style="font-size:0.875rem; font-weight:900; margin-bottom:4px;">🌎 <span id="lbl-core-title">王道の資産運用</span> <button type="button" class="term-btn" onclick="openTermHelp('allocation')" id="btn-help-port">💡 ポートフォリオとは？</button></div>
+            <div style="font-size:0.875rem; font-weight:500; margin-bottom:4px;">🌎 <span id="lbl-core-title">王道の資産運用</span> <button type="button" class="term-btn" onclick="openTermHelp('allocation')" id="btn-help-port">💡 ポートフォリオとは？</button></div>
             <div style="font-size:0.75rem; color:var(--text-sub); margin-bottom:8px;" id="lbl-core-desc">ボタンを押して「インデックス株」と「金(ゴールド)」を購入しましょう！暴落や急な出費に備えて「金」と「手元現金」も残すのがコツです。</div>
             <div class="asset-card">
                 <div class="asset-card-top"><span class="asset-name">📈 <span id="lbl-ind-name">全世界インデックス株</span> <button type="button" class="term-btn" onclick="openTermHelp('index')">?</button></span><span class="asset-holding-val" id="val-index-hold">保有: ¥0</span></div>
@@ -502,59 +520,59 @@
             </div>
             <div class="asset-note" id="lbl-asset-note">※ 上の数字はこのゲーム用の設定で、物価上昇分を除いた「実質」です（額面ではこれに物価上昇が加わります）。現実の将来の成績を示したり保証したりするものではありません。</div>
             <div class="sponsor-reward-bar hidden" id="sponsor-reward-bar">
-                <div style="font-size:0.75rem; font-weight:800; color:#fde047;" id="lbl-sponsor-bar-txt">🎁 【1回限定】おすすめ投資コラム(PR)をチェックして臨時資金 +200 を受け取ろう！</div>
+                <div style="font-size:0.75rem; font-weight:500; color:var(--amber);" id="lbl-sponsor-bar-txt">🎁 【1回限定】おすすめ投資コラム(PR)をチェックして臨時資金 +200 を受け取ろう！</div>
                 <button type="button" class="sponsor-reward-btn" onclick="claimSponsorBonus()" id="btn-sponsor-claim">PRを見て +200 獲得</button>
             </div>
         </div>
 
         <!-- タブ2: 個別株・IPO -->
         <div id="tab-stocks" class="panel-box hidden">
-            <div style="font-size:0.875rem; font-weight:900; margin-bottom:6px;">🚀 <span id="lbl-stock-title">ハイテク個別株 & リアルIPO抽選</span> <button type="button" class="term-btn" onclick="openTermHelp('ipo')">?</button></div>
+            <div style="font-size:0.875rem; font-weight:500; margin-bottom:6px;">🚀 <span id="lbl-stock-title">ハイテク個別株 & リアルIPO抽選</span> <button type="button" class="term-btn" onclick="openTermHelp('ipo')">?</button></div>
             <div id="stocks-container"></div>
-            <div style="background:linear-gradient(135deg, rgba(192,132,252,0.2), rgba(56,189,248,0.12)); border:1px solid rgba(192,132,252,0.6); border-radius:10px; padding:10px; margin-top:8px;">
-                <div style="font-size:0.875rem; font-weight:900; color:var(--accent-purple);" id="lbl-ipo-head">🌟 IPO（新規公開株）ブックビルディング抽選（年1回・当選率 8%）</div>
+            <div style="border-top:1px solid var(--rule); padding:10px 0 0; margin-top:8px;">
+                <div style="font-size:0.875rem; font-weight:500; color:var(--accent-purple);" id="lbl-ipo-head">🌟 IPO（新規公開株）ブックビルディング抽選（年1回・当選率 8%）</div>
                 <div style="font-size:0.75rem; color:var(--text-sub); margin-bottom:6px; line-height:1.45;" id="lbl-ipo-sub">【現実のIPOルールを再現】抽選参加自体は無料（外れてもお金は減りません）ですが、申込には<strong>「買付余力（手元現金 300以上）」</strong>が必要です。当選時は80%で初値高騰（+150〜+350）、20%で<strong>公募割れ（-40〜-80の損失）</strong>となります！</div>
-                <button type="button" class="asset-btn buy" style="width:100%; padding:8px; font-weight:900;" onclick="tryIPO()" id="lbl-ipo-btn">IPOブックビルディングに申し込む（要買付余力: 現金300）</button>
+                <button type="button" class="asset-btn buy" style="width:100%; padding:8px; font-weight:500;" onclick="tryIPO()" id="lbl-ipo-btn">IPOブックビルディングに申し込む（要買付余力: 現金300）</button>
             </div>
         </div>
 
         <!-- タブ3: 仮想通貨 -->
         <div id="tab-crypto" class="panel-box hidden">
-            <div style="font-size:0.875rem; font-weight:900; margin-bottom:6px;">🔥 <span id="lbl-crypto-title">仮想通貨ドリーム投資</span> <button type="button" class="term-btn" onclick="openTermHelp('crypto')">?</button></div>
+            <div style="font-size:0.875rem; font-weight:500; margin-bottom:6px;">🔥 <span id="lbl-crypto-title">仮想通貨ドリーム投資</span> <button type="button" class="term-btn" onclick="openTermHelp('crypto')">?</button></div>
             <div id="crypto-container"></div>
         </div>
 
         <!-- タブ4: 不動産 -->
         <div id="tab-realestate" class="panel-box hidden">
-            <div style="font-size:0.875rem; font-weight:900; margin-bottom:6px;">🏢 <span id="lbl-re-title">収益不動産オーナー投資</span> <button type="button" class="term-btn" onclick="openTermHelp('leverage')" id="btn-help-lev">💡 レバレッジとは？</button></div>
-            <div style="font-size:0.875rem; font-weight:900; color:var(--accent-blue); margin-bottom:4px;" id="lbl-re-owned">▼ 保有中の物件</div>
+            <div style="font-size:0.875rem; font-weight:500; margin-bottom:6px;">🏢 <span id="lbl-re-title">収益不動産オーナー投資</span> <button type="button" class="term-btn" onclick="openTermHelp('leverage')" id="btn-help-lev">💡 レバレッジとは？</button></div>
+            <div style="font-size:0.875rem; font-weight:500; color:var(--accent-blue); margin-bottom:4px;" id="lbl-re-owned">▼ 保有中の物件</div>
             <div id="owned-prop-container" style="margin-bottom:8px;"></div>
-            <div style="font-size:0.875rem; font-weight:900; color:var(--accent-green); margin-bottom:4px;" id="lbl-re-mkt">▼ 購入可能な物件 (頭金20%＋銀行融資80%)</div>
+            <div style="font-size:0.875rem; font-weight:500; color:var(--accent-green); margin-bottom:4px;" id="lbl-re-mkt">▼ 購入可能な物件 (頭金20%＋銀行融資80%)</div>
             <div id="market-prop-container"></div>
         </div>
 
         <!-- タブ5: キャリア・法人 -->
         <div id="tab-career" class="panel-box hidden">
-            <div style="font-size:0.875rem; font-weight:900; margin-bottom:6px;">💼 <span id="lbl-car-head">本業キャリア昇進 ＆ 法人化</span> <button type="button" class="term-btn" onclick="openTermHelp('corp')">?</button></div>
-            <div style="background:#050811; padding:8px 10px; border-radius:8px; margin-bottom:8px; font-size:0.875rem;">
+            <div style="font-size:0.875rem; font-weight:500; margin-bottom:6px;">💼 <span id="lbl-car-head">本業キャリア昇進 ＆ 法人化</span> <button type="button" class="term-btn" onclick="openTermHelp('corp')">?</button></div>
+            <div style="padding:4px 0 8px; margin-bottom:8px; font-size:0.875rem; border-bottom:1px solid var(--rule);">
                 <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span id="lbl-car-pos">現在の役職:</span><strong id="career-title" style="color:var(--accent-blue);">新入社員 (Lv.1 / MAX Lv.6)</strong></div>
                 <div style="display:flex; justify-content:space-between;"><span id="lbl-car-sal">年間給与貯蓄額 (+12%/回):</span><strong id="career-salary" style="color:var(--accent-green);">+¥160万/年</strong></div>
             </div>
-            <button type="button" class="asset-btn buy" id="career-up-btn" style="width:100%; padding:10px; font-weight:900; margin-bottom:8px;" onclick="upgradeCareer()">✨ <span id="lbl-car-btn">スキルアップ自己投資で昇進する (+12%)</span> (<span id="lbl-car-cost-prefix">費用</span>: <span id="career-cost">¥50万</span>)</button>
+            <button type="button" class="asset-btn buy" id="career-up-btn" style="width:100%; padding:10px; font-weight:500; margin-bottom:8px;" onclick="upgradeCareer()">✨ <span id="lbl-car-btn">スキルアップ自己投資で昇進する (+12%)</span> (<span id="lbl-car-cost-prefix">費用</span>: <span id="career-cost">¥50万</span>)</button>
             <div style="border-top:1px solid var(--border); padding-top:8px;">
-                <div style="font-size:0.875rem; font-weight:900; color:var(--accent-gold); margin-bottom:4px;" id="lbl-corp-head">🏢 資産管理法人（配当・家賃の税率 18%→10%／設立費150・維持費30/年）</div>
-                <button type="button" class="next-btn" id="corp-setup-btn" style="background:var(--accent-gold); color:#030712; padding:9px; font-size:0.875rem;" onclick="setupCorporation()" disabled>法人を設立する（純資産 5,000 以上で解放）</button>
+                <div style="font-size:0.875rem; font-weight:500; color:var(--accent-gold); margin-bottom:4px;" id="lbl-corp-head">🏢 資産管理法人（配当・家賃の税率 18%→10%／設立費150・維持費30/年）</div>
+                <button type="button" class="next-btn" id="corp-setup-btn" style="background:transparent; color:var(--ink); border:1px solid var(--rule-strong); min-height:44px; font-size:0.875rem; letter-spacing:0;" onclick="setupCorporation()" disabled>法人を設立する（純資産 5,000 以上で解放）</button>
             </div>
             <div style="border-top:1px solid var(--border); padding-top:8px; margin-top:8px;">
-                <div style="font-size:0.875rem; font-weight:900; color:var(--accent-green); margin-bottom:4px;">🏖️ リタイア（仕事を辞めて資産で暮らす） <button type="button" class="term-btn" onclick="openTermHelp('retire')">?</button></div>
+                <div style="font-size:0.875rem; font-weight:500; color:var(--accent-green); margin-bottom:4px;">🏖️ リタイア（仕事を辞めて資産で暮らす） <button type="button" class="term-btn" onclick="openTermHelp('retire')">?</button></div>
                 <div style="font-size:0.75rem; color:var(--text-sub); margin-bottom:6px; line-height:1.5;" id="retire-status">リタイアすると給与は止まり、生活費を配当・家賃・年金と資産の取り崩しでまかないます。</div>
-                <button type="button" class="next-btn" id="retire-btn" style="background:linear-gradient(135deg, #10b981, #059669); color:#ffffff; padding:10px; font-size:0.875rem;" onclick="requestRetire()">🏖️ リタイアする（仕事を辞める）</button>
+                <button type="button" class="next-btn" id="retire-btn" style="background:transparent; color:var(--ink); border:1px solid var(--rule-strong); min-height:44px; font-size:0.875rem; letter-spacing:0;" onclick="requestRetire()">🏖️ リタイアする（仕事を辞める）</button>
             </div>
         </div>
 
         <!-- タブ6: 無料投資アカデミー -->
         <div id="tab-academy" class="panel-box hidden">
-            <div style="font-size:0.875rem; font-weight:900; margin-bottom:4px;" id="lbl-acad-head">💡 投資アカデミー (完全無料・全24講座)</div>
+            <div style="font-size:0.875rem; font-weight:500; margin-bottom:4px;" id="lbl-acad-head">💡 投資アカデミー (完全無料・全24講座)</div>
             <div style="font-size:0.75rem; color:var(--text-sub); margin-bottom:8px;" id="lbl-acad-sub">お金は一切かかりません！初級からFIRE・プロ編まで、タップして現実世界でも役立つ知恵を学ぼう！初めて読む講座には現金ボーナスも付きます🎁</div>
             <div class="acad-progress-row">
                 <div class="acad-progress-label"><span id="lbl-acad-progress">📖 学習進捗</span>: <strong id="acad-progress-count">0 / 24</strong></div>
@@ -630,11 +648,11 @@
     <!-- 3. ゲームリザルト画面 -->
     <div id="result-view" class="hidden" style="text-align:center; padding:10px 0;">
         <div style="font-size:3.5rem; margin-bottom:6px;">👑</div>
-        <div style="font-size:1.25rem; font-weight:900; color:var(--accent-gold); margin-bottom:6px;" id="lbl-res-title">🎉 66年間の人生シミュレーション大完走！</div>
+        <div style="font-size:1.25rem; font-weight:500; color:var(--accent-gold); margin-bottom:6px;" id="lbl-res-title">🎉 66年間の人生シミュレーション大完走！</div>
         <div class="ending-flavor-text" id="ending-flavor-text" style="display:none;"></div>
         <div class="event-result-banner" style="text-align:left;">
-            <div style="font-size:0.875rem; color:var(--text-sub); font-weight:800;" id="lbl-res-nw">最終純資産（今の価値＝25歳時点の物価）</div>
-            <div id="res-networth" style="color:var(--accent-green); font-size:1.9rem; font-weight:900; margin:6px 0 2px;">¥0</div>
+            <div style="font-size:0.875rem; color:var(--text-sub); font-weight:500;" id="lbl-res-nw">最終純資産（今の価値＝25歳時点の物価）</div>
+            <div id="res-networth" style="color:var(--accent-green); font-size:1.9rem; font-weight:500; margin:6px 0 2px;">¥0</div>
             <div id="res-nominal" style="font-size:0.75rem; color:var(--text-sub); margin-bottom:6px;"></div>
             <div style="font-size:0.875rem; margin-top:6px;"><span id="lbl-res-rank-label">最終資産家ランク</span>: <strong id="res-title" style="color:var(--accent-gold);">👑</strong></div>
             <div style="font-size:0.875rem; margin-top:4px;"><span id="lbl-res-fire-label">FIRE</span>: <strong id="res-fire" style="color:var(--accent-blue);">-</strong></div>
@@ -645,18 +663,18 @@
         <div class="best-record-banner" id="best-record-banner" style="display:none;">
             <div id="best-record-text">📊 自己ベスト: ¥0</div>
         </div>
-        <div style="text-align:left; margin-bottom:10px; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:rgba(56,189,248,0.07);" id="ranking-submit-box">
-            <div style="font-size:0.875rem; font-weight:800; margin-bottom:6px;" id="lbl-ranking-submit-title">🌐 みんなの資産ランキングに登録する</div>
+        <div style="text-align:left; margin-bottom:12px; padding:10px 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);" id="ranking-submit-box">
+            <div style="font-size:0.875rem; font-weight:500; margin-bottom:6px;" id="lbl-ranking-submit-title">🌐 みんなの資産ランキングに登録する</div>
             <input type="text" id="ranking-name-input" maxlength="20" placeholder="表示名（ニックネーム）" style="width:100%; box-sizing:border-box; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--panel-bg); color:var(--text-main); font-size:0.875rem; margin-bottom:6px;">
-            <button type="button" class="asset-btn buy" style="width:100%; padding:9px; font-weight:900;" onclick="submitScoreToLeaderboard()" id="btn-ranking-submit">🏆 ランキングに登録する</button>
+            <button type="button" class="asset-btn buy" style="width:100%; padding:9px; font-weight:500;" onclick="submitScoreToLeaderboard()" id="btn-ranking-submit">🏆 ランキングに登録する</button>
             <div id="ranking-submit-status" style="font-size:0.875rem; margin-top:6px; color:var(--text-sub);"></div>
         </div>
         <div style="display:flex; gap:6px; margin-bottom:8px;">
-            <button type="button" class="start-game-btn" style="flex:2; background:#f8fafc; color:#030712; margin-top:0; padding:12px; font-size:0.88rem;" onclick="shareToX()" id="lbl-share-btn">𝕏 結果とURLをシェア</button>
-            <button type="button" class="asset-btn buy" style="flex:1; padding:12px; font-size:0.875rem; font-weight:900;" onclick="copyShareText()" id="btn-copy-share">📋 コピー</button>
+            <button type="button" class="start-game-btn" style="flex:2; margin-top:0; font-size:0.9375rem;" onclick="shareToX()" id="lbl-share-btn">𝕏 結果とURLをシェア</button>
+            <button type="button" class="asset-btn buy" style="flex:1; padding:12px; font-size:0.875rem; font-weight:500;" onclick="copyShareText()" id="btn-copy-share">📋 コピー</button>
         </div>
-        <button type="button" class="asset-btn buy" style="width:100%; padding:10px; font-weight:900; margin-bottom:8px;" onclick="generateShareCard()" id="btn-gen-share-card">🖼️ 結果シェアカードを画像で作成</button>
-        <button type="button" class="asset-btn buy" style="width:100%; padding:10px; font-weight:900; margin-bottom:10px;" onclick="openTitlesModal()">🎖️ 獲得した称号コレクションを見る</button>
+        <button type="button" class="asset-btn buy" style="width:100%; padding:10px; font-weight:500; margin-bottom:8px;" onclick="generateShareCard()" id="btn-gen-share-card">🖼️ 結果シェアカードを画像で作成</button>
+        <button type="button" class="asset-btn buy" style="width:100%; padding:10px; font-weight:500; margin-bottom:10px;" onclick="openTitlesModal()">🎖️ 獲得した称号コレクションを見る</button>
         <div class="promo-box aff-elem hidden" style="margin-bottom:12px;">
             <span class="promo-badge">REAL WEALTH / PR</span>
             <div class="promo-title" id="lbl-res-promo-title">🚀 次は「現実のあなた」が億り人になる番です！</div>
@@ -688,8 +706,8 @@
 <div class="modal-overlay hidden" id="quiz-modal" role="dialog" aria-modal="true" aria-labelledby="quiz-title">
     <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="quiz-title">🎓 実践マネーリテラシー検定</div>
-        <div style="font-size:0.75rem; color:var(--accent-blue); font-weight:800; margin-bottom:6px;">正解すると知識ボーナス（現金 +80）を獲得！</div>
-        <div class="modal-desc" id="quiz-question" style="background:#050811; padding:12px; border-radius:10px; border:1px solid var(--border); white-space:pre-line;">問題文</div>
+        <div style="font-size:0.75rem; color:var(--accent-blue); font-weight:500; margin-bottom:6px;">正解すると知識ボーナス（現金 +80）を獲得！</div>
+        <div class="modal-desc" id="quiz-question" style="white-space:pre-line;">問題文</div>
         <div id="quiz-choices"></div>
     </div>
 </div>
@@ -712,7 +730,7 @@
         <div class="modal-title" id="lbl-titles-modal-head">🎖️ 獲得称号コレクション (全43種)</div>
         <div class="modal-desc" id="lbl-titles-modal-sub" style="margin-bottom:10px;">No.1〜24は通過点となる一般称号、No.25〜36は達成不可能に近い【MYTHIC（神話級）】称号です！</div>
         <div class="title-grid" id="titles-list-container"></div>
-        <button type="button" class="asset-btn sell" style="width:100%; padding:9px; font-weight:900; margin-bottom:8px;" onclick="resetAllSavedData()" id="btn-reset-from-titles">🗑️ 称号とチュートリアル記録をすべて初期化する</button>
+        <button type="button" class="asset-btn sell" style="width:100%; padding:9px; font-weight:500; margin-bottom:8px;" onclick="resetAllSavedData()" id="btn-reset-from-titles">🗑️ 称号とチュートリアル記録をすべて初期化する</button>
         <button type="button" class="next-btn" onclick="closeTitlesModal()" id="btn-titles-close">閉じる</button>
     </div>
 </div>
@@ -723,8 +741,8 @@
         <div class="modal-title" id="lbl-tut-corner-title">🎓 チュートリアル ＆ 攻略ステップ</div>
         <div class="modal-desc" id="lbl-tut-corner-sub" style="margin-bottom:10px;">強制ナビゲーションは最初の1回のみです。ここではいつでも基本ステップを見返したり、データを初期化して最初からやり直せます！</div>
         <div id="tutorial-steps-list" style="max-height:240px; overflow-y:auto; margin-bottom:10px;"></div>
-        <button type="button" class="asset-btn buy" style="width:100%; padding:10px; font-weight:900; margin-bottom:6px;" id="btn-restart-nav" onclick="restartInteractiveTutorial()">🔄 ステップナビを最初から再体験する</button>
-        <button type="button" class="asset-btn sell" style="width:100%; padding:9px; font-weight:900; margin-bottom:8px;" onclick="resetAllSavedData()" id="btn-reset-from-tut">🗑️ 全データ（称号・チュートリアル）を初期化する</button>
+        <button type="button" class="asset-btn buy" style="width:100%; padding:10px; font-weight:500; margin-bottom:6px;" id="btn-restart-nav" onclick="restartInteractiveTutorial()">🔄 ステップナビを最初から再体験する</button>
+        <button type="button" class="asset-btn sell" style="width:100%; padding:9px; font-weight:500; margin-bottom:8px;" onclick="resetAllSavedData()" id="btn-reset-from-tut">🗑️ 全データ（称号・チュートリアル）を初期化する</button>
         <button type="button" class="next-btn" onclick="closeTutorialCornerModal()" id="btn-tut-corner-close">閉じる</button>
     </div>
 </div>
@@ -754,7 +772,7 @@
     <div tabindex="-1" class="modal-card" style="text-align:center;">
         <div style="font-size:2.4rem; margin-bottom:6px;">💁‍♀️✨</div>
         <div class="modal-title" style="justify-content:center;" id="nav-pop-title">ナビゲーターからのご案内</div>
-        <div class="modal-desc" id="nav-pop-desc" style="text-align:left; background:#050811; padding:12px; border-radius:10px; border:1px solid var(--border); white-space:pre-line;">説明</div>
+        <div class="modal-desc" id="nav-pop-desc" style="white-space:pre-line;">説明</div>
         <button type="button" class="start-game-btn" style="margin-top:4px; padding:12px;" onclick="closeNavPopup()" id="btn-nav-ok">OK！光っているボタンを押す →</button>
         <button type="button" class="icon-btn" style="margin-top:8px; width:100%; padding:8px; color:var(--text-sub);" onclick="skipTutorialNow()" id="btn-nav-skip-modal">⏭️ チュートリアルをスキップして自由に遊ぶ</button>
     </div>
@@ -764,13 +782,13 @@
 <div class="modal-overlay hidden" id="rankup-modal" role="dialog" aria-modal="true" aria-labelledby="lbl-rankup-head">
     <div tabindex="-1" class="modal-card rankup-card">
         <div class="rankup-crown">👑</div>
-        <div style="font-size:0.875rem; font-weight:900; color:#fde047; letter-spacing:1px; margin-bottom:4px;" id="lbl-rankup-head">✨ おめでとうございます！資産家ランク昇格！ ✨</div>
+        <div style="font-size:0.875rem; font-weight:500; color:var(--amber); letter-spacing:1px; margin-bottom:4px;" id="lbl-rankup-head">✨ おめでとうございます！資産家ランク昇格！ ✨</div>
         <div class="modal-title" style="justify-content:center; font-size:1.25rem;" id="rankup-new-title">💎 憧れの億り人</div>
-        <div class="event-result-banner" style="background:rgba(251, 191, 36, 0.18);">
-            <div style="font-size:0.875rem; color:#ffffff; font-weight:800; line-height:1.5;" id="rankup-desc">昇格しました！</div>
-            <div style="margin-top:8px; font-size:0.88rem; font-weight:900; color:var(--accent-green);" id="rankup-bonus">🎁 ボーナス獲得！</div>
+        <div class="event-result-banner">
+            <div style="font-size:0.875rem; color:var(--ink); font-weight:500; line-height:1.5;" id="rankup-desc">昇格しました！</div>
+            <div style="margin-top:8px; font-size:0.88rem; font-weight:500; color:var(--accent-green);" id="rankup-bonus">🎁 ボーナス獲得！</div>
         </div>
-        <button type="button" class="start-game-btn" style="background:linear-gradient(135deg, #fbbf24, #d97706); color:#030712;" onclick="closeRankUpModal()" id="btn-rankup-ok">最高！さらなる高みを目指す →</button>
+        <button type="button" class="start-game-btn" onclick="closeRankUpModal()" id="btn-rankup-ok">閉じる</button>
     </div>
 </div>
 
@@ -779,7 +797,7 @@
     <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="ev-title">臨時マーケットイベント</div>
         <div class="modal-desc" id="ev-desc">説明文</div>
-        <div id="ev-beginner-tip" style="background:rgba(56,189,248,0.14); border-left:4px solid var(--accent-blue); padding:10px; border-radius:0 8px 8px 0; font-size:0.875rem; color:#e0f2fe; margin-bottom:12px; font-weight:700; line-height:1.5; white-space:pre-line;">💡 解説</div>
+        <div id="ev-beginner-tip" class="modal-note">💡 解説</div>
         <div id="ev-choices"></div>
     </div>
 </div>
@@ -790,8 +808,8 @@
         <div style="font-size:2.6rem; margin-bottom:4px;" id="ev-res-icon">🎊</div>
         <div class="modal-title" style="justify-content:center;" id="ev-res-title">イベント結果発表！</div>
         <div class="event-result-banner" id="ev-res-banner-box">
-            <div style="font-size:1rem; font-weight:900; color:var(--accent-gold); margin-bottom:4px;" id="ev-res-subtitle">大成功！</div>
-            <div style="font-size:0.875rem; color:#ffffff; font-weight:700; line-height:1.5; white-space:pre-line;" id="ev-res-desc">詳細</div>
+            <div style="font-size:1rem; font-weight:500; color:var(--accent-gold); margin-bottom:4px;" id="ev-res-subtitle">大成功！</div>
+            <div style="font-size:0.875rem; color:var(--ink);  line-height:1.5; white-space:pre-line;" id="ev-res-desc">詳細</div>
         </div>
         <button type="button" class="next-btn" onclick="closeEventResultModal()" id="btn-ev-res-ok">確認して進む →</button>
     </div>
@@ -802,8 +820,8 @@
     <div tabindex="-1" class="modal-card">
         <div class="modal-title" id="acad-modal-title">用語・講座解説</div>
         <div class="modal-desc" id="acad-modal-desc" style="white-space: pre-line; margin-bottom:10px;">解説文</div>
-        <div class="aff-elem hidden" style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.4); border-radius:10px; padding:9px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
-            <span style="font-size:0.75rem; font-weight:800; color:#a7f3d0;" id="lbl-modal-aff-tip">💡 現実でも非課税NISAやインデックス投資を始めるならこちら(PR)</span>
+        <div class="aff-elem hidden" style="border-top:1px solid var(--rule); padding:9px 0; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <span style="font-size:0.75rem; font-weight:500; color:var(--sub);" id="lbl-modal-aff-tip">💡 現実でも非課税NISAやインデックス投資を始めるならこちら(PR)</span>
             <button type="button" class="promo-link-btn" style="padding:6px 10px; white-space:nowrap;" onclick="openMonetizeLink('broker')" id="btn-modal-aff-go">詳細を見る &gt;</button>
         </div>
         <button type="button" class="next-btn" onclick="closeAcademyModal()" id="btn-acad-close">なるほど！（閉じる）</button>
@@ -1236,8 +1254,8 @@
         const okBtn = document.getElementById('app-dialog-ok');
         const cancelBtn = document.getElementById('app-dialog-cancel');
         okBtn.innerText = o.okLabel || 'OK';
-        okBtn.style.background = o.danger ? 'linear-gradient(135deg, #f43f5e, #be123c)' : '';
-        okBtn.style.color = o.danger ? '#ffffff' : '';
+        okBtn.style.background = o.danger ? 'var(--red)' : '';
+        okBtn.style.color = o.danger ? 'var(--paper)' : '';
         cancelBtn.classList.toggle('hidden', !o.cancelLabel);
         cancelBtn.innerText = o.cancelLabel || 'キャンセル';
         document.getElementById('app-dialog').classList.remove('hidden');
@@ -1533,15 +1551,15 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const count = countUnlockedTitles();
         const total = titleMasterList.length;
         const btn = document.getElementById('btn-titles');
-        if (btn) btn.innerText = ('🎖️ 称号') + '(' + count + '/' + total + ')';
+        if (btn) btn.innerText = '称号 (' + count + '/' + total + ')';
         const opBtn = document.getElementById('lbl-op-titles-btn');
-        if (opBtn) opBtn.innerText = ('🎖️ 獲得称号') + ' (' + count + '/' + total + ')';
+        if (opBtn) opBtn.innerText = '称号 (' + count + '/' + total + ')';
         const resCount = document.getElementById('res-titles-count');
         if (resCount) resCount.innerText = count + ' / ' + total;
         // 称号モーダルの見出し・説明とオープニングの紹介文も総数から自動生成する
         const mythicTotal = titleMasterList.filter(function(t) { return t.mythic; }).length;
         const head = document.getElementById('lbl-titles-modal-head');
-        if (head) head.innerText = '🎖️ 獲得称号コレクション (全' + total + '種)';
+        if (head) head.innerText = '称号 (全' + total + '種)';
         const sub = document.getElementById('lbl-titles-modal-sub');
         if (sub) sub.innerText = '全' + total + '種のうち ' + (total - mythicTotal) + '種は通過点となる一般称号、' + mythicTotal + '種は達成不可能に近い【MYTHIC（神話級）】称号（MYTHICマーク付き）です！';
         const opF3 = document.getElementById('lbl-op-f3');
@@ -1584,7 +1602,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             listEl.innerHTML +=
                 '<div class="title-card ' + (t.mythic ? 'mythic ' : '') + (isUnlocked ? 'unlocked' : '') + '">' +
                     '<div>' +
-                        '<div style="font-size:0.875rem; font-weight:900; color:' + (isUnlocked ? '#fde047' : (t.mythic ? '#f472b6' : '#cbd5e1')) + ';">' + mythicBadge + t.icon + ' ' + name + '</div>' +
+                        '<div style="font-size:0.875rem; font-weight:500; color:' + (isUnlocked ? 'var(--ink)' : 'var(--sub)') + ';">' + mythicBadge + t.icon + ' ' + name + '</div>' +
                         '<div style="font-size:0.75rem; color:var(--text-sub); margin-top:2px;">' + desc + '</div>' +
                     '</div>' +
                     '<span class="title-badge-tag ' + (isUnlocked ? 'done' : 'lock') + '">' + statusText + '</span>' +
@@ -1938,7 +1956,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     function updateMuteButtonUI() {
         const btn = document.getElementById('btn-mute');
         if (!btn) return;
-        btn.innerText = audioMuted ? '🔇' : '🔊';
+        btn.innerHTML = '<svg class="ico"><use href="#i-' + (audioMuted ? 'sound-off' : 'sound') + '"/></svg>';
         btn.setAttribute('aria-pressed', audioMuted ? 'true' : 'false');
         btn.setAttribute('aria-label', audioMuted ? '音を出す（ミュート中）' : '音を消す（ミュート）');
         btn.title = audioMuted ? 'ミュート中（タップで音を出す）' : 'タップでミュート';
@@ -2361,14 +2379,18 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const btn = document.getElementById('btn-op-continue');
         if (!btn) return;
         const data = loadSavedGameData();
-        if (!data) { btn.classList.add('hidden'); return; }
+        const startBtn0 = document.getElementById('lbl-op-start-btn');
+        if (!data) { btn.classList.add('hidden'); if (startBtn0) { startBtn0.classList.remove('secondary-start'); startBtn0.innerText = 'はじめる'; } return; }
         const sg = data.g;
         const assets = (sg.cash || 0) + (sg.indexAsset || 0) + (sg.goldAsset || 0) + (sg.realEstateAsset || 0)
             + (sg.stocks || []).reduce(function(sum, x) { return sum + x.shares * x.price; }, 0)
             + (sg.cryptos || []).reduce(function(sum, x) { return sum + x.holdings * x.price; }, 0);
         const nw = assets - (sg.debt || 0);
-        btn.innerText = '▶ 続きから（' + sg.age + '歳・純資産 ' + fmtShort(nw) + '）';
+        btn.innerText = '続きから（' + sg.age + '歳・' + fmtShort(nw) + '）';
         btn.classList.remove('hidden');
+        // 続きがあるときは「続きから」を主ボタンにし、「はじめる」は静かな見た目にする
+        const startBtn = document.getElementById('lbl-op-start-btn');
+        if (startBtn) { startBtn.classList.add('secondary-start'); startBtn.innerText = '新しくはじめる'; }
     }
 
     function resumeSavedGame() {
@@ -2558,7 +2580,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         Object.keys(scenario).forEach(function(k) {
             const stepObj = scenario[k];
             if (!stepObj.targetId) return;
-            listEl.innerHTML += '<div class="tut-step-card"><strong>' + stepObj.title + '</strong><div style="color:#cbd5e1; white-space:pre-line;">' + stepObj.desc + '</div></div>';
+            listEl.innerHTML += '<div class="tut-step-card"><strong>' + stepObj.title + '</strong><div style="color:var(--sub); white-space:pre-line;">' + stepObj.desc + '</div></div>';
         });
         document.getElementById('tutorial-corner-modal').classList.remove('hidden');
         playSound('click');
@@ -4529,7 +4551,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             let dispName = p.nameJa;
             mkt.innerHTML +=
                 '<div class="asset-card">' +
-                    '<div class="asset-card-top"><span class="asset-name">🏠 ' + dispName + '</span><span style="color:var(--accent-green); font-size:0.875rem; font-weight:900;">' + d.yieldLbl + totalYield + '%</span></div>' +
+                    '<div class="asset-card-top"><span class="asset-name">🏠 ' + dispName + '</span><span style="color:var(--accent-green); font-size:0.875rem; font-weight:500;">' + d.yieldLbl + totalYield + '%</span></div>' +
                     '<div class="asset-sub-info"><span>' + d.priceLbl + fmtShort(p.price) + '</span><span>' + d.downLbl + '<strong>' + fmtShort(down) + '</strong></span></div>' +
                     '<button type="button" class="asset-btn buy" id="btn-buy-prop-' + p.id + '" style="width:100%;" onclick="buyProp(' + p.id + ')">' + d.buyPropBtn(fmtShort(down)) + '</button>' +
                 '</div>';
@@ -4692,7 +4714,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 '<div class="ac-card' + (isRead ? ' read' : '') + '" onclick="openAcademyDetail(' + ac.id + ')">' +
                     '<div style="display:flex; justify-content:space-between; align-items:center;">' +
                         '<div><span class="ac-level ' + ac.level + '">' + badgeLabel + '</span><strong>' + ac.title + '</strong></div>' +
-                        '<span style="color:var(--accent-blue); font-size:0.75rem; font-weight:900; white-space:nowrap;">' + rightLabel + '</span>' +
+                        '<span style="color:var(--accent-blue); font-size:0.75rem; font-weight:500; white-space:nowrap;">' + rightLabel + '</span>' +
                     '</div>' +
                 '</div>';
         });
@@ -4765,7 +4787,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     function closeAcademyModal() { document.getElementById('academy-modal').classList.add('hidden'); }
 
     // --- 📈 純資産とライバルの推移グラフ（軸・目盛り付き、高解像度画面でもくっきり、タップで値を表示）---
-    const CHART_COLORS = { you: '#c98500', rival: '#3987e5', grid: '#1e293b', axis: '#334155', label: '#94a3b8' };
+    const CHART_COLORS = { you: '#7B5E41', rival: '#A49E93', grid: '#E3DCCD', axis: '#C9BFAD', label: '#665F55' };
     let chartHoverIdx = null;
 
     // 古いセーブデータには純資産・ライバルの履歴がないので、足りない年は空欄（null）で埋める
@@ -4871,7 +4893,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             if (v === null || v === undefined) return;
             ctx.beginPath(); ctx.arc(xAt(i), yAt(v), 4.5, 0, Math.PI * 2);
             ctx.fillStyle = color; ctx.fill();
-            ctx.lineWidth = 2; ctx.strokeStyle = '#050811'; ctx.stroke();
+            ctx.lineWidth = 2; ctx.strokeStyle = '#F8F5EF'; ctx.stroke();
         };
         drawLine(rival, CHART_COLORS.rival, true);
         drawLine(you, CHART_COLORS.you, false);
@@ -4879,7 +4901,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const tip = document.getElementById('chart-tip');
         const hi = (chartHoverIdx !== null && chartHoverIdx < you.length) ? chartHoverIdx : null;
         if (hi !== null) {
-            ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1;
+            ctx.strokeStyle = '#B9AF9D'; ctx.lineWidth = 1;
             ctx.beginPath(); ctx.moveTo(Math.round(xAt(hi)) + 0.5, pad.t); ctx.lineTo(Math.round(xAt(hi)) + 0.5, pad.t + plotH); ctx.stroke();
             drawDot(hi, rival[hi], CHART_COLORS.rival);
             drawDot(hi, you[hi], CHART_COLORS.you);
@@ -4936,7 +4958,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         const legacy = isLegacyRankingRecord(rec) ? ' <span class="rank-legacy-tag">旧ルール</span>' : '';
         return '<div style="display:flex; justify-content:space-between; gap:8px; padding:6px 2px; border-bottom:1px solid var(--border); font-size:0.875rem;">'
             + '<span style="overflow-wrap:anywhere;">' + label + ' ' + safeName + fireMark + legacy + '</span>'
-            + '<span style="color:var(--accent-green); font-weight:800; white-space:nowrap;">' + fmtShort(Number(rec.netWorth) || 0) + '</span>'
+            + '<span style="color:var(--accent-green); font-weight:500; white-space:nowrap;">' + fmtShort(Number(rec.netWorth) || 0) + '</span>'
             + '</div>';
     }
     function openRankingModal() {
@@ -5005,7 +5027,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
                 current.forEach(function(r, i) { html += rankingRowHtml(r, medals[i] || (i + 1) + '.'); });
                 if (!current.length) html += '<div style="padding:8px 2px; color:var(--text-sub); font-size:0.875rem;">新しいルールでのFIRE成功者はまだいません。</div>';
                 if (legacy.length) {
-                    html += '<div style="margin-top:10px; padding:4px 2px; font-size:0.75rem; font-weight:800; color:var(--text-sub);">▼ ルール変更前の記録（インフレ・取り崩しなし）</div>';
+                    html += '<div style="margin-top:10px; padding:4px 2px; font-size:0.75rem; font-weight:500; color:var(--text-sub);">▼ ルール変更前の記録（インフレ・取り崩しなし）</div>';
                     legacy.forEach(function(r, i) { html += rankingRowHtml(r, (i + 1) + '.'); });
                 }
             } else {
@@ -5323,6 +5345,106 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
         playSound('click');
     }
 
+
+    // ===== 表示の仕上げ：絵文字をアイコン代わりに使わない =====
+    // データ（イベント・称号・講座の文章）は変えず、画面に出すときだけ絵文字を外す
+    const EMOJI_RE = /(?:\p{Extended_Pictographic}|[\u{1F1E6}-\u{1F1FF}]|[\u{1F3FB}-\u{1F3FF}])(?:️|‍(?:\p{Extended_Pictographic})?)*️?\s?/gu;
+    function stripEmoji(text) {
+        if (!text) return text;
+        return String(text).replace(EMOJI_RE, '').replace(/️|‍/g, '').replace(/^[ \t]+/gm, '').replace(/[ \t]{2,}/g, ' ');
+    }
+    function stripEmojiIn(root) {
+        if (!root) return;
+        if (root.nodeType === 3) {
+            const t = root.nodeValue;
+            if (t && EMOJI_RE.test(t)) { EMOJI_RE.lastIndex = 0; root.nodeValue = stripEmoji(t); }
+            EMOJI_RE.lastIndex = 0;
+            return;
+        }
+        if (root.nodeType !== 1 || root.tagName === 'SCRIPT' || root.tagName === 'STYLE' || root.tagName === 'TEXTAREA') return;
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(function(n) {
+            const p = n.parentElement;
+            if (p && (p.tagName === 'SCRIPT' || p.tagName === 'STYLE' || p.tagName === 'TEXTAREA')) return;
+            const t = n.nodeValue;
+            EMOJI_RE.lastIndex = 0;
+            if (t && EMOJI_RE.test(t)) { EMOJI_RE.lastIndex = 0; n.nodeValue = stripEmoji(t); }
+        });
+        EMOJI_RE.lastIndex = 0;
+    }
+    function initEmojiFilter() {
+        stripEmojiIn(document.body);
+        const obs = new MutationObserver(function(muts) {
+            muts.forEach(function(m) {
+                if (m.type === 'characterData') stripEmojiIn(m.target);
+                else m.addedNodes.forEach(stripEmojiIn);
+            });
+        });
+        obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+    }
+
+    // ===== 年輪の描画：輪の面積が純資産に比例する（半径は平方根）=====
+    function seededRand(seed) {
+        let x = seed || 7;
+        return function() { x = (x * 9301 + 49297) % 233280; return x / 233280; };
+    }
+    function ringPathD(cx, cy, r, amp, wob) {
+        let d = '';
+        for (let i = 0; i <= 72; i++) {
+            const a = i / 72 * Math.PI * 2;
+            const rr = r * (1 + amp * (Math.sin(a * 3 + wob[0]) * 0.5 + Math.sin(a * 5 + wob[1]) * 0.3 + Math.sin(a * 2 + wob[2]) * 0.2));
+            d += (i ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(1) + ' ' + (cy + rr * Math.sin(a)).toFixed(1);
+        }
+        return d + 'Z';
+    }
+    // svg: 描く先、values: 毎年の純資産（今の価値）、opts: { size, target, color, crash, targetColor, seed, animateLast }
+    function drawRings(svg, values, opts) {
+        if (!svg) return null;
+        const ns = 'http://www.w3.org/2000/svg';
+        const size = opts.size, c = size / 2, maxR = size / 2 - 4;
+        const vals = values.map(function(v) { return Math.max(1, v); });
+        const top = Math.max(opts.target || 0, vals.reduce(function(a, b) { return Math.max(a, b); }, 1));
+        const scale = maxR / Math.sqrt(top);
+        const rnd = seededRand(opts.seed || 11);
+        const wob = [rnd() * 6.28, rnd() * 6.28, rnd() * 6.28];
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+        if (opts.target) {
+            const t = document.createElementNS(ns, 'circle');
+            t.setAttribute('cx', c); t.setAttribute('cy', c); t.setAttribute('r', (Math.sqrt(opts.target) * scale).toFixed(1));
+            t.setAttribute('fill', 'none'); t.setAttribute('stroke', opts.targetColor); t.setAttribute('stroke-width', 1);
+            t.setAttribute('stroke-dasharray', '2 4'); t.setAttribute('class', 'ring-target');
+            svg.appendChild(t);
+        }
+        let last = null;
+        const n = vals.length;
+        vals.forEach(function(v, i) {
+            const r = Math.sqrt(v) * scale;
+            const shrank = i > 0 && v < vals[i - 1];
+            const p = document.createElementNS(ns, 'path');
+            p.setAttribute('d', ringPathD(c, c, r, 0.006 + Math.min(i, 66) * 0.0004, wob));
+            p.setAttribute('fill', 'none');
+            p.setAttribute('stroke', shrank ? opts.crash : opts.color);
+            p.setAttribute('stroke-width', shrank ? 2.4 : (i === n - 1 ? 1.6 : 0.9));
+            p.setAttribute('opacity', i === n - 1 ? 1 : (0.5 + 0.45 * i / Math.max(1, n)).toFixed(2));
+            p.setAttribute('class', shrank ? 'ring ring-shrank' : 'ring');
+            svg.appendChild(p);
+            last = p;
+        });
+        const dot = document.createElementNS(ns, 'circle');
+        dot.setAttribute('cx', c); dot.setAttribute('cy', c); dot.setAttribute('r', 1.6); dot.setAttribute('fill', opts.color);
+        svg.appendChild(dot);
+        return last;
+    }
+    function drawCoverRings() {
+        const svg = document.getElementById('op-cover-rings');
+        if (!svg) return;
+        const vals = []; let v = 600;
+        for (let i = 0; i < 40; i++) { v *= ([7, 15, 23, 31].indexOf(i) >= 0 ? 0.86 : 1.09); vals.push(v); }
+        drawRings(svg, vals, { size: 380, color: '#D8CFB8', crash: '#8E978F', seed: 3 });
+    }
+
     loadSavedTitles();
     initInsightPanel();
     initChartInteraction();
@@ -5338,6 +5460,8 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     applyAudioPrefsToUI();
     // 市場の説明（設定値から作る）を最初に表示しておく
     document.getElementById('market-desc-inline').innerHTML = i18n.ja.mktDesc(market) + getMarketLockNote();
+    drawCoverRings();
+    initEmojiFilter();
 </script>
 </body>
 </html>
