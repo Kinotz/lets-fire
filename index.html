@@ -4924,7 +4924,7 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
     // --- 🏆 ランキング表示（送信する項目と Firestore のルールは変えず、表示側だけで並べ方を決める）---
     // ルール変更（インフレ・取り崩し・新しいFIRE判定）を公開した日時。これより前の記録は「旧ルール」として区別して表示する
     // ※ 公開した日時に合わせて直してください
-    const RANKING_RULES_V2_FROM = Date.parse('2026-11-16T00:00:00+09:00');
+    const RANKING_RULES_V2_FROM = Date.parse('2026-11-19T00:00:00+09:00');
     let rankingTab = 'fire';
     function isLegacyRankingRecord(rec) {
         const t = rec && rec.createdAt && typeof rec.createdAt.toMillis === 'function' ? rec.createdAt.toMillis() : null;
