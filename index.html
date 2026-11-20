@@ -361,7 +361,7 @@
         .ac-filter-row { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
         .ac-filter-btn { background: transparent; border: 1px solid var(--rule); color: var(--sub); font-size: var(--fs-s); padding: 3px 10px; border-radius: 999px; cursor: pointer; }
         .ac-filter-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-        .ac-card { background: transparent; border: none; border-bottom: 1px solid var(--rule); padding: 10px 0; font-size: var(--fs-m); cursor: pointer; text-align: left; width: 100%; color: inherit; }
+        .ac-card { flex-shrink: 0; background: transparent; border: none; border-bottom: 1px solid var(--rule); padding: 10px 0; font-size: var(--fs-m); cursor: pointer; text-align: left; width: 100%; color: inherit; }
         .ac-level { font-size: var(--fs-xs); color: var(--sub); margin-right: 6px; }
         .ac-level.basic, .ac-level.adv, .ac-level.pro { color: var(--sub); }
         .turn-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; padding: 8px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--paper); border-top: 1px solid var(--rule); }
@@ -839,7 +839,7 @@
                 <button type="button" class="ac-filter-btn" id="ac-flt-adv" onclick="filterAcademy('adv')">🚀 応用編(8)</button>
                 <button type="button" class="ac-filter-btn" id="ac-flt-pro" onclick="filterAcademy('pro')">👑 プロ・FIRE編(8)</button>
             </div>
-            <div id="academy-container" style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:5px;"></div>
+            <div id="academy-container" style="display:flex; flex-direction:column; gap:5px;"></div>
             <div class="promo-box aff-elem hidden">
                 <span class="promo-badge">RECOMMENDED / PR</span>
                 <div class="promo-title" id="lbl-acad-promo-title">💎 学んだ知識を「現実の資産形成」に活かそう！</div>
