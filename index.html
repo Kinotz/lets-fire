@@ -31,6 +31,8 @@
             --wood: #7B5E41; --ash: #A49E93; --red: #B03A2E;
             --green: #3B4A40; --green-press: #2C382F; --on-green: #F2EEE5;
             --amber: #8A6326; --amber-line: #B9853F; --slate: #3F5560; --rose: #8C5A6A;
+            /* 記録の「いまの内訳」の棒と凡例の点だけに使う色（見分けやすさを確認済みの組み合わせ）*/
+            --mix-cash: #2A6FC0; --mix-stock: #178A5E; --mix-gold: #D99A0B; --mix-crypto: #DE82AE; --mix-prop: #C0501F;
             --font-sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic", "YuGothic", sans-serif;
             --font-serif: "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Noto Serif JP", "Noto Serif CJK JP", "Yu Mincho", "YuMincho", serif;
             --fs-xs: 0.8125rem; --fs-s: 0.875rem; --fs-m: 1rem; --fs-l: 1rem;
@@ -267,11 +269,11 @@
         .net-worth-val { font-size: 1.5rem; font-weight: 500; margin: 2px 0 4px; }
         .growth-pill { font-size: var(--fs-s); color: var(--ink); }
         .growth-pill.minus { color: var(--red); }
-        .breakdown-bar { display: flex; height: 8px; border-radius: 1px; overflow: hidden; background: var(--paper-lo); margin-bottom: 6px; }
-        .bar-seg { height: 100%; transition: width 0.4s ease; }
+        .breakdown-bar { display: flex; gap: 2px; height: 14px; border-radius: 2px; overflow: hidden; background: var(--paper); margin-bottom: 8px; }
+        .bar-seg { height: 100%; flex: 0 1 auto; min-width: 2px; transition: width 0.4s ease; }
         .legend-row { display: flex; flex-wrap: wrap; gap: 0 12px; font-size: var(--fs-xs); color: var(--sub); margin-bottom: 8px; }
         .legend-item { display: flex; align-items: center; gap: 4px; cursor: pointer; background: none; border: none; padding: 0; color: inherit; font: inherit; }
-        .dot { width: 8px; height: 8px; border-radius: 1px; display: inline-block; }
+        .dot { width: 12px; height: 12px; border-radius: 2px; display: inline-block; flex: none; }
         .cf-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; border-top: 1px solid var(--rule); text-align: left; }
         .cf-cell { background: transparent; border: none; border-bottom: 1px solid var(--rule); padding: 8px 2px; color: inherit; font-family: inherit; cursor: pointer; min-height: 48px; display: flex; flex-direction: column; text-align: left; }
         .cf-cell:nth-child(odd) { border-right: 1px solid var(--rule); padding-right: 10px; }
@@ -751,14 +753,14 @@
             </div>
             <div class="nominal-line" id="nominal-line"><span id="disp-nominal">額面 ¥600万</span><button type="button" class="term-btn" data-nav-free onclick="openTermHelp('inflation')" id="btn-inflation">物価 ×1.00（今年 +2.0%）？</button></div>
             <div class="breakdown-bar" id="breakdown-bar">
-                <div class="bar-seg" style="width:100%; background:var(--accent-blue);"></div>
+                <div class="bar-seg" style="width:100%; background:var(--mix-cash);"></div>
             </div>
             <div class="legend-row">
-                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('cash')"><span class="dot" style="background:var(--accent-blue);"></span><span id="l-cash">現金(100%)</span></button>
-                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('index')"><span class="dot" style="background:var(--accent-green);"></span><span id="l-stock">株式(0%)</span></button>
-                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('gold')"><span class="dot" style="background:var(--accent-gold);"></span><span id="l-gold">金(0%)</span></button>
-                <button type="button" class="legend-item" data-nav-free id="legend-crypto" onclick="openTermHelp('crypto')"><span class="dot" style="background:var(--accent-crypto);"></span><span id="l-crypto">仮想通貨(0%)</span></button>
-                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('reals')"><span class="dot" style="background:var(--accent-purple);"></span><span id="l-prop">不動産(0%)</span></button>
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('cash')"><span class="dot" style="background:var(--mix-cash);"></span><span id="l-cash">現金(100%)</span></button>
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('index')"><span class="dot" style="background:var(--mix-stock);"></span><span id="l-stock">株式(0%)</span></button>
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('gold')"><span class="dot" style="background:var(--mix-gold);"></span><span id="l-gold">金(0%)</span></button>
+                <button type="button" class="legend-item" data-nav-free id="legend-crypto" onclick="openTermHelp('crypto')"><span class="dot" style="background:var(--mix-crypto);"></span><span id="l-crypto">仮想通貨(0%)</span></button>
+                <button type="button" class="legend-item" data-nav-free onclick="openTermHelp('reals')"><span class="dot" style="background:var(--mix-prop);"></span><span id="l-prop">不動産(0%)</span></button>
             </div>
             <div class="cf-grid">
                 <button type="button" class="cf-cell" data-nav-free onclick="openTermHelp('salary')" aria-label="給与貯蓄の説明を見る"><span><span id="lbl-cf-sal">給与貯蓄</span> ⓘ</span><strong id="disp-salary" style="color:var(--accent-blue);">+¥160万</strong></button>
@@ -4395,12 +4397,10 @@ firstHedge: { title: "暴落保険（オプション的な仕組み）", desc: "
             if (item) item.classList.toggle('is-zero', x[1] === 0);
         });
 
-        document.getElementById('breakdown-bar').innerHTML =
-            '<div class="bar-seg" style="width:' + pCash + '%; background:var(--accent-blue);"></div>' +
-            '<div class="bar-seg" style="width:' + pStock + '%; background:var(--accent-green);"></div>' +
-            '<div class="bar-seg" style="width:' + pGold + '%; background:var(--accent-gold);"></div>' +
-            '<div class="bar-seg" style="width:' + pCrypto + '%; background:var(--accent-crypto);"></div>' +
-            '<div class="bar-seg" style="width:' + pProp + '%; background:var(--accent-purple);"></div>';
+        document.getElementById('breakdown-bar').innerHTML = [[pCash, 'cash'], [pStock, 'stock'], [pGold, 'gold'], [pCrypto, 'crypto'], [pProp, 'prop']]
+            .filter(function(x) { return x[0] > 0; })
+            .map(function(x) { return '<div class="bar-seg" style="width:' + x[0] + '%; background:var(--mix-' + x[1] + ');"></div>'; })
+            .join('');
 
         const annualSavings = getAnnualSavings();
         const reCF = calcRECashFlow();
